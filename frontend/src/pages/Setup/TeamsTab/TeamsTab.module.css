@@ -1,0 +1,338 @@
+.container {
+  width: 100%;
+  min-height: calc(100vh - 200px);
+}
+
+.pageHeader {
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 12px 16px;
+  background: #ffffff;
+  border-bottom: 1px solid #d9d9d9;
+  border-radius: 8px;
+}
+
+.header h2 {
+  color: #262626;
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.teamName {
+  font-weight: 500;
+  color: #262626;
+  font-size: 14px;
+}
+
+.teamCode {
+  font-size: 12px;
+  color: #8c8c8c;
+  font-weight: 400;
+  display: block;
+  margin-top: 2px;
+}
+
+.quarterCell {
+  min-width: 100px;
+}
+
+.noCapacity {
+  color: #bfbfbf;
+  font-style: italic;
+}
+
+.mainLayout {
+  display: flex;
+  gap: 24px;
+  min-height: 500px;
+}
+
+.teamListSection {
+  flex: 0 0 45%;
+  max-width: 45%;
+  min-width: 400px;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+@media (max-width: 1200px) {
+  .mainLayout {
+    flex-direction: column;
+  }
+  
+  .teamListSection {
+    flex: 1;
+    max-width: 100%;
+    min-width: 100%;
+  }
+  
+  .capacitySection {
+    flex: 1 !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+.teamListSection :global(.ant-table) {
+  width: 100%;
+}
+
+.teamListSection :global(.ant-table-content) {
+  overflow-x: auto;
+}
+
+.teamListSection :global(.ant-table-thead > tr > th),
+.teamListSection :global(.ant-table-tbody > tr > td) {
+  padding: 12px 16px;
+}
+
+.teamListHeader {
+  padding: 16px 24px;
+  border-bottom: 1px solid #d9d9d9;
+  background: #fafafa;
+}
+
+.teamListTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #262626;
+  margin: 0 0 12px 0;
+}
+
+.capacitySection {
+  flex: 1;
+  min-width: 400px;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: auto;
+}
+
+.capacityHeader {
+  padding: 16px 24px;
+  background: #fafafa;
+  border-bottom: 1px solid #d9d9d9;
+}
+
+.capacityTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: #262626;
+  margin: 0;
+}
+
+.capacitySubtitle {
+  font-size: 14px;
+  color: #8c8c8c;
+  margin-top: 4px;
+}
+
+.capacityContent {
+  padding: 24px;
+}
+
+.statCard {
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  border: 1px solid #d9d9d9;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.statCardBlue {
+  border-left: 4px solid #1890ff;
+}
+
+.statCardBlue .statValue {
+  color: #1890ff;
+}
+
+.statCardGreen {
+  border-left: 4px solid #52c41a;
+}
+
+.statCardGreen .statValue {
+  color: #52c41a;
+}
+
+.statCardOrange {
+  border-left: 4px solid #fa8c16;
+}
+
+.statCardOrange .statValue {
+  color: #fa8c16;
+}
+
+.statCardCyan {
+  border-left: 4px solid #13c2c2;
+}
+
+.statCardCyan .statValue {
+  color: #13c2c2;
+}
+
+.statValue {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #262626;
+}
+
+.statLabel {
+  font-size: 12px;
+  color: #8c8c8c;
+  margin-top: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.roleCard {
+  background: #ffffff;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+  transition: all 0.2s ease-in-out;
+}
+
+.roleCard:hover {
+  border-color: #1890ff;
+  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.15);
+}
+
+.roleCardDev {
+  border-left: 4px solid #1890ff;
+}
+
+.roleCardQA {
+  border-left: 4px solid #52c41a;
+}
+
+.roleCardBA {
+  border-left: 4px solid #13c2c2;
+}
+
+.roleValue {
+  font-size: 24px;
+  font-weight: 700;
+  color: #262626;
+}
+
+.roleLabel {
+  font-size: 14px;
+  color: #1890ff;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+.roleMemberCount {
+  font-size: 12px;
+  color: #8c8c8c;
+  margin-top: 4px;
+}
+
+.allocationCard {
+  background: #ffffff;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+}
+
+.allocationValue {
+  font-size: 18px;
+  font-weight: 600;
+  color: #262626;
+}
+
+.allocationLabel {
+  font-size: 12px;
+  color: #595959;
+  margin-top: 4px;
+}
+
+.allocationPercent {
+  font-size: 12px;
+  color: #8c8c8c;
+  margin-top: 4px;
+}
+
+.sectionTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #262626;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 3px solid #1890ff;
+  display: inline-block;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 48px 32px;
+  color: #8c8c8c;
+}
+
+.emptyStateIcon {
+  font-size: 48px;
+  color: #d9d9d9;
+  margin-bottom: 16px;
+}
+
+.emptyStateText {
+  font-size: 16px;
+  color: #262626;
+  margin-bottom: 8px;
+}
+
+.emptyStateHint {
+  font-size: 14px;
+  color: #8c8c8c;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 16px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #d9d9d9;
+}
+
+.capacityPanel {
+  margin-top: 16px;
+  padding: 16px;
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #f0f0f0;
+}
+
+.capacityPanelHeader {
+  margin-bottom: 16px;
+}
+
+.teamRow {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.teamRow:hover {
+  background: #f8f9ff !important;
+}
+
+.teamRowSelected {
+  background: #e6f4ff !important;
+  border-left: 3px solid #1890ff;
+}
+

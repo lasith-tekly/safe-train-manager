@@ -1,0 +1,165 @@
+div.badge {
+  padding-top: 0; // forced override for complex badge (badge with interactions)
+  padding-bottom: 0; // forced override for complex badge (badge with interactions)
+
+  &.df-closable { // add
+    @include ltr {
+      padding-right: 0;
+    }
+    @include rtl {
+      padding-left: 0;
+    }
+
+    button {
+      &:hover {
+        cursor: pointer;
+      }
+      border: $df-badge-close-border;
+      padding: $df-badge-close-padding;
+
+      span {
+        font-size: $df-badge-close-font-size;
+        vertical-align: inherit;
+      }
+
+      &:focus,
+      &.focus {
+        outline: 0;
+        box-shadow: $btn-focus-box-shadow;
+      }
+    }
+  }
+
+  &:not(.badge-pill) {
+    &.df-closable { // add
+      display: inline-flex;
+      padding-left: 0;
+
+      span[role=button] {
+        padding: $badge-padding-y $df-badge-interactive-close-padding-left $badge-padding-y $badge-padding-x;
+        @include ltr {
+          border-top-left-radius: $badge-border-radius;
+          border-bottom-left-radius: $badge-border-radius;
+        }
+        @include rtl {
+          border-top-right-radius: $badge-border-radius;
+          border-bottom-right-radius: $badge-border-radius;
+        }
+      }
+      button {
+        @include ltr {
+          border-top-right-radius: $badge-border-radius;
+          border-bottom-right-radius: $badge-border-radius;
+        }
+        @include rtl {
+          border-top-left-radius: $badge-border-radius;
+          border-bottom-left-radius: $badge-border-radius;
+        }
+      }
+    }
+  }
+
+  &.badge-pill {
+    &.df-closable { // add
+      button {
+        @include ltr {
+          border-top-right-radius: $badge-pill-border-radius;
+          border-bottom-right-radius: $badge-pill-border-radius;
+        }
+        @include rtl {
+          border-top-left-radius: $badge-pill-border-radius;
+          border-bottom-left-radius: $badge-pill-border-radius;
+        }
+      }
+    }
+  }
+}
+
+.badge { // override
+  text-transform: uppercase;
+  &.badge-pill,
+  &.df-badge-dot {
+    cursor: text;
+  }
+  &:not(.badge-pill):not(.df-badge-dot) {
+    cursor: pointer;
+
+    &:focus,
+    &.focus {
+      outline: 0;
+      box-shadow: $btn-focus-box-shadow;
+    }
+  }
+}
+
+@each $color, $value in $df-badge-theme-colors {
+  $background-color: null;
+  $color-value: null;
+  $hover-color-value: null;
+  @if type-of($value) == 'map' and map-has-key($value, background-color) {
+    $background-color: map-get($value, background-color);
+    $color-value: map-get($value, "color");
+    $hover-color-value: map-get($value, "color");
+  } @else {
+    $background-color: $value;
+    $color-value: color-yiq($background-color);
+    $hover-color-value: color-yiq(darken($background-color, $df-badge-interaction-hover-background-percentage));
+  }
+  $hover-background-color: darken($background-color, $df-badge-interaction-hover-background-percentage);
+
+  .badge-#{$color} {
+    @include badge-variant($background-color);
+    color: $color-value;
+
+    &:not(.badge-pill):hover:not(.df-badge-dot):hover {
+      &:not(.df-closable) { // add
+        color: $hover-color-value;
+        text-decoration: none;
+        background-color: $hover-background-color;
+      }
+    }
+
+    &:not(.badge-pill):not(.df-badge-dot) {
+      &.df-closable { // add
+        span[role=button]:hover {
+          color: $hover-color-value;
+          text-decoration: none;
+          background-color: $hover-background-color;
+        }
+      }
+    }
+
+    &.df-closable { // add
+      button {
+        color: $color-value;
+        background: $background-color;
+
+        @include hover-focus {
+          color: $hover-color-value;
+          text-decoration: none;
+          background-color: $hover-background-color;
+        }
+      }
+    }
+
+    &.df-badge-dot::before {
+      content: "";
+      height: $df-df-badge-dot-font-size;
+      width: $df-df-badge-dot-font-size;
+      background-color: $background-color;
+      border-radius: 50%;
+      display: inline-block;
+      @include ltr {
+        margin-right: $df-df-badge-dot-margin-right;
+      }
+      @include rtl {
+        margin-left: $df-df-badge-dot-margin-right;
+      }
+    }
+
+    &.df-badge-dot {
+      background-color: transparent;
+      color: inherit;
+    }
+  }
+}

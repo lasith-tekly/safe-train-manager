@@ -1,0 +1,177 @@
+.container {
+  padding: 24px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.metricsRow {
+  margin-bottom: 16px;
+}
+
+.card {
+  height: 100%;
+}
+
+/* Budget Health */
+.budgetList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.budgetItem {
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.budgetItem:hover {
+  background-color: #fafafa;
+}
+
+.budgetHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.productCode {
+  font-weight: 600;
+  color: #262626;
+}
+
+.budgetValues {
+  color: #8c8c8c;
+  font-size: 12px;
+}
+
+/* Feature Stats */
+.featureStats {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.statItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.statDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.statLabel {
+  flex: 1;
+  color: #595959;
+}
+
+.statValue {
+  font-size: 16px;
+  font-weight: 500;
+  color: #262626;
+}
+
+/* Capacity Heatmap */
+.heatmapContainer {
+  overflow-x: auto;
+}
+
+.heatmapTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.heatmapTable th,
+.heatmapTable td {
+  padding: 8px 12px;
+  text-align: center;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.heatmapTable th {
+  font-weight: 600;
+  color: #8c8c8c;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.heatmapTable tbody tr {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.heatmapTable tbody tr:hover {
+  background-color: #fafafa;
+}
+
+.teamCell {
+  text-align: left !important;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.teamCode {
+  font-weight: 600;
+  color: #262626;
+}
+
+.teamName {
+  font-size: 12px;
+  color: #8c8c8c;
+}
+
+.heatmapCell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 36px;
+  border-radius: 4px;
+}
+
+.heatmapValue {
+  color: white;
+  font-weight: 500;
+  font-size: 12px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Legend */
+.legend {
+  display: flex;
+  gap: 24px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #8c8c8c;
+}
+
+.legendDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}

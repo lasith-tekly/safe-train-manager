@@ -1,0 +1,31 @@
+$df-checkbox-svg-height: 1rem !default;
+$df-checkbox-svg-width: 1rem !default;
+$df-checkbox-top: #{$line-height-base / 2}em !default;
+$df-checkbox-border-radius: 0.125rem !default;
+$df-checkbox-margin-right: 0.5rem !default;
+$df-checkbox-margin-bottom: 0.3rem !default;
+$df-checkbox-label-disabled-color: $df-disabled-color !default;
+$df-checkbox-border-color: $gray-400 !default;
+$df-checkbox-background-color: $white !default;
+$df-checkbox-disabled-border-color: $gray-300 !default;
+$df-checkbox-disabled-background-color: $df-disabled-bg-color !default;
+$df-checkbox-checked-disabled-background-color: $gray-300 !default;
+$df-checkbox-checked-color: theme-color("primary") !default;
+$df-checkbox-indeterminate-bg-color: theme-color("primary") !default;
+$df-checkbox-indeterminate-disabled-bg-color: $gray-300 !default;
+$df-checkbox-disabled-cursor: $df-disabled-cursor !default;
+
+//IE compatibility: Outer quotes should be double and inner single
+$df-checkbox: "<svg version='1.1' viewBox='0 0 17.5 17.5' xmlns='http://www.w3.org/2000/svg'><rect x='.75' y='.75' width='16' height='16' rx='2' fill='#cccccc' fill-rule='evenodd' stroke='#bbbbbb' stroke-width='1.5'/><path d='m7.0155 12.75c-0.2598 0-0.5196-0.10213-0.71744-0.30639l-2.2513-2.3243c-0.39569-0.40852-0.39569-1.0719 0-1.4804 0.39569-0.40956 1.0382-0.40956 1.4339 0l1.5348 1.5835 5.0031-5.1654c0.39569-0.40956 1.0382-0.40956 1.4339 0 0.39669 0.40852 0.39669 1.0719 0 1.4814l-5.7196 5.905c-0.19785 0.20426-0.45765 0.30639-0.71744 0.30639' fill='#ffffff' fill-rule='evenodd'/></svg>" !default;
+// partial checkbox
+$df-checkbox-indeterminate: "<svg version='1.1' viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'><g fill='none' fill-rule='evenodd'><g transform='translate(-20 -351)'><g transform='translate(20 349)'><g transform='translate(0 2)'><rect width='16' height='16' rx='2' fill='#cccccc'/><rect x='3' y='7' width='10' height='2.5' rx='1.25' fill='#ffffff'/></g></g></g></g></svg>" !default;
+$df-checkbox-svg-basic: df-getSVGasURL($df-checkbox, $white, $df-checkbox-border-color, $df-checkbox-background-color) !default;
+$df-checkbox-svg-checked: df-getSVGasURL($df-checkbox, $white, $df-checkbox-checked-color, $df-checkbox-checked-color) !default;
+$df-checkbox-svg-disabled: df-getSVGasURL($df-checkbox, $df-checkbox-disabled-background-color, $df-checkbox-disabled-border-color, $df-checkbox-disabled-background-color) !default;
+$df-checkbox-svg-disabled-checked: df-getSVGasURL($df-checkbox, $white, $df-checkbox-disabled-border-color, $df-checkbox-checked-disabled-background-color) !default;
+$df-checkbox-svg-indeterminate: df-getSVGasURL($df-checkbox-indeterminate, $white, #fff, $df-checkbox-indeterminate-bg-color) !default;
+$df-checkbox-svg-indeterminate-disabled: df-getSVGasURL($df-checkbox-indeterminate, $white, #fff, $df-checkbox-indeterminate-disabled-bg-color) !default;
+
+$df-checkbox-high-contrast-unchecked-content: "\edf1" !default; // icon-square
+$df-checkbox-high-contrast-intermediate-content: "\ec9a" !default; // icon-minus-square
+$df-checkbox-high-contrast-checked-content: "\ea1b" !default; // icon-check-square

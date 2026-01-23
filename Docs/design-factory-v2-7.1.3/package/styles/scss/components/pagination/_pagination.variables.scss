@@ -1,0 +1,20 @@
+$df-pagination-size-base: 2.25rem !default;
+$df-pagination-size-sm: 1.75rem !default;
+$df-pagination-size-lg: 3rem !default;
+
+$df-pagination-border-radius-base: 0.175rem !default;
+$df-pagination-border-radius-sm: 0.15rem !default;
+$df-pagination-border-radius-lg: 0.2rem !default;
+
+$df-pagination-icon-left-offset-base: 0.95rem !default;
+$df-pagination-icon-left-offset-lg: $df-pagination-icon-left-offset-base +
+  ($df-pagination-size-lg - $df-pagination-size-base) / 2 !default;
+$df-pagination-icon-left-offset-sm: $df-pagination-icon-left-offset-base +
+  ($df-pagination-size-sm - $df-pagination-size-base) / 2 !default;
+
+$df-pagination-first-icon-code: "e926" !default; // .icon-angle-double-left
+$df-pagination-previous-icon-code: "e92a" !default; // .icon-angle-left
+$df-pagination-next-icon-code: "e92b" !default; // .icon-angle-right
+$df-pagination-last-icon-code: "e927" !default; // .icon-angle-double-right
+
+$df-pagination-disabled-cursor: $df-disabled-cursor !default;

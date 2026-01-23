@@ -1,0 +1,5 @@
+@mixin df-color-variant($color, $value) {
+  .df-color-#{$color} {
+    color: $value !important;
+  }
+}

@@ -1,0 +1,114 @@
+.form-check {// add
+  > input[type="checkbox"] {// same as custom-control-input from bootstrap to hide the browser input (mandatory)
+    position: absolute;
+    opacity:0;
+    z-index: -1;
+  }
+
+  > input[type="checkbox"] ~ .form-check-label {
+    @include df-checkboxradio-pos($df-checkbox-margin-bottom);
+    cursor:pointer; // add
+    @include ltr {
+      margin-right: $df-checkbox-margin-right;
+    }
+    @include rtl {
+      margin-left: $df-checkbox-margin-right;
+    }
+
+    // Cover the case of the usage of a checkbox without a proper label
+    &:not(.df-empty-label-checkbox) {
+      &::before {
+        top: $df-checkbox-top;
+      }
+    }
+
+    &::before {// add
+      @include ltr {
+        left: 0; // idem as custom-control-input from bootstrap to hide the browser input (mandatory)
+      }
+      @include rtl{
+        right: 0;
+      }
+      display: block; // idem as custom-control-input from bootstrap to hide the browser input (mandatory)
+      width: $df-checkbox-svg-width;
+      height: $df-checkbox-svg-height;
+      @extend %df-icon-style;
+      color: $df-high-contrast-color;
+      content: $df-checkbox-high-contrast-unchecked-content;
+      background-color: transparent; // mandatory
+      background-image: $df-checkbox-svg-basic;
+      background-size: $df-checkbox-svg-height $df-checkbox-svg-width;
+      background-repeat: no-repeat; // mandatory
+      border-radius: $df-checkbox-border-radius;
+    }
+  }
+
+  > input[type="checkbox"]:focus ~ .form-check-label::before {
+    background-image: $df-checkbox-svg-basic;
+    box-shadow: $btn-focus-box-shadow;
+  }
+
+  > input[type="checkbox"]:indeterminate ~ .form-check-label::before {
+    background-image: $df-checkbox-svg-indeterminate;
+    content: $df-checkbox-high-contrast-intermediate-content;
+  }
+
+  > input[type="checkbox"]:indeterminate:checked ~ .form-check-label::before {
+    background-image: $df-checkbox-svg-indeterminate;
+    content: $df-checkbox-high-contrast-intermediate-content;
+  }
+
+  > input[type="checkbox"]:indeterminate:checked:focus ~ .form-check-label::before {
+    background-image: $df-checkbox-svg-indeterminate;
+  }
+
+  > input[type="checkbox"]:checked:focus ~ .form-check-label::before {
+    background-image: $df-checkbox-svg-checked;
+    box-shadow: $btn-focus-box-shadow;
+  }
+
+  > input[type="checkbox"]:disabled ~ .form-check-label::before {
+    background-image: $df-checkbox-svg-disabled;
+  }
+
+  > input[type="checkbox"]:disabled:indeterminate ~ .form-check-label::before {
+    background-image: $df-checkbox-svg-indeterminate-disabled;
+  }
+
+  > input[type="checkbox"]:disabled:checked ~ .form-check-label::before {
+    background-image: $df-checkbox-svg-disabled-checked;
+  }
+
+  > input[type="checkbox"]:disabled:checked:indeterminate ~ .form-check-label::before {
+    background-image: $df-checkbox-svg-indeterminate-disabled;
+  }
+
+  > input[type="checkbox"]:checked ~ .form-check-label::before {
+    background-image: $df-checkbox-svg-checked;
+    content: $df-checkbox-high-contrast-checked-content;
+  }
+
+  > input[type="checkbox"]:disabled ~ .form-check-label {
+    color: $df-checkbox-label-disabled-color;
+    cursor: $df-checkbox-disabled-cursor;
+  }
+
+  > input[type="checkbox"] ~ .invalid-feedback {
+    @include ltr {
+      margin-left: -$form-check-input-gutter;
+    }
+    @include rtl {
+      margin-right: -$form-check-input-gutter;
+    }
+    margin-top: -$df-checkbox-margin-bottom;
+    margin-bottom: $df-checkbox-margin-bottom;
+  }
+}
+
+.btn-group-toggle {
+  > .btn,
+  > .btn-group > .btn {
+    cursor: pointer;
+  }
+}
+

@@ -1,0 +1,91 @@
+.btn {
+  font-family: $df-btn-font-family;
+  &.disabled,
+  &:disabled {
+    cursor: not-allowed;
+  }
+}
+
+@each $color, $value in $theme-colors {
+  .btn-#{$color} {
+    &.df-btn-icononly {
+      border: $df-btn-icononly-border;
+      width: $df-btn-icononly-width;
+      height: $df-btn-icononly-height;
+      padding: $df-btn-icononly-padding;
+      border-radius: $df-btn-icononly-border-radius;
+    }
+    @include hover {
+      color: color-yiq(lighten($value, 5.5%));
+      @include gradient-bg(lighten($value, 5.5%));
+      border-color: lighten($value, 5.5%);
+    }
+
+    &.disabled,
+    &:disabled {
+      color: color-yiq($df-btn-disabled-color);
+      background-color: $df-btn-disabled-color;
+      border-color: $df-btn-disabled-color;
+    }
+  }
+
+  .btn-outline-#{$color} {
+    &.df-btn-icononly {
+      border: $df-btn-icononly-border;
+      width: $df-btn-icononly-width;
+      height: $df-btn-icononly-height;
+      padding: $df-btn-icononly-padding;
+      border-radius: $df-btn-icononly-border-radius;
+    }
+    &:not(:disabled):not(.disabled):hover {
+      color: color-yiq(rgba(lighten($value, 40%), 0.3));
+      background-color: rgba(lighten($value, 40%), 0.3);
+    }
+
+    &:not(:disabled):not(.disabled):active,
+    &:not(:disabled):not(.disabled).active,
+    .show > &.dropdown-toggle {
+      color: color-yiq(rgba(lighten($value, 40%), 0.5));
+      background-color: rgba(lighten($value, 40%), 0.5);
+    }
+
+    &.disabled,
+    &:disabled {
+      color: $df-btn-outline-disabled-text-color;
+      border-color: $df-btn-disabled-color;
+    }
+  }
+}
+
+.df-btn-xl {
+  @include button-size($df-btn-padding-y-xl, $df-btn-padding-x-xl, $df-btn-font-size-xl, $df-btn-line-height-xl, $df-btn-border-radius-xl);
+}
+// btn-link
+// Make a button look and behave like a link
+.btn-link {
+  &:focus,
+  &.focus {
+    box-shadow: $btn-focus-box-shadow; // override
+  }
+
+  @include hover {
+    background-color: $df-btn-link-hover-bg-color;
+  }
+
+  &:not(:disabled):not(.disabled):active,
+  &:not(:disabled):not(.disabled).active {
+    text-decoration: $df-btn-link-active-td;
+    color: $link-hover-color; // add
+  }
+
+  &:disabled,
+  &.disabled {
+    pointer-events: inherit; // override
+    cursor: $df-btn-link-disabled-pointer; // add
+    @include hover {
+      text-decoration: $df-btn-link-hover-td;
+      background-color: $df-btn-link-disabled-hover-bg-color;
+    }
+  }
+}
+

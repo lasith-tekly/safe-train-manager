@@ -1,0 +1,57 @@
+.table {
+  thead {
+    th {
+      border-top: $df-thead-border-top;
+      border-bottom: $df-thead-border-bottom;
+    }
+  }
+  tbody {
+    td,
+    th {
+      padding-top: $df-tbody-cell-vertical-padding;
+      padding-bottom: $df-tbody-cell-vertical-padding;
+    }
+    tr {
+      &:first-child {
+        td,
+        th {
+          border-top: $df-tbody-first-row-border-top;
+        }
+      }
+    }
+  }
+  th {
+    font-weight: $df-th-font-weight;
+  }
+  th:first-child,
+  tr td:first-child {
+    padding-left: $df-table-horizontal-padding;
+  }
+  th:last-child,
+  tr td:last-child {
+    padding-right: $df-table-horizontal-padding;
+  }
+  .thead-light {
+    th,
+    td {
+      border-bottom: $df-thead-light-border-bottom;
+    }
+  }
+  &.table-sm {
+    tbody {
+      td,
+      th {
+        padding-top: $df-tbody-cell-vertical-padding-sm;
+        padding-bottom: $df-tbody-cell-vertical-padding-sm;
+      }
+    }
+  }
+
+  &.table-borderless {
+    thead {
+      th {
+        border: none;
+      }
+    }
+  }
+}

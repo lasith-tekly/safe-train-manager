@@ -1,0 +1,26 @@
+{
+  "name": "design-factory-v2",
+  "version": "7.1.3",
+  "peerDependencies": {
+    "@angular/common": "^8.0.0",
+    "@angular/core": "^8.0.0",
+    "@ng-bootstrap/ng-bootstrap": "~5.2.1",
+    "bootstrap": "~4.3.1",
+    "ng5-slider": "~1.2.4",
+    "@ng-select/ng-select": "~3.0.7",
+    "@ng-select/ng-option-highlight": "~0.0.2"
+  },
+  "main": "bundles/design-factory-v2.umd.js",
+  "module": "fesm5/design-factory-v2.js",
+  "es2015": "fesm2015/design-factory-v2.js",
+  "esm5": "esm5/design-factory-v2.js",
+  "esm2015": "esm2015/design-factory-v2.js",
+  "fesm5": "fesm5/design-factory-v2.js",
+  "fesm2015": "fesm2015/design-factory-v2.js",
+  "typings": "design-factory-v2.d.ts",
+  "metadata": "design-factory-v2.metadata.json",
+  "sideEffects": false,
+  "dependencies": {
+    "tslib": "^1.9.0"
+  }
+}

@@ -1,0 +1,242 @@
+.form-check {// add all for toggle
+  input[type="checkbox"] {// same as custom-control-input from bootstrap to hide the browser input (mandatory)
+    position: absolute;
+    opacity:0;
+    z-index: -1;
+  }
+
+  input[type="checkbox"] ~ .form-toggle-label {
+    @include ltr {
+      padding-left: $df-toggle-label-padding-left;
+    }
+    @include rtl {
+      padding-right: $df-toggle-label-padding-left;
+    }
+    margin-bottom: $df-toggle-label-margin-bottom; // override as for custom-control-input of bootstrap
+    line-height: $df-toggle-height;
+    color: $df-toggle-label-color;
+  }
+
+  .form-toggle-label .form-toggle-container {
+    position: relative;
+
+    .form-check-input {
+      @include ltr {
+        margin-left: 0px; // override from bootstrap
+      }
+      @include rtl {
+        margin-right: 0px;
+      }
+    }
+    input[type="checkbox"] ~ .form-toggle-label {
+      @include ltr {
+        padding-left: $df-toggle-inner-label-padding-left;
+      }
+      @include rtl {
+        padding-right: $df-toggle-inner-label-padding-left;
+      }
+      font-weight: $df-toggle-inner-label-font-weight;
+    }
+    input[type="checkbox"] ~ .form-toggle-label-sm {
+      @include ltr {
+        padding-left: $df-toggle-sm-inner-label-padding-left;
+      }
+      @include rtl {
+        padding-right: $df-toggle-sm-inner-label-padding-left;
+      }
+      font-weight: $df-toggle-inner-label-font-weight;
+    }
+  }
+
+  input[type="checkbox"] ~ .form-toggle-label::before {
+    position: absolute; // mandatory
+    @include ltr {
+      left: $df-toggle-left;
+    }
+    @include rtl {
+      right: $df-toggle-left;
+    }
+    bottom: $df-toggle-bottom;
+    display: block; // mandatory
+    border-radius: $df-toggle-border-radius;
+    width: $df-toggle-width;
+    height: $df-toggle-height;
+    border-width: $df-toggle-border-width;
+    border-style: $df-toggle-border-style;
+    content: " "; // mandatory
+    background-color: $df-toggle-inactive-background-color;
+    border-color: $df-toggle-inactive-border-color;
+    cursor: pointer;
+  }
+
+  input[type="checkbox"]:focus ~ .form-toggle-label::before {
+    box-shadow: $btn-focus-box-shadow;
+  }
+
+  input[type="checkbox"] ~ .form-toggle-label::after {
+      position: absolute;
+      @include ltr {
+        left: $df-toggle-circle-left;
+      }
+      @include rtl {
+        right: $df-toggle-circle-left;
+      }
+      bottom: $df-toggle-circle-bottom;
+      width: $df-toggle-circle-width;
+      height: $df-toggle-circle-height;
+      background-color: $df-toggle-inactive-dot-color;
+      content: ""; // mandatory
+      transition: $df-toggle-transition;
+      border-radius: $df-toggle-circle-border-radius;
+      cursor: pointer;
+  }
+
+  input[type="checkbox"]:disabled ~ .form-toggle-label::before {
+    background-color: $df-toggle-disabled-inactive-background-color;
+    border-color: $df-toggle-disabled-inactive-border-color;
+    cursor: $df-toggle-disabled-cursor;
+  }
+
+  input[type="checkbox"]:disabled ~ .form-toggle-label::after {
+    background-color: $df-toggle-disabled-inactive-dot-color;
+    cursor: $df-toggle-disabled-cursor;
+  }
+
+  input[type="checkbox"]:checked:disabled ~ .form-toggle-label::before {
+    background-color: $df-toggle-disabled-active-background-color;
+    border-color: $df-toggle-disabled-active-border-color;
+  }
+
+  input[type="checkbox"]:checked:disabled ~ .form-toggle-label::after {
+    background-color: $df-toggle-disabled-active-dot-color;
+  }
+
+  input[type="checkbox"]:disabled ~ .form-toggle-label {
+    color: $df-toggle-disabled-label-color;
+  }
+
+  input[type="checkbox"]:checked ~ .form-toggle-label::before {
+    background-color: $df-toggle-active-background-color;
+    border-color: $df-toggle-active-border-color;
+  }
+
+  input[type="checkbox"]:checked ~ .form-toggle-label::after {
+    background-color: $df-toggle-active-dot-color;
+    @include ltr {
+      transform: translateX($df-toggle-width / 2);
+    }
+    @include rtl {
+      transform: translateX(-($df-toggle-width / 2));
+    }
+  }
+
+  input[type="checkbox"] ~ .form-toggle-label-sm {
+    @include ltr {
+      padding-left: $df-toggle-sm-label-padding-left;
+    }
+    @include rtl {
+      padding-right: $df-toggle-sm-label-padding-left;
+    }
+    margin-bottom: $df-toggle-label-margin-bottom;
+    color: $df-toggle-label-color;
+  }
+
+  input[type="checkbox"] ~ .form-toggle-label-sm::before {
+    position: absolute;
+    @include ltr {
+      left: $df-toggle-left;
+    }
+    @include rtl {
+      right: $df-toggle-left;
+    }
+    bottom: $df-toggle-sm-bottom;
+    display: block;
+    border-radius: $df-toggle-sm-border-radius;
+    width: $df-toggle-sm-width;
+    height: $df-toggle-sm-height;
+    border-width: $df-toggle-border-width;
+    border-style: $df-toggle-border-style;
+    content: " "; // mandatory
+    background-color: $df-toggle-inactive-background-color;
+    border-color: $df-toggle-inactive-border-color;
+    cursor: pointer;
+  }
+
+  input[type="checkbox"]:focus ~ .form-toggle-label-sm::before {
+    box-shadow: $btn-focus-box-shadow;
+  }
+
+  input[type="checkbox"] ~ .form-toggle-label-sm::after {
+      position: absolute; // mandatory
+      @include ltr {
+        left: $df-toggle-sm-circle-left;
+      }
+      @include rtl {
+        right: $df-toggle-sm-circle-left;
+      }
+      bottom: $df-toggle-sm-circle-bottom;
+      display: block; // mandatory
+      width: $df-toggle-sm-circle-width;
+      height: $df-toggle-sm-circle-height;
+      background-color: $df-toggle-inactive-dot-color;
+      content: ""; // mandatory
+      transition: $df-toggle-transition;
+      border-radius: $df-toggle-circle-border-radius;
+      cursor: pointer;
+  }
+
+  input[type="checkbox"]:disabled ~ .form-toggle-label-sm::before {
+    background-color: $df-toggle-disabled-inactive-background-color;
+    border-color: $df-toggle-disabled-inactive-border-color;
+    cursor: $df-toggle-disabled-cursor;
+  }
+
+  input[type="checkbox"]:disabled ~ .form-toggle-label-sm::after {
+    background-color: $df-toggle-disabled-inactive-dot-color;
+    cursor: $df-toggle-disabled-cursor;
+  }
+
+  input[type="checkbox"]:checked:disabled ~ .form-toggle-label-sm::before {
+    background-color: $df-toggle-disabled-active-background-color;
+    border-color: $df-toggle-disabled-active-border-color;
+  }
+
+  input[type="checkbox"]:checked:disabled ~ .form-toggle-label-sm::after {
+    background-color: $df-toggle-disabled-active-dot-color;
+  }
+
+  input[type="checkbox"]:disabled ~ .form-toggle-label-sm {
+    color: $df-toggle-disabled-label-color;
+  }
+
+  input[type="checkbox"]:checked ~ .form-toggle-label-sm::before {
+    background-color: $df-toggle-active-background-color;
+    border-color: $df-toggle-active-border-color;
+  }
+
+  input[type="checkbox"]:checked ~ .form-toggle-label-sm::after {
+    background-color: $df-toggle-active-dot-color;
+    @include ltr {
+      transform: translateX($df-toggle-sm-width / 2);
+    }
+    @include rtl {
+      transform: translateX(-($df-toggle-sm-width / 2));
+    }
+  }
+
+  .form-toggle-label.form-toggle-name {
+    color: $df-toggle-label-color;
+    font-weight: $df-toggle-label-font-weight;
+    display: block;
+    @include ltr {
+      margin-left: $df-toggle-label-name-margin-left;
+    }
+    @include rtl {
+      margin-right: $df-toggle-label-name-margin-left;
+    }
+  }
+
+  .form-toggle-label.form-toggle-name.form-toggle-label-disabled {
+    color: $df-toggle-disabled-label-color;
+  }
+}

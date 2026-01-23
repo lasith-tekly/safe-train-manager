@@ -1,0 +1,19 @@
+$df-rating-font-size: 1rem * map-get($df-size-ratios, 'xl') !default;
+
+$df-rating-color: $df-checkbox-checked-color !default;
+$df-rating-tiny-color: $yiq-text-dark !default;
+$df-rating-hover-color: $df-brand-primary-85 !default;
+$df-rating-active-color: $link-hover-color !default;
+$df-rating-disabled-color: $gray-300 !default;
+$df-rating-disabled-cursor: $df-select-disabled-cursor !default;
+
+$df-rating-star-to-star-distance: 0.2em !default;
+$df-rating-number-to-stars-distance: 0.4em !default;
+$df-rating-padding: $btn-padding-y !default;
+$df-rating-focus-outline: none !default;
+$df-rating-border: $btn-border-width solid !default;
+$df-rating-border-radius: $btn-border-radius !default;
+$df-rating-box-shadow: $btn-focus-box-shadow !default;
+
+$df-rating-border-color-transparent: transparent !default;
+$df-rating-box-shadow-transparent: 0 0 0 $input-btn-focus-width transparent !default;

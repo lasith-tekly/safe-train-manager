@@ -1,0 +1,62 @@
+.progress-bar {
+  position: relative;
+  border-radius: $progress-border-radius;
+  &.infinite-animation {
+    width: 20%;
+
+    @include ltr {
+      animation-name: infinite-animation;
+    }
+    @include rtl {
+      animation-name: infinite-animation-rtl;
+    }
+    animation-duration: $df-infinite-animation-duration;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+  }
+}
+
+@keyframes infinite-animation {
+  //The progressbar is hidden at the beginning because it is too far on the left
+  0% {
+    left: -35%;
+  }
+  // At 75% of the animation time frame, the progressbar is hidden because it is too far on the right
+  75% {
+    left: 100%;
+  }
+  // Between 75% and 100% of the time frame, the progressbar stays hidden
+  100% {
+    left: 100%;
+  }
+}
+
+@keyframes infinite-animation-rtl {
+  //The progressbar is hidden at the beginning because it is too far on the left
+  0% {
+    right: -35%;
+  }
+  // At 75% of the animation time frame, the progressbar is hidden because it is too far on the right
+  75% {
+    right: 100%;
+  }
+  // Between 75% and 100% of the time frame, the progressbar stays hidden
+  100% {
+    right: 100%;
+  }
+}
+
+.df-dark-background-version {
+  .progress {
+    background-color: $df-darkBackgroundVersion-progressbar-background-color;
+  }
+  .progress-bar {
+    background-color: $df-darkBackgroundVersion-progressbar-color;
+  }
+}
+
+.progressbar-text {
+  color: $df-text-color;
+}
+
+

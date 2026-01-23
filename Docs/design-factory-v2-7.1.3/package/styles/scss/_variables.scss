@@ -1,0 +1,51 @@
+@import "~bootstrap/scss/functions";
+@import "bootstrap/functions-override";
+@import "utilities/common.utilities";
+
+// File to override bootstrap variables
+@import "bootstrap/variables";
+@import "~bootstrap/scss/variables";
+
+// import common variables for components
+@import "common.variables";
+
+// import local variable DF of all components
+@import "components/fonts/icon-font.variables";
+@import "components/brand-color/brand-color.variables";
+@import "components/tabs/tabs.variables";
+@import "components/accordion/accordion.variables";
+@import "components/alert/alert.variables";
+@import "components/badge/badge.variables";
+@import "components/breadcrumbs/breadcrumbs.variables";
+@import "components/button/button.variables";
+@import "components/card/card.variables";
+@import "components/form/form.variables";
+@import "components/fonts/fonts.variables";
+@import "components/pagination/pagination.variables";
+@import "components/icon/amadeus-icon.variables";
+@import "components/navbar/navbar.variables";
+@import "components/checkbox/checkbox.variables";
+@import "components/radio/radio.variables";
+@import "components/toggle/toggle.variables";
+@import "components/inputs/inputs.variables";
+@import "components/link/link.variables";
+@import "components/fieldset/fieldset.variables";
+@import "components/table/table.variables";
+@import "components/modal/modal.variables";
+@import "components/slider/slider.variables";
+@import "components/select/select.variables";
+@import "components/popover/popover.variables";
+@import "components/dropdown/dropdown.variables";
+@import "components/collapse/collapse.variables";
+@import "components/progressbar/progressbar.variables";
+@import "components/spinner/spinner.variables";
+@import "components/tooltip/tooltip.variables";
+@import "components/rating/rating.variables";
+@import "components/list-group/list-group.variables";
+@import "components/datepicker/datepicker.variables";
+@import "components/speechbubble/speechbubble.variables";
+@import "components/list/list.variables";
+@import "components/media/media.variables";
+@import "components/stepper/stepper.variables";
+@import "components/skip-links/skip-links.variables";
+@import "components/typeahead/typeahead.variables";

@@ -1,0 +1,179 @@
+.df-accordion-number {
+  color: $df-accordion-title-number-color;
+}
+
+// Bootstrap ng-bootstrap Collapse
+.accordion.df-withsubtitle {
+  // add
+  .card {
+    > .card-header {
+      > button {
+        display: flex; // add
+        flex-wrap: wrap;
+      }
+    }
+  }
+}
+
+.accordion {
+  > .card { // override
+    overflow: visible;
+  }
+
+  //add to custom card for collapse
+  .card + .card {
+    margin-top: (-$df-accordion-border-width);
+  }
+
+  // TO be remove when bootstrap correct the border-bottom when we have
+  // only one panel
+  .card:first-of-type:last-of-type {
+    // add
+    border-bottom: $df-accordion-border;
+    border-radius: $card-border-radius;
+  }
+  div:last-of-type.card {
+    > .card-header {
+      > button {
+        border-radius: 0;
+      }
+    }
+  }
+
+  .card {
+    border: $df-accordion-border; //override
+    outline-color: transparent; // override browser
+
+    > .card-header {
+      padding: $df-accordion-cardheader-padding; //override
+      border: hidden; //add
+      font-family: $df-accordion-font-family; // add
+      background-color: $white; // override
+      border: hidden; //add
+      display: inline-block; // mandatory
+      width: 100%; // mandatory
+      height: 100%; // mandatory
+      margin-bottom: $df-accordion-card-header-margin-bottom; // add
+      position: relative; // add for the pseudo element to be over the correct div
+      outline-color: transparent; // override browser
+      cursor: not-allowed; // add todo check after wrapping remove that it is not broken
+
+      > button {
+        //add
+        border-color: transparent;
+        border-radius: $card-border-radius;
+        background-color: $white;
+        display: inline-block; // mandatory
+        width: 100%;
+        height: 100%;
+        padding-top: $df-accordion-padding-top;
+        
+        padding-bottom: $df-accordion-padding-bottom;
+        
+        line-height: $df-accordion-line-height; // override btn-link
+        color: $df-accordion-link-color; // override btn-link
+        outline-color: transparent; // override browser
+        //add from ng-bootstrap widget for bootstrap collapse with button
+        text-align: left; // override
+        white-space: $df-accordion-title-white-space; // add
+        word-break: break-word;
+
+        &.btn-link {
+          text-decoration:none;
+        }
+
+        @include ltr {
+          padding-left: $df-accordion-padding-left;
+          padding-right: $df-accordion-padding-right;
+          text-align: left; // override
+        }
+
+        @include rtl {
+          text-align: right;
+          padding-left: $df-accordion-padding-right;
+          padding-right: $df-accordion-padding-left;
+        }
+
+        &[aria-disabled="true"],
+        &.disabled,
+        &[disabled] {
+          color: $df-accordion-disabled-color;
+          background-color: $df-accordion-disabled-bg-color;
+          opacity: $df-accordion-disabled-opacity;
+          cursor: $df-accordion-disabled-cursor;
+        }
+
+        &:after {
+          font-family: $df-accordion-icon-font-family;
+          content: $df-accordion-icon-up-content;
+          font-size: $df-accordion-icon-font-size;
+          position: absolute;
+          
+          top: $df-accordion-icon-top; // add
+          transform: $df-accordion-icon-translateY; // add
+
+          @include ltr {
+            right: $df-accordion-icon-position-right; // add
+          }
+
+          @include rtl {
+            left: $df-accordion-icon-position-right;
+          }
+        }
+
+        // The new version of bootstrap 4.1 is using a button so the CSS will need to be cleaned
+        &:not([aria-disabled="true"]):not(.disabled):not([disabled]) {
+          :hover {
+            color: $df-accordion-link-hover-color; // override the $link-hover-color todo remove if btn-link is aligned.
+          }
+          &:focus,
+          &.focus {
+            &:before {
+              content: "";
+              position: absolute;
+              top: 0px;
+              bottom: $df-accordion-border-width;
+              left: -$df-accordion-border-width;
+              right: -$df-accordion-border-width;
+              z-index: 1;
+              box-shadow: $btn-focus-box-shadow; // override
+              border-radius: $card-border-radius; // keep this for the box-shadow
+            }
+          }
+        }
+
+        &.collapsed {
+          // the underline will disappear with usage of the button link?
+          &:after {
+            content: $df-accordion-icon-down-content;
+          }
+        }
+
+        &:not(.collapsed) {
+          border-bottom: $df-accordion-border; // override
+          border-radius: $df-accordion-expanded-link-border-radius; // override btn-link
+        }
+      }
+    }
+  }
+}
+
+@each $extension, $ratio in $df-size-ratios {
+  .df-accordion-#{$extension} {
+    .card {
+      > .card-header {
+        > button {
+          padding-top: $ratio * $df-accordion-padding-top;
+          padding-right: $ratio * $df-accordion-padding-right;
+          padding-bottom: $ratio * $df-accordion-padding-bottom;
+          padding-left: $ratio * $df-accordion-padding-left;
+          font-size: $ratio * $font-size-base;
+          &:after {
+            font-size: $ratio * $df-accordion-icon-font-size;
+            right: $ratio * $df-accordion-icon-position-right;
+          }
+        }
+      }
+    }
+  }
+}

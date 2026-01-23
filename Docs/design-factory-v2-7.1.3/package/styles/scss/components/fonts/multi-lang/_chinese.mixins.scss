@@ -1,0 +1,8 @@
+@import "font-faces.mixins";
+
+@mixin df-fonts-multi-lang-chinese($parent-selector) {
+  $headings-font-stack: "Amadeus", "Source Han Sans","思源黑体","Source Han Sans SC","思源黑体 CN","Source Han Sans CN","苹方-简","PingFang SC","冬青黑体简体中文","Hiragino Sans GB","微软雅黑体","Microsoft YaHei New","微软雅黑","Microsoft Yahei",sans-serif;
+  $body-font-stack: "Source Sans Pro", "Source Han Sans","思源黑体","Source Han Sans SC","思源黑体 CN","Source Han Sans CN","苹方-简","PingFang SC","冬青黑体简体中文","Hiragino Sans GB","微软雅黑体","Microsoft YaHei New","微软雅黑","Microsoft Yahei",sans-serif;
+
+  @include df-fonts-multi-lang-typo-fonts($parent-selector, $body-font-stack, $headings-font-stack);
+}

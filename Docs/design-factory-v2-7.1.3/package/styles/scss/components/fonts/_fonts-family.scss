@@ -1,0 +1,96 @@
+@font-face {
+  font-family: "Source Sans Pro";
+  src: url("#{$font-path}/source-sans-pro-light/sourcesanspro-light.eot") format("eot"),
+  url("#{$font-path}/source-sans-pro-light/sourcesanspro-light.woff2") format("woff2"),
+  url("#{$font-path}/source-sans-pro-light/sourcesanspro-light.woff") format("woff"),
+  url("#{$font-path}/source-sans-pro-light/sourcesanspro-light.ttf") format("truetype"),
+  url("#{$font-path}/source-sans-pro-light/sourcesanspro-light.svg#source_sans_prolight") format("svg");
+  font-style: normal;
+  font-weight: 100;
+}
+
+@font-face {
+  font-family: "Source Sans Pro";
+  src: url("#{$font-path}/source-sans-pro-regular/sourcesanspro-regular.eot") format("eot"),
+  url("#{$font-path}/source-sans-pro-regular/sourcesanspro-regular.woff2") format("woff2"),
+  url("#{$font-path}/source-sans-pro-regular/sourcesanspro-regular.woff") format("woff"),
+  url("#{$font-path}/source-sans-pro-regular/sourcesanspro-regular.ttf") format("truetype"),
+  url("#{$font-path}/source-sans-pro-regular/sourcesanspro-regular.svg#source_sans_proregular") format("svg");
+  font-style: normal;
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "Source Sans Pro";
+  src: url("#{$font-path}/source-sans-pro-semibold/sourcesanspro-semibold.eot") format("eot"),
+  url("#{$font-path}/source-sans-pro-semibold/sourcesanspro-semibold.woff2") format("woff2"),
+  url("#{$font-path}/source-sans-pro-semibold/sourcesanspro-semibold.woff") format("woff"),
+  url("#{$font-path}/source-sans-pro-semibold/sourcesanspro-semibold.ttf") format("truetype"),
+  url("#{$font-path}/source-sans-pro-semibold/sourcesanspro-semibold.svg#source_sans_prosemibold") format("svg");
+  font-style: normal;
+  font-weight: 500;
+}
+
+@font-face {
+  font-family: "Source Sans Pro";
+  src: url("#{$font-path}/source-sans-pro-bold/sourcesanspro-bold.eot") format("eot"),
+  url("#{$font-path}/source-sans-pro-bold/sourcesanspro-bold.woff2") format("woff2"),
+  url("#{$font-path}/source-sans-pro-bold/sourcesanspro-bold.woff") format("woff"),
+  url("#{$font-path}/source-sans-pro-bold/sourcesanspro-bold.ttf") format("truetype"),
+  url("#{$font-path}/source-sans-pro-bold/sourcesanspro-bold.svg#source_sans_probold") format("svg");
+  font-style: normal;
+  font-weight: 700;
+}
+
+@font-face {
+  font-family: "Amadeus";
+  src: url("#{$font-path}/amadeus-thin/amadeus-thin.eot") format("eot"),
+  url("#{$font-path}/amadeus-thin/amadeus-thin.woff2") format("woff2"),
+  url("#{$font-path}/amadeus-thin/amadeus-thin.woff") format("woff"),
+  url("#{$font-path}/amadeus-thin/amadeus-thin.ttf") format("truetype"),
+  url("#{$font-path}/amadeus-thin/amadeus-thin.svg#amadeusthin") format("svg");
+  font-style: normal;
+  font-weight: 100;
+}
+
+@font-face {
+  font-family: "Amadeus";
+  src: url("#{$font-path}/amadeus-bold/amadeus-bold.eot") format("eot"),
+  url("#{$font-path}/amadeus-bold/amadeus-bold.woff2") format("woff2"),
+  url("#{$font-path}/amadeus-bold/amadeus-bold.woff") format("woff"),
+  url("#{$font-path}/amadeus-bold/amadeus-bold.ttf") format("truetype"),
+  url("#{$font-path}/amadeus-bold/amadeus-bold.svg#amadeusbold") format("svg");
+  font-style: normal;
+  font-weight: 700;
+}
+
+@font-face {
+  font-family: "Amadeus";
+  src: url("#{$font-path}/amadeus-regular/amadeus-regular.eot") format("eot"),
+  url("#{$font-path}/amadeus-regular/amadeus-regular.woff2") format("woff2"),
+  url("#{$font-path}/amadeus-regular/amadeus-regular.woff") format("woff"),
+  url("#{$font-path}/amadeus-regular/amadeus-regular.ttf") format("truetype"),
+  url("#{$font-path}/amadeus-regular/amadeus-regular.svg#amadeusregular") format("svg");
+  font-style: normal;
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: 'Design-Factory-icon';
+  src: url("#{$font-path}/icon-font/light/df-light-300.woff2") format("woff2"),
+  url("#{$font-path}/icon-font/light/df-light-300.woff") format("woff"),
+  url("#{$font-path}/icon-font/light/df-light-300.ttf") format("truetype"),
+  url("#{$font-path}/icon-font/light/df-light-300.svg#df-light-300") format("svg");
+  font-style: normal;
+  font-weight: 300;
+}
+
+@font-face {
+  font-family: 'Design-Factory-icon';
+  src: url("#{$font-path}/icon-font/solid/df-solid-900.woff2") format("woff2"),
+  url("#{$font-path}/icon-font/solid/df-solid-900.woff") format("woff"),
+  url("#{$font-path}/icon-font/solid/df-solid-900.ttf") format("truetype"),
+  url("#{$font-path}/icon-font/solid/df-solid-900.svg#df-solid-900") format("svg");
+  font-style: normal;
+  font-weight: 900;
+}

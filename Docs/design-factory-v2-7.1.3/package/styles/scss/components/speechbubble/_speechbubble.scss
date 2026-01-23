@@ -1,0 +1,110 @@
+@mixin speech-color($color) {
+  li::after, ul {
+    background: $color;
+    color: color-yiq($color);
+  }
+  ul:last-child::after {
+    border-bottom-color: $color;
+  }
+}
+
+@mixin speech-orientation($tail, $radius) {
+  ul:last-child::after {
+    border-#{$tail}: $df-speech-tail-factor * $df-speech-gap solid transparent;
+    #{$tail}: - $df-speech-gap;
+  }
+  &.df-speech {
+    ul:last-child {
+      border-radius: $radius;
+    }
+    li::after {
+      #{$tail}: - $df-speech-size;
+    }
+  }
+}
+
+.df-speech {
+  li {
+    display: inline-block;
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      margin-bottom: $df-speech-gap;
+      width: $df-speech-size;
+      height: $df-speech-size;
+      border-radius: 100%;
+      display: none; //Avatar is by default disabled
+    }
+  }
+
+  ul {
+    line-height: $df-speech-bubble-height;
+    border-radius: $df-speech-border-radius;
+    margin: $df-speech-gap 2 * $df-speech-gap;
+    padding-inline-start: 0;
+    &:last-child  {
+      position: relative;
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        width: 0;
+        height: 0;
+        border-bottom: 2 * $df-speech-tail-factor * $df-speech-gap solid;
+      }
+    }
+  }
+
+  p {
+    padding: $df-speech-padding-y $df-speech-padding-x;
+    margin-bottom: 0;
+  }
+}
+$tail-left: 'left';
+$radius-left: $df-speech-border-radius $df-speech-border-radius $df-speech-border-radius 0;
+$tail-right: 'right';
+$radius-right: $df-speech-border-radius $df-speech-border-radius 0 $df-speech-border-radius;
+.df-speech-left {
+  @include ltr {
+    @include speech-orientation($tail-left, $radius-left);
+  }
+  @include rtl {
+    @include speech-orientation($tail-right, $radius-right);
+  }
+}
+
+.df-speech-right {
+  @include ltr {
+    @include speech-orientation($tail-right, $radius-right);
+  }
+  @include rtl {
+    @include speech-orientation($tail-left, $radius-left);
+  }
+}
+
+.df-speech-interlocutor {
+  @include speech-color($df-speech-interlocutor-color);
+  @extend .df-speech-left;
+
+  //Enable avatar
+  &.df-speech {
+    li {
+      @include ltr {
+        left: $df-speech-size;
+      }
+      @include rtl {
+        right: $df-speech-size;
+      }
+      position: relative;
+      &::after {
+        display: inherit;
+      }
+    }
+  }
+}
+
+.df-speech-user {
+  @include speech-color($df-speech-user-color);
+  @extend .df-speech-right;
+}

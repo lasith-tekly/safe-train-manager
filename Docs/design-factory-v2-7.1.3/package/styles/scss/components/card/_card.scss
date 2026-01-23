@@ -1,0 +1,27 @@
+.card.btn-outline-primary {
+  text-align: $df-card-focusable-text-align;
+  color: $df-card-focusable-color;
+  border: $df-card-focusable-border;
+  border-radius: $df-card-focusable-border-radius;
+  height: inherit;
+
+  &:not([aria-disabled="true"]):not([disabled]):not(.disabled) {
+    &:hover {
+      background-color: $df-card-focusable-background;
+      border: $df-card-focusable-border-hover;
+    }
+    &:active {
+      background-color: $df-card-focusable-background;
+      border: $df-card-focusable-border-active;
+    }
+  }
+
+  &[aria-disabled="true"],
+  &.disabled,
+  &[disabled] {
+    color: $df-card-focusable-disabled-color;
+    background-color: $df-card-focusable-disabled-background;
+    opacity: $df-card-focusable-disabled-opacity;
+    cursor: $df-card-focusable-disabled-cursor;
+  }
+}

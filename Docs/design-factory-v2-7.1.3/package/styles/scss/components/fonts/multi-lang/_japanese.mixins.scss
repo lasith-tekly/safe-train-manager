@@ -1,0 +1,14 @@
+@import "font-faces.mixins";
+
+@mixin df-fonts-multi-lang-japanese($parent-selector) {
+  $headings-font-stack: "Amadeus", '源ノ角ゴシック', 'Source Han Sans', '源ノ角ゴシック JP', 'Source Han Sans JP', 'ヒラギノ角ゴ ProN', 'Hiragino Kaku Gothic ProN', '游ゴシック', 'Yu Gothic', '游ゴシック体', YuGothic, 'メイリオ', Meiryo, 'ＭＳ Ｐゴシック', 'MS PGothic', HiraKakuProN-W3, 'TakaoExゴシック', TakaoExGothic, 'MotoyaLCedar', 'Droid Sans Japanese', sans-serif;
+  $body-font-stack: "Source Sans Pro", '源ノ角ゴシック', 'Source Han Sans', '源ノ角ゴシック JP', 'Source Han Sans JP', 'ヒラギノ角ゴ ProN', 'Hiragino Kaku Gothic ProN', '游ゴシック', 'Yu Gothic', '游ゴシック体', YuGothic, 'メイリオ', Meiryo, 'ＭＳ Ｐゴシック', 'MS PGothic', HiraKakuProN-W3, 'TakaoExゴシック', TakaoExGothic, 'MotoyaLCedar', 'Droid Sans Japanese', sans-serif;
+
+  @include df-fonts-multi-lang-typo-fonts($parent-selector, $body-font-stack, $headings-font-stack);
+
+  #{$parent-selector} {
+    .display-1, .display-2, .display-3, .display-4 {
+      font-weight: 400;
+    }
+  }
+}

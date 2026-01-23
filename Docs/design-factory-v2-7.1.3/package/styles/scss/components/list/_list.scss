@@ -1,0 +1,15 @@
+ol {
+  counter-reset: df-ol-counter;
+  list-style-type: none;
+  padding-left: $df-ol-padding-left;
+  li {
+    counter-increment: df-ol-counter;
+    position: relative;
+    &:before {
+      content: $df-ol-marker-content;
+      font-weight: $df-ol-marker-font-weight;
+      position: absolute;
+      left: $df-ol-marker-left;
+    }
+  }
+}

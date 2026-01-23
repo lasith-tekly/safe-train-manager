@@ -1,0 +1,5 @@
+@import "../utilities/colors";
+// Color contrast
+@function color-yiq($color) {
+    @return black-or-white($color);
+}

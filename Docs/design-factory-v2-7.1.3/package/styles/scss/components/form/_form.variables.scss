@@ -1,0 +1,23 @@
+$df-disabled-input-color: $gray-400 !default;
+$df-input-disabled-cursor: $df-disabled-cursor !default;
+$df-label-margin-bottom-sm: 0.375rem !default;
+$form-feedback-warning-color: $warning !default;
+$df-form-feedback-help-warning-color: $brown !default;
+$df-form-feedback-warning-icon: "" !default;
+$df-form-sm-checkbox-label-before-left: 0.0625rem !default; // To fix chrome behavior
+$df-form-check-adjust-lg-padding-left: 0.375rem !default; // icon size (real visual one) + 0.5rem padding left - $form-check-input-gutter
+$df-form-sm-check-label-padding-left: $form-check-input-gutter !default;
+$df-form-sm-checkbox-label-padding-left: $df-form-sm-check-label-padding-left + $df-form-sm-checkbox-label-before-left !default;
+$df-form-lg-check-label-padding-left: $form-check-input-gutter + $df-form-check-adjust-lg-padding-left !default;
+$df-custom-select-feedback-icon-position-rtl: center left ($custom-select-padding-x + $custom-select-indicator-padding) !default;
+
+$form-validation-states: map-merge(
+  (
+    "warning": (
+      "color": $form-feedback-warning-color,
+      "icon": $df-form-feedback-warning-icon,
+      "text-color": $df-form-feedback-help-warning-color
+    )
+  ),
+  $form-validation-states
+);

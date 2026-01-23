@@ -1,0 +1,93 @@
+// code taken from 'sass-math-pow' library https://github.com/strarsis/sass-math-pow/tree/master/sass
+// needed to do math calculation with power (ex: 2^2.5)
+
+@function math-pow-polyfill($number, $exp) {
+  @if (round($exp) != $exp) {
+    @return math-exp($exp * math-ln($number));
+  }
+  
+  // Traditional method for integers
+  $value: 1;
+  
+  @if $exp > 0 {
+    @for $i from 1 through $exp {
+      $value: $value * $number;
+    }
+  }
+  @else if $exp < 0 {
+    @for $i from 1 through -$exp {
+      $value: $value / $number;
+    }
+  }  
+  @return $value;
+}
+
+@function math-factorial($value) {
+  @if $value == 0 {
+    @return 1;
+  }
+  
+  $result: 1;
+  
+  @for $index from 1 through $value {
+    $result: $result * $index;
+  }
+  
+  @return $result;
+}
+
+@function math-summation($iteratee, $input, $initial: 0, $limit: 100) {
+  $sum: 0;
+  
+  @for $index from $initial to $limit {
+    $sum: $sum + call(get-function($iteratee), $input, $index);
+  }
+  
+  @return $sum;
+}
+
+@function math-exp-maclaurin($x, $n) {
+  $result: math-pow-polyfill($x, $n) / math-factorial($n);
+  @return $result;
+}
+@function math-exp($value) {
+  $result: math-summation(math-exp-maclaurin, $value, 0, 100);
+  @return $result;
+}
+
+@function math-ln-maclaurin($x, $n) {
+  $result: (math-pow-polyfill(-1, $n + 1) / $n) * (math-pow-polyfill($x - 1, $n));
+  @return $result;
+}
+
+@function math-ln($value) {
+  $ten-exp: 1;
+  $ln-ten: 2.30258509;
+  
+  @while ($value > math-pow-polyfill(10, $ten-exp)) {
+    $ten-exp: $ten-exp + 1;
+  }
+  
+  $value: $value / math-pow-polyfill(10, $ten-exp);
+  
+  $result: math-summation(math-ln-maclaurin, $value, 1, 100);
+  
+  @return $result + $ten-exp * $ln-ten;
+}
+
+// indirectly checks for eyeglass-math math-pow() existence
+@function pow-nonint-ok() {
+  // using some well-known input/output
+  $test: math-pow(9, 0.5);
+  // => 3 when pow works correctly with non-integer exponents
+  @return ($test == 3);
+}
+$pow-nonint-ok: pow-nonint-ok(); // cache result to improve performance
+
+@function poly-pow($Base, $Exponent) {
+  @if($pow-nonint-ok == false) {
+    @return math-pow-polyfill($Base, $Exponent); // use polyfill pow
+  } @else {
+    @return math-pow($Base, $Exponent);          // use eyeglass-math pow
+  }
+}

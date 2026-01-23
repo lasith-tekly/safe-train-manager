@@ -1,0 +1,93 @@
+.breadcrumb {
+  height: $df-breadcrumb-height;
+
+  &.breadcrumb-sm {
+    height: $df-breadcrumb-sm-height;
+    font-size: $font-size-sm;
+  }
+
+  &.breadcrumb-lg {
+    height: $df-breadcrumb-lg-height;
+    font-size: $font-size-lg;
+  }
+}
+
+.breadcrumb-item {
+  @include ltr {
+    padding: $df-breadcrumb-item-padding;
+
+    &:before {
+      padding: $df-breadcrumb-item-before-padding;
+    }
+  }
+
+  @include rtl {
+    padding: $df-breadcrumb-item-padding;
+
+    &:before {
+      padding: $df-breadcrumb-item-before-padding;
+    }
+  }
+
+  &:nth-of-type(2):before {
+    // first item after arrow should not have slash char before text
+    content: $df-breadcrumb-item-before-content;
+  }
+
+  &.active {
+    // active item in bold
+    font-weight: $df-breadcrumb-item-active-font-weight;
+  }
+
+  &.active:before {
+    // no bold for the slash before active item
+    font-weight: $df-breadcrumb-item-normal-font-weight;
+  }
+}
+
+.df-breadcrumb-icon {
+  // hide arrow item
+  display: $df-breadcrumb-item-display;
+}
+
+.df-breadcrumb-icon:before {
+  // custom df class for breadcrumb icon
+  // extends icon-angle-(left or right) class depending on the direction
+  @extend %df-icon-style;
+
+  @include ltr {
+    content: $df-breadcrumb-icon-angle-left-content;
+  }
+
+  @include rtl {
+    content: $df-breadcrumb-icon-angle-right-content;
+  }
+}
+
+// Mobile breakpoint
+@include media-breakpoint-only(xs) {
+  .breadcrumb-item {
+    &:not(:nth-of-type(1)) {
+      // items are hidden
+      display: $df-breadcrumb-item-display;
+    }
+
+    &:nth-last-of-type(2),
+    &:nth-last-of-type(1) {
+      // two last items are displayed
+      display: $df-breadcrumb-item-two-last-items-display;
+    }
+
+    &:nth-last-of-type(2):before {
+      // first item after arrow should not have slash char before text
+      content: $df-breadcrumb-item-before-content;
+    }
+  }
+
+  .df-breadcrumb-icon {
+    // arrow displayed
+    display: $df-breadcrumb-icon-display;
+    color: $df-breadcrumb-icon-color;
+    margin: $df-breadcrumb-icon-margin;
+  }
+}

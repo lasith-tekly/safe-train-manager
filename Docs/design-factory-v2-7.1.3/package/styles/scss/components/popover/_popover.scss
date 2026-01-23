@@ -1,0 +1,25 @@
+@import "popover.mixin";
+
+.popover {
+    @include popover-mixin;
+}
+
+.bs-popover-top {
+    margin-bottom: $popover-arrow-height + $df-popover-margin;
+}
+
+.bs-popover-right {
+    margin-left: $popover-arrow-height + $df-popover-margin;
+}
+
+.bs-popover-bottom {
+    margin-top: $popover-arrow-height + $df-popover-margin;
+}
+
+.bs-popover-left {
+    margin-right: $popover-arrow-height + $df-popover-margin;
+}
+
+.popover-header {
+    border-bottom: none;
+}

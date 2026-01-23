@@ -1,0 +1,158 @@
+@import '../../utilities/rtl.mixins';// for all alerts
+
+.modal {
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  .modal-dialog {
+    .modal-content {
+      box-shadow: $df-modal-box-shadow;
+      border-radius: $df-modal-border-radius;
+      border: $df-modal-border;
+
+      .modal-header {
+        padding-top: $df-modal-header-padding-y;
+        padding-bottom: $df-modal-header-padding-y;
+        @include ltr {
+          padding-left: $df-modal-header-padding-left;
+        }
+        @include rtl {
+          padding-right: $df-modal-header-padding-left;
+        }
+        .modal-title {
+          word-break: $df-modal-header-title-break-word;
+        }
+        &.no-border-bottom {
+          border-bottom: none;
+        }
+        button.close {
+          padding-top: $df-modal-header-button-close-padding-y;
+          padding-bottom: $df-modal-header-button-close-padding-y;
+          margin-top: $df-modal-header-button-close-margin-top;
+
+          @include rtl {
+            margin: $df-modal-header-button-close-margin-top auto (-$modal-header-padding-y) (-$modal-header-padding-x);
+          }
+        }
+      }
+
+      .modal-body {
+        @include ltr {
+          text-align: left;
+          padding-right: $df-modal-body-padding-x;
+          padding-left: $df-modal-body-padding-x;
+        }
+        @include rtl {
+          text-align: right;
+          padding-right: $df-modal-body-padding-x;
+          padding-left: $df-modal-body-padding-x;
+        }
+        
+        .alert-modal-icon {
+          font-size: $df-modal-body-alert-icon-size;
+        }
+        &.df-warning-modal {
+          .alert-modal-icon {
+            color: $warning;
+          }
+        }
+        &.df-info-modal {
+          .alert-modal-icon {
+            color: $info;
+          }
+        }
+        &.df-success-modal {
+          .alert-modal-icon {
+            color: $success;
+          }
+        }
+        &.df-error-modal {
+          .alert-modal-icon {
+            color: $danger;
+          }
+        }
+
+        @include media-breakpoint-up(sm) {
+          &.df-warning-modal{
+            border-top: $df-modal-body-alert-border-style $warning;
+          }
+          &.df-info-modal{
+            border-top: $df-modal-body-alert-border-style $info;
+          }
+          &.df-error-modal{
+            border-top: $df-modal-body-alert-border-style $danger;
+          }
+          &.df-success-modal{
+            border-top: $df-modal-body-alert-border-style $success;
+          }
+        }
+      }
+
+      .modal-footer {
+        padding-top: $df-modal-footer-padding-y;
+        padding-bottom: $df-modal-footer-padding-y;
+      }
+    }
+  }
+
+  @include media-breakpoint-only(xs) {
+    .modal-dialog {
+      margin: 0;
+      padding: $df-modal-xs-padding;
+      min-height: 100%;
+      display: flex;
+      flex: 1;
+
+      .modal-content {
+        flex: 1;
+        overflow: auto;
+        min-height: 100%;
+        justify-content: center;
+        padding-top: $df-modal-xs-content-padding-y;
+        padding-bottom: $df-modal-xs-content-padding-y;
+
+        .modal-header {
+          justify-content: center;
+          @include ltr {
+            padding-right: $df-modal-xs-header-padding-right;
+          }
+          @include rtl {
+            padding-left: $df-modal-xs-header-padding-right;
+          }
+          border-bottom: none;
+          margin-bottom: 10px;
+          button.close {
+            position: absolute;
+            top: $df-modal-xs-button-close-position-top;
+            @include ltr {
+              right: $df-modal-xs-button-close-position-right;
+            }
+            @include rtl {
+              left: $df-modal-xs-button-close-position-right;
+            }
+            padding: 0;
+            margin: 0;
+          }
+        }
+
+        .modal-body {
+          flex: 0;
+          p {
+            margin-bottom: 0;
+          }
+        }
+
+        .modal-footer {
+          justify-content: center;
+          align-items: baseline;
+          border-top: none;
+          margin-top: $df-modal-xs-footer-margin-top;
+        }
+      }
+    }
+  }
+}
+
+.modal-backdrop.show {
+  opacity: $df-modal-backdrop-opacity;
+}

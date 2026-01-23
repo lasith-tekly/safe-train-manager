@@ -1,0 +1,24 @@
+$df-sprite-radio-height: 1rem !default;
+$df-sprite-radio-width: 1rem !default;
+$df-radio-checked-color: theme-color("primary") !default;
+$df-radio-background-color: $white !default;
+$df-radio-disabled-border-color: $gray-300 !default;
+$df-radio-disabled-cursor: $df-disabled-cursor !default;
+$df-radio-label-disabled-color: $df-disabled-color !default;
+$df-radio-margin-right: 0.5rem !default;
+$df-radio-disabled-background-color: $df-disabled-bg-color !default;
+$df-radio-border-color: $gray-400 !default;
+$df-radio-border-width: 1.5px !default;
+$df-radio-border-style: none !default;
+$df-radio-margin-bottom: 0.3rem !default;
+$df-radiogroup-legend-margin-bottom: 0.5rem !default;
+
+//IE compatibility: Outer quotes should be double and inner single
+$df-radio-svg: "<svg version='1.1' viewBox='0 0 17.5 17.5' xmlns='http://www.w3.org/2000/svg'><circle cx='8.8' cy='8.7' r='8' fill='#cccccc' fill-rule='evenodd' stroke='#bbbbbb' stroke-width='1.5'/><circle cx='8.8' cy='8.7' r='4.4' fill-rule='evenodd' fill='#ffffff'/></svg>" !default;
+$df-radio-svg-normal: df-getSVGasURL($df-radio-svg, #fff, $gray-400, $df-radio-background-color) !default;
+$df-radio-svg-checked: df-getSVGasURL($df-radio-svg, $df-radio-checked-color, $df-radio-checked-color, #fff) !default;
+$df-radio-svg-disabled-checked: df-getSVGasURL($df-radio-svg, $df-radio-disabled-border-color, $gray-400, #fff) !default;
+$df-radio-svg-disabled: df-getSVGasURL($df-radio-svg, $df-radio-disabled-background-color, $gray-400,  $df-radio-disabled-background-color) !default;
+
+$df-radio-high-contrast-unchecked-content: "\ea3d"!default; // icon-circle
+$df-radio-high-contrast-checked-content: "\ead0"!default; // icon-dot-circle

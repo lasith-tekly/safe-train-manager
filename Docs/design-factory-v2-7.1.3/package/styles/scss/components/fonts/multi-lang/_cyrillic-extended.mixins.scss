@@ -1,0 +1,11 @@
+@import "font-faces.mixins";
+
+// Kazakh, Tajik, Kirghiz languages
+@mixin df-fonts-multi-lang-cyrillic-extended($parent-selector) {
+  $headings-font-stack: "Noto Sans", sans-serif;
+  $body-font-stack: "Source Sans Pro Full", sans-serif;
+
+  @include df-fonts-multi-lang-font-faces-noto-sans();
+  @include df-fonts-multi-lang-font-faces-source-sans-pro-full();
+  @include df-fonts-multi-lang-typo-fonts($parent-selector, $body-font-stack, $headings-font-stack);
+}

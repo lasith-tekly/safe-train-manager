@@ -1,0 +1,33 @@
+.list-group-item-action {
+  // Hover state
+  &:not([aria-disabled="true"]):not(.disabled):not([disabled]) {
+    @include hover-focus {
+      text-decoration: underline;
+    }
+    &:focus {
+      @extend .df-focused;
+    }
+  }
+}
+
+.list-group-item {
+  &[aria-disabled="true"],
+  &.disabled,
+  &[disabled] {
+    color: $df-listgroup-disabled-color;
+    background-color: $df-listgroup-disabled-bg-color;
+    opacity: $df-listgroup-disabled-opacity;
+    cursor: $df-listgroup-disabled-cursor;
+    pointer-events: inherit; // override
+  }
+}
+
+@each $extension, $ratio in $df-size-ratios {
+  .df-list-group-#{$extension} {
+    font-size: $font-size-base * $ratio;
+    .list-group-item {
+      padding-top: $list-group-item-padding-y * $ratio;
+      padding-bottom: $list-group-item-padding-y * $ratio;
+    }
+  }
+}

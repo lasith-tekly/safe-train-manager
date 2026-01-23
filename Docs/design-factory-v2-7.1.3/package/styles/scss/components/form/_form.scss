@@ -1,0 +1,129 @@
+.form-inline {
+  .form-group {
+    label {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.form-control {
+  &:disabled {
+    color: $df-disabled-input-color;
+    cursor: $df-input-disabled-cursor;
+    &::placeholder {
+      color: $df-disabled-input-color;
+    }
+  }
+  &::placeholder {
+    font-style: italic;
+  }
+}
+
+.invalid-feedback, .valid-feedback, .warning-feedback {
+  font-size: $font-size-sm;
+}
+
+.form-row { // add
+  & ~ .invalid-feedback {
+    display: block;
+  }
+}
+
+// fix forms.scss elements for checkbox/radio
+.form-check-inline {
+  @include ltr {
+    padding-left: $form-check-input-gutter; // Override (the override)
+  }
+
+  @include rtl {
+    padding-right: $form-check-input-gutter; // Override (the override)
+  }
+}
+
+// forms size small
+.form-sm {
+  .form-control, ng-select {
+    @extend .form-control-sm;
+  }
+
+  .form-check > input[type="checkbox"] ~ .form-check-label::before,
+  .form-check > input[type="radio"] ~ .form-check-label::before,
+  .form-check > input[type="radio"] ~ .form-check-label::after
+   {
+    width: $font-size-sm;
+    height:  $font-size-sm;
+  }
+
+  .form-check > input[type="checkbox"] ~ .form-check-label { //add
+    @include ltr {
+      padding-left: $df-form-sm-checkbox-label-padding-left; // override normal size (taking account the left .0625rem)
+    }
+    @include rtl {
+      padding-right: $df-form-sm-checkbox-label-padding-left; // override normal size (taking account the left .0625rem)
+    }
+  }
+
+  .form-check > input[type="radio"] ~ .form-check-label {
+    @include ltr {
+      padding-left: $df-form-sm-check-label-padding-left;
+    }
+    @include rtl {
+      padding-right: $df-form-sm-check-label-padding-left;
+    }
+    
+  }
+
+  .form-check > input[type="checkbox"] ~ .form-check-label::before
+  {
+    background-size: $font-size-sm $font-size-sm;
+    @include ltr {
+      left: $df-form-sm-checkbox-label-before-left; // add to fix issue with chrome of 1px with shadow-box
+    }
+    @include rtl {
+      right: $df-form-sm-checkbox-label-before-left; // add to fix issue with chrome of 1px with shadow-box
+    }
+  }
+
+  label {
+    :not(.col-form-label) {
+      margin-bottom: $df-label-margin-bottom-sm;
+    }
+    font-size: $font-size-sm;
+  }
+}
+
+// forms size large
+.form-lg {
+  .form-control {
+    @extend .form-control-lg;
+  }
+
+  .form-check > input[type="checkbox"] ~ .form-check-label::before,
+  .form-check > input[type="radio"] ~ .form-check-label::before,
+  .form-check > input[type="radio"] ~ .form-check-label::after
+   {
+    width: $font-size-lg;
+    height:  $font-size-lg;
+  }
+
+  .form-check > input[type="checkbox"] ~ .form-check-label,
+  .form-check > input[type="radio"] ~ .form-check-label { //add
+    @include ltr {
+      padding-left: $df-form-lg-check-label-padding-left;
+    }
+    @include rtl {
+      padding-right: $df-form-lg-check-label-padding-left;
+    }
+  }
+
+  .form-check > input[type="checkbox"] ~ .form-check-label::before
+  {
+    background-size: $font-size-lg $font-size-lg;
+  }
+  label {
+    :not(.col-form-label) {
+      margin-bottom: $df-label-margin-bottom-sm;
+    }
+    font-size: $font-size-lg;
+  }
+}

@@ -1,0 +1,25 @@
+@mixin df-dropdown-toggle($up, $down) {
+  &#{$up} .dropdown-toggle:after {
+    @extend .icon-angle-up:before;
+  }
+  &#{$down} .dropdown-toggle:after {
+    @extend .icon-angle-down:before;
+  }
+}
+
+@mixin df-dropdown-orientation($ltr-right, $ltr-left) {
+  &, .dropdown, .dropup {
+    .dropdown-toggle {
+      padding-#{$ltr-right}: $df-dropdown-toggle-padding;
+      &:after {
+        margin-#{$ltr-left}: $df-dropdown-toggle-margin;
+      }
+      [class*="icon-"]:before {
+        margin-#{$ltr-right}: $df-dropdown-toggle-margin;
+      }
+    }
+    .btn-primary.dropdown-toggle-split {
+      border-#{$ltr-left}-color: $df-dropdown-toggle-border-color-primary;
+    }
+  }
+}

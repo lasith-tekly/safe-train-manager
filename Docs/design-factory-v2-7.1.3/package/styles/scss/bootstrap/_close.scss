@@ -1,0 +1,4 @@
+.close {
+    opacity: 0.55; // override native bootstrap opacity of 0.5 because it's not WCAG compliant on contrast
+    font-weight: initial;
+}  

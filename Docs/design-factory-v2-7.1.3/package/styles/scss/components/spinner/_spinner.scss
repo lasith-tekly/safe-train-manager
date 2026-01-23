@@ -1,0 +1,44 @@
+.spinner-border {
+    overflow: $df-spinner-overflow;
+    width: $df-spinner-circumference;
+    height: $df-spinner-circumference;
+    border-right-color: $light;
+    border-top-color: $light;
+    border-bottom-color: $light;
+    border-width: $df-spinner-border-width;
+}
+
+.spinner-border-sm {
+    width: $df-spinner-sm-circumference;
+    height: $df-spinner-sm-circumference;
+    border-width: $df-spinner-sm-border-width;
+}
+
+.df-spinner-border-dark {
+    @extend .spinner-border;
+    border-right-color: $dark-primary;
+    border-top-color: $dark-primary;
+    border-bottom-color: $dark-primary;
+}
+
+.df-btn-lg-spinner {
+    @extend .px-5, .position-relative;
+    &::after {
+        @extend .spinner-border, .spinner-border-sm, .position-absolute;
+        top: $df-btn-lg-spinner-top;
+        @include ltr {
+            right: $df-btn-lg-spinner-right;
+        }
+        @include rtl {
+            left: $df-btn-lg-spinner-right;
+        }
+        content: $df-btn-lg-spinner-content;
+    }
+}
+
+.df-btn-lg-spinner-dark {
+    @extend .df-btn-lg-spinner;
+    &::after {
+        @extend .df-spinner-border-dark;
+    }
+}

@@ -1,0 +1,219 @@
+@mixin setSliderSize($barSize, $pointerSize, $fontSize) {
+  height: $barSize;
+
+  .ng5-slider-bar-wrapper { // override
+    margin-top: -$pointerSize / 2;
+    padding-top: $pointerSize / 2;
+    height: $pointerSize;
+  }
+
+  .ng5-slider-bar { // override
+    height: $barSize;
+    border-radius: $barSize / 2;
+  }
+
+  .ng5-slider-selection { // override
+    border-radius: $barSize / 2;
+  }
+
+  .ng5-slider-pointer { // override
+    width: $pointerSize;
+    height: $pointerSize;
+    top: -$pointerSize / 2 + $barSize / 2;
+    border-radius: $pointerSize / 2;
+
+    &:after {
+      display: none;
+    }
+  }
+
+  .ng5-slider-bubble { // override
+    bottom: $pointerSize / 2;
+    font-size: $fontSize;
+  }
+
+  .ng5-slider-ticks { // override
+    top: -($df-slider-tick-height - $barSize) / 2;
+  }
+
+  .ng5-slider-tick { // override
+    margin-left: $pointerSize / 2 - $df-slider-tick-width / 2; // for centering
+  }
+
+  &.vertical { // override
+    width: $barSize;
+
+    .ng5-slider-bar-wrapper {
+      margin: 0 0 0 (-$pointerSize / 2);
+      padding: 0 0 0 $pointerSize / 2;
+      width: $pointerSize;
+    }
+
+    .ng5-slider-bar {
+      width: $barSize;
+    }
+
+    .ng5-slider-pointer {
+      left: -$pointerSize / 2 + $barSize / 2 !important;
+    }
+
+    .ng5-slider-bubble {
+      left: $pointerSize / 2 + $input-btn-focus-width / 2 !important;
+    }
+
+    .ng5-slider-ticks {
+      left: -($df-slider-tick-height - $barSize) / 2;
+    }
+
+    .ng5-slider-tick {
+      margin-top: $pointerSize / 2 - $df-slider-tick-width / 2; // for centering
+    }
+  }
+}
+
+.ng5-slider { // override
+  @include setSliderSize($df-slider-bar-size, $df-slider-pointer-size, $df-slider-label-size);
+
+  margin: $df-slider-margin-with-label 0 $df-slider-margin 0;
+
+  &[disabled] {
+
+    .ng5-slider-pointer, .ng5-slider-pointer:after, .ng5-slider-pointer:hover:after {
+      background-color: $df-slider-pointer-disabled-color;
+    }
+
+    .ng5-slider-selection {
+      background: $df-slider-bar-disabled-color;
+    }
+
+    .ng5-slider-tick {
+      &.ng5-slider-selected {
+        background: $df-slider-bar-disabled-color;
+      }
+    }
+  }
+
+  .ng5-slider-bar {
+    background: $df-slider-bar-color;
+  }
+
+  .ng5-slider-bar-wrapper.ng5-slider-left-out-selection .ng5-slider-bar {
+    background: $df-slider-bar-leftout-selection-color;
+  }
+
+  .ng5-slider-bar-wrapper.ng5-slider-right-out-selection .ng5-slider-bar {
+    background: $df-slider-bar-rightout-selection-color;
+  }
+
+  .ng5-slider-selection {
+    background: $df-slider-bar-selected-color;
+  }
+
+  .ng5-slider-pointer {
+    background-color: $df-slider-pointer-color;
+
+    &:focus, &.ng5-slider-active {
+      outline: none;
+      box-shadow: $btn-focus-box-shadow;
+    }
+
+    &.ng5-slider-active {
+      &:after {
+        background-color: $df-slider-pointer-active-color;
+      }
+    }
+  }
+
+  .ng5-slider-bubble {
+    padding: $df-slider-bubble-padding-y $df-slider-bubble-padding-x;
+    color: $df-slider-label-color;
+
+    &.ng5-slider-limit {
+      color: $df-slider-label-limit-color;
+    }
+  }
+
+  .ng5-slider-ticks-values-under {
+    .ng5-slider-tick-value {
+      bottom: $df-slider-tick-value-position - 2;
+    }
+  }
+
+  .ng5-slider-tick {
+    width: $df-slider-tick-width;
+    height: $df-slider-tick-height;
+    background: $df-slider-tick-color;
+
+    &.ng5-slider-selected {
+      background: $df-slider-tick-selected-color;
+    }
+  }
+
+  .ng5-slider-tick-value {
+    top: $df-slider-tick-value-position;
+  }
+
+  .ng5-slider-tick-legend {
+    top: $df-slider-tick-legend-position;
+    max-width: $df-slider-tick-legend-max-width;
+  }
+
+  &.vertical {
+    vertical-align: top;
+
+    .ng5-slider-tick-value {
+      left: $df-slider-tick-value-position-vertical;
+    }
+
+    .ng5-slider-tick-legend {
+      right: $df-slider-tick-legend-position;
+    }
+
+    .ng5-slider-ticks-values-under {
+      .ng5-slider-tick-value {
+        right: $df-slider-tick-value-position-vertical;
+      }
+    }
+  }
+}
+
+.ng5-slider { // add
+  &.df-slider-no-ticks {
+    margin: $df-slider-margin 0 $df-slider-margin 0;
+  }
+
+  &:hover:not([disabled]) {
+    cursor: pointer;
+  }
+
+  &:not([disabled]) {
+    .ng5-slider-pointer-min {
+      &:hover {
+        border: $df-slider-pointer-hover-border-width solid $df-slider-pointer-hover-border-color;
+      }
+    }
+    .ng5-slider-pointer-max {
+      &:hover {
+        border: $df-slider-pointer-hover-border-width solid $df-slider-pointer-hover-border-color;
+      }
+    }
+  }
+
+  &[disabled] {
+    .ng5-slider-bubble {
+      color: $df-slider-label-disabled-color;
+    }
+  }
+
+  .ng5-slider-model-value, .ng5-slider-model-high, .ng5-slider-combined {
+    font-weight: 500;
+  }
+}
+
+.df-slider-sm { // add
+  @include setSliderSize($df-slider-bar-size-sm, $df-slider-pointer-size-sm, $df-slider-label-size-sm);
+}
+
+.df-slider-lg { // add
+  @include setSliderSize($df-slider-bar-size-lg, $df-slider-pointer-size-lg, $df-slider-label-size-lg);
+}

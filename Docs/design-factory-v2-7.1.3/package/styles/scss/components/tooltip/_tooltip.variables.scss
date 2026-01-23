@@ -1,0 +1,5 @@
+$df-tooltip-size-default: map-get($df-size-ratios, 'sm') !default;
+
+$df-tooltip-font-size-default: 1em * $df-tooltip-size-default !default;
+$df-tooltip-padding-y: 0.25em / $df-tooltip-size-default !default;
+$df-tooltip-padding-x: 0.5em / $df-tooltip-size-default !default;

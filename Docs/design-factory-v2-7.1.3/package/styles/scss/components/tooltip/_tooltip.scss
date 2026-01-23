@@ -1,0 +1,20 @@
+.tooltip {
+  font-size: $df-tooltip-font-size-default;
+
+  &.bs-tooltp-top {
+    padding: $df-tooltip-padding-y $df-tooltip-padding-x;
+  }
+  &.bs-tooltp-right {
+    padding-top: $df-tooltip-padding-y;
+    padding-right: $df-tooltip-padding-x;
+    padding-bottom: $df-tooltip-padding-y;
+  }
+  &.bs-tooltp-bottom {
+    padding: $df-tooltip-padding-y $df-tooltip-padding-x;
+  }
+  &.bs-tooltp-left {
+    padding-top: $df-tooltip-padding-y;
+    padding-bottom: $df-tooltip-padding-y;
+    padding-left: $df-tooltip-padding-x;
+  }
+}

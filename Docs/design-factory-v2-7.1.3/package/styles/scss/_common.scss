@@ -1,0 +1,36 @@
+.mandatory-indicator {// add
+  color: $df-mandatory-indicator-color;
+  font-weight: $df-mandatory-indicator-font-weight;
+  margin-left: $df-mandatory-indicator-margin;
+  margin-right: $df-mandatory-indicator-margin;
+}
+
+.df-subtitle {// add
+  color: $df-subtitle-color;
+}
+
+@each $extension, $ratio in $df-size-ratios {
+  .df-font-#{$extension} {
+    font-size: $font-size-base * $ratio;
+  }
+}
+
+// To be used to remove text-decoration on icon of DF
+.df-icon-wtd {
+  &::before {
+    display: inline-block;
+    text-decoration: none;
+  }
+}
+.df-focused {
+  border-radius: $df-focused-border-radius;
+  box-shadow: $df-focused-box-shadow;
+  border: $df-focused-border;
+  outline: none; //disable default
+}
+
+@each $degree, $value in $df-degrees {
+  .df-transform-r-#{$degree} {
+    transform: rotate($value);
+  }
+}

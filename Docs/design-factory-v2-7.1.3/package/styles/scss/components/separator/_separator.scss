@@ -1,0 +1,39 @@
+hr {
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+
+  &.separator-md {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+  }
+  &.separator-lg {
+    margin-top: 2.5rem;
+    margin-bottom: 2.5rem;
+  }
+  &.separator-xl {
+    margin-top: 3rem;
+    margin-bottom: 3rem;
+  }
+}
+
+.vertical-separator {
+  width: $hr-border-width;
+  background-color: $hr-border-color;
+  margin-left: 1.5rem;
+  margin-right: 1.5rem;
+  display: inline-block;
+  height: 100%;
+
+  &.separator-md {
+    margin-left: 2rem;
+    margin-right: 2rem;
+  }
+  &.separator-lg {
+    margin-left: 2.5rem;
+    margin-right: 2.5rem;
+  }
+  &.separator-xl {
+    margin-left: 3rem;
+    margin-right: 3rem;
+  }
+}

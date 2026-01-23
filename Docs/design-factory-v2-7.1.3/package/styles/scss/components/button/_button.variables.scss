@@ -1,0 +1,20 @@
+$df-btn-disabled-color: $gray-200 !default;
+$df-btn-outline-disabled-text-color: $text-muted !default;
+$df-btn-icononly-width: 2rem !default;
+$df-btn-icononly-height: 2rem !default;
+$df-btn-icononly-border-radius: 50% !default;
+$df-btn-icononly-border: none !default;
+$df-btn-icononly-padding: 0 !default;
+
+$df-btn-padding-y-xl: $btn-padding-y-lg !default;
+$df-btn-padding-x-xl: $btn-padding-x-lg !default;
+$df-btn-font-family: $font-family-sans-serif !default;
+$df-btn-font-size-xl: $font-size-base * map-get($df-size-ratios, 'xl') !default;
+$df-btn-line-height-xl: $btn-line-height-lg !default;
+$df-btn-border-radius-xl: 1.5rem !default; //default ngBootstrap value of $btn-border-radius-lg
+$df-btn-link-icon-margin-right: .5rem !default;
+$df-btn-link-hover-bg-color: $gray-50 !default;
+$df-btn-link-disabled-hover-bg-color: $white !default;
+$df-btn-link-hover-td: none !default;
+$df-btn-link-disabled-pointer: $df-disabled-cursor !default;
+$df-btn-link-active-td: underline !default;

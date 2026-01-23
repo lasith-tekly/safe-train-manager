@@ -1,0 +1,36 @@
+// this function is needed so that the generated CSS will not output the calculated unicode character
+// see stackoverflow issue : https://stackoverflow.com/questions/30421570/sass-unicode-escape-is-not-preserved-in-css-file
+// sass github issue : https://github.com/sass/sass/issues/1395
+@function unicode($str) {
+  @return unquote('"') + unquote(str-insert($str, "\\", 1)) + unquote('"');
+}
+
+// This function currently change all the colors #ffffff #bbbbbb and #cccccc (that you should put in the svg) by the one given in input
+// I put f for fill value.
+@function df-getSVGasURL($svg, $fig-color, $border-color, $background-color) {//add
+  //TODO add end of line and multiple space replacing...
+  $ret : str-replace($svg ,"#bbbbbb", $border-color);
+  $ret : str-replace($ret ,"#cccccc", $background-color);
+  $ret : str-replace($ret ,"#ffffff", $fig-color);
+  $ret: str-replace($ret, "#", "%23");
+  $ret : str-replace($ret, "<", "%3C");
+  $ret : str-replace($ret, ">", "%3E");
+  @return url("data:image/svg+xml;charset=utf8," + $ret);
+}
+
+//Default values
+$df-size-ratios: (
+  'sm' : 0.875,
+  'md' : 1,
+  'lg' : 1.125,
+  'xl' : 1.25
+) !default;
+
+$df-sizing-ratios: (
+  'sm' : 0.7,
+  'lg' : 1.9,
+  'xl' : 1.9
+) !default;
+
+//Shadow
+$df-box-shadow: 0 0.0625rem 0.75rem 0 #999 !default;

@@ -1,0 +1,26 @@
+$df-badge-theme-colors: () !default;
+$df-badge-theme-colors: map-merge((
+  "success": $success,
+  "danger": (background-color: $danger, "color": $white),
+  "warning": $warning,
+  "info": (background-color: $info, "color": $white),
+  "light": $light,
+  "dark": $dark,
+  "purple": $purple,
+  "pink": $pink,
+  "orange": $orange,
+  "yellow": $yellow,
+  "blue": $blue,
+  "white": $white,
+  "light-blue": $light-blue
+), $df-badge-theme-colors);
+
+// Closable feature
+$df-badge-close-font-size: $badge-font-size !default;
+$df-badge-close-border: none !default;
+$df-badge-close-padding: $badge-padding-y !default;
+$df-badge-interactive-close-padding-left: 0.38em !default;
+$df-badge-interaction-hover-background-percentage: 15% !default;
+
+$df-df-badge-dot-font-size: 0.8em !default;
+$df-df-badge-dot-margin-right: 0.38em !default;

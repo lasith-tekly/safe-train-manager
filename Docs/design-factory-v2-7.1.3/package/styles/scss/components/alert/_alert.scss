@@ -1,0 +1,202 @@
+@import '../../utilities/rtl.mixins';// for all alerts
+
+
+ngb-alert {
+  span.alert-icon {
+    position: absolute;
+    top: $df-alert-size-default-icon-top;
+    font-weight: $df-icon-solid-font-weight;
+    @include ltr {
+      margin-left: $df-alert-size-default-icon-margin-left;
+    }
+
+    @include rtl {
+      margin-right: $df-alert-size-default-icon-margin-left;
+    }
+  }
+  &[insert-alert-icon] {
+    @include ltr {
+      padding-left: $df-alert-size-default-insert-alert-icon;
+    }
+
+    @include rtl {
+      padding-right: $df-alert-size-default-insert-alert-icon;
+    }
+  }
+  &.alert-success {
+    background-color: $df-success-background;
+    .alert-icon {
+      color: $success;
+    }
+  }
+  &.alert-danger {
+    background-color: $df-danger-background;
+    .alert-icon {
+      color: $danger;
+    }
+  }
+  &.alert-warning {
+    background-color: $df-warning-background;
+    .alert-icon {
+      color: $warning;
+    }
+  }
+  &.alert-info {
+    background-color: $df-info-background;
+    .alert-icon {
+      color: $info;
+    }
+  }
+  &.alert-tip {
+    border-color: $df-tip-border-color;
+    background-color: $df-tip-background;
+    .alert-icon {
+      font-weight: $df-icon-light-font-weight;
+      @include ltr {
+        margin-left: $df-alert-tip-size-default-icon-margin-left;
+      }
+
+      @include rtl {
+        margin-right: $df-alert-tip-size-default-icon-margin-left;
+      }
+    }
+  }
+  &.alert-dismissible {
+    button.close {
+      font-size: $df-alert-size-default-close-font;
+      padding: $df-alert-size-default-close-padding;
+      height: $df-alert-size-default-close-height;
+    }
+  }
+  &.alert {
+    padding-top: $df-alert-size-default-padding-top;
+    padding-bottom: $df-alert-size-default-padding-bottom;
+
+    @include ltr {
+      padding-right: $df-alert-size-default-padding-right;
+    }
+
+    @include rtl {
+      padding-left: $df-alert-size-default-padding-right;
+    }
+  }
+  &.df-alert-sm {
+    &[insert-alert-icon] {
+      padding-left: $df-alert-size-sm-insert-alert-icon;
+    }
+    font-size: $df-alert-size-sm-font-size;
+    padding-left: $df-alert-size-sm-padding-left;
+    padding-top: $df-alert-size-sm-padding-top;
+    padding-bottom: $df-alert-size-sm-padding-top;
+    padding-right: $df-alert-size-sm-padding-right;
+    span.alert-icon {
+      top: $df-alert-size-sm-icon-top;
+
+      @include ltr {
+        margin-left: $df-alert-size-sm-icon-margin-left;
+      }
+
+      @include rtl {
+        margin-right: $df-alert-size-sm-icon-margin-left;
+      }
+    }
+    &.alert-tip {
+      .alert-icon {
+        @include ltr {
+          margin-left: $df-alert-tip-size-sm-icon-margin-left;
+        }
+
+        @include rtl {
+          margin-right: $df-alert-tip-size-sm-icon-margin-left;
+        }
+      }
+    }
+    &.alert-dismissible {
+      button.close {
+        font-size: $df-alert-size-sm-close-font;
+        padding: $df-alert-size-sm-close-padding;
+      }
+    }
+  }
+  &.df-alert-lg {
+    &[insert-alert-icon] {
+      padding-left: $df-alert-size-lg-insert-alert-icon;
+    }
+    font-size: $df-alert-size-lg-font-size;
+    padding-left: $df-alert-size-lg-padding-left;
+    padding-top: $df-alert-size-lg-padding-top;
+    padding-bottom: $df-alert-size-lg-padding-bottom;
+    padding-right: $df-alert-size-lg-padding-right;
+    span.alert-icon {
+      top: $df-alert-size-lg-icon-top;
+
+      @include ltr {
+        margin-left: $df-alert-size-lg-icon-margin-left;
+      }
+
+      @include rtl {
+        margin-right: $df-alert-size-lg-icon-margin-left;
+      }
+    }
+    &.alert-tip {
+      .alert-icon {
+        @include ltr {
+          margin-left: $df-alert-tip-size-lg-icon-margin-left;
+        }
+
+        @include rtl {
+          margin-right: $df-alert-tip-size-lg-icon-margin-left;
+        }
+      }
+    }
+    &.alert-dismissible {
+      button.close {
+        font-size: $df-alert-size-lg-close-font;
+        padding: $df-alert-size-lg-close-padding;
+      }
+    }
+  }
+}
+
+// for page alerts
+ngb-alert.df-page-alert {
+  position: fixed;
+  width: $df-page-alert-width;
+  z-index: $df-page-alert-zindex;
+  border-width: $df-page-alert-border-width;
+
+  @include ltr {
+    padding-left: $df-page-alert-padding-left;
+    left: $df-page-alert-start-distance;
+  }
+
+  @include rtl {
+    padding-right: $df-page-alert-padding-left;
+    right: $df-page-alert-start-distance;
+  }
+
+  &.df-alert-sm {
+    @include ltr {
+      padding-left: $df-page-alert-padding-left;
+    }
+
+    @include rtl {
+      padding-right: $df-page-alert-padding-left;
+    }
+  }
+  &.df-alert-lg {
+    @include ltr {
+      padding-left: $df-page-alert-padding-left;
+    }
+
+    @include rtl {
+      padding-right: $df-page-alert-padding-left;
+    }
+  }
+}
+
+// for card alerts
+ngb-alert.df-card-alert {
+  border-width: $df-card-alert-border-width;
+  border-radius: $df-card-alert-border-radius;
+}

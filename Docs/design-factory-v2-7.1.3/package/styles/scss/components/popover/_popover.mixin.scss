@@ -1,0 +1,53 @@
+@mixin popover-mixin {
+  box-shadow: $popover-box-shadow;
+  @include media-breakpoint-up(xs) {
+    max-width: $df-popover-max-width-mobile;
+  }
+  @include media-breakpoint-up(sm) {
+    max-width: $df-popover-max-width;
+  }
+
+  &.bs-popover-top:not(.bs-popover-top-left):not(.bs-popover-top-right) .arrow,
+  &.bs-popover-bottom:not(.bs-popover-bottom-left):not(.bs-popover-bottom-right) .arrow {
+    transform: translateX(-50%);
+  }
+
+  &.bs-popover-left:not(.bs-popover-left-top):not(.bs-popover-left-bottom) .arrow,
+  &.bs-popover-right:not(.bs-popover-right-top):not(.bs-popover-right-bottom) .arrow {
+    transform: translateY(-50%);
+  }
+
+  .popover-header {
+    margin: $df-popover-header-default-margin;
+    font-size: $h3-font-size;
+  }
+
+  .popover-body {
+    margin: $df-popover-body-default-margin;
+    font-size: $font-size-base;
+  }
+  &.popover-sm {
+
+    .popover-header {
+      margin: $df-popover-header-sm-margin;
+      font-size: $h4-font-size;
+    }
+
+    .popover-body {
+      margin: $df-popover-body-sm-margin;
+      font-size: $font-size-sm;
+    }
+  }
+  &.popover-lg {
+
+    .popover-header {
+      margin: $df-popover-header-lg-margin;
+      font-size: $h2-font-size;
+    }
+
+    .popover-body {
+      margin: $df-popover-body-lg-margin;
+      font-size: $font-size-lg;
+    }
+  }
+}

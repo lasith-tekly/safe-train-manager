@@ -1,0 +1,39 @@
+@import "pow";
+@import "./colors-cached";
+
+@function colorPre($color) {
+  $color : $color / 255;
+  @if $color < 0.03928 {
+    @return $color / 12.92;
+  } @else {
+    $color: ($color + .055) / 1.055;
+    @return poly-pow($color, 2.4);
+  }
+}
+
+/// Returns the luminance of `$color` as a float (between 0 and 1)
+/// 1 is pure white, 0 is pure black
+/// @param {Color} $color - Color
+/// @return {Number}
+/// @link http://www.w3.org/TR/2008/REC-WCAG20-20081211/#relativeluminancedef Reference
+@function luminance($color) {
+    @return (colorPre(red($color)) * .2126) + (colorPre(green($color)) * .7152) + (colorPre(blue($color)) * .0722);
+}
+
+// returns white or black color, based on the one which has the best contrast ratio
+// with the given color
+@function black-or-white($color) {
+  $value: map-get($cached, "#{$color}"); //convert color into string of the expanded color.
+  @if ($value == null) {
+    $black: #000000;
+    $white: #ffffff;
+    $luminance: luminance($color) + 0.05;
+
+    @if ($luminance * $luminance > 0.0525) {
+      $value: $yiq-text-dark;
+    } @else {
+      $value: $yiq-text-light;
+    }
+  }
+  @return $value;
+}

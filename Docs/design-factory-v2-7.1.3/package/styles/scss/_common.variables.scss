@@ -1,0 +1,43 @@
+// Common variables DF
+
+$df-brand-primary-85: #006CD4 !default; //add, use for hover
+$df-font-family: Design-Factory-icon !default;
+$df-mandatory-indicator-color: $danger !default;
+$df-mandatory-indicator-font-weight: 700 !default;
+$df-mandatory-indicator-margin: 0.125rem !default;
+$df-subtitle-color: $gray-600 !default;
+$df-zindex-topmost: 10000 !default;
+
+// Merge DF Spacer with BS ones
+$spacers: map-merge((
+  "75": ($spacer * 0.75)
+), $spacers);
+
+$df-size-ratios: map-merge(('sm' : $font-size-sm / $font-size-base), $df-size-ratios);
+$df-size-ratios: map-merge(('lg' : $font-size-lg / $font-size-base), $df-size-ratios);
+$df-cursor-type: pointer !default;
+$df-focused-border-radius: $border-radius !default;
+$df-focused-box-shadow: $btn-focus-box-shadow !default;
+$df-focused-border: $border-width solid $primary !default;
+$df-enable-rtl: false !default;
+
+// Disabled state
+$df-disabled-bg-color: $gray-100 !default;
+$df-disabled-color: $gray-500 !default;
+$df-disabled-opacity: 1 !default;
+$df-disabled-cursor: not-allowed !default;
+
+//Windows High Contrast Mode
+$df-high-contrast-color: rgba(0,0,0,0) !default;
+
+$df-degrees: (
+  0: 0deg,
+  45:  45deg,
+  90: 90deg,
+  135: 135deg,
+  180: 180deg,
+  225: 225deg,
+  270: 270deg,
+  315: 315deg,
+  360: 360deg
+) !default;

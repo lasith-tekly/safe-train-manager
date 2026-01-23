@@ -1,0 +1,118 @@
+.nav-tabs {
+  .nav-link {
+    color: $df-tabs-color; // add (override link color todo why?)
+    border-bottom: $df-tabs-border-bottom; // add
+    border-top: $df-tabs-border-top; // add
+    border-left: $df-tabs-border-left; // add
+    border-right: $df-tabs-border-right; // add
+
+    @include hover { // override
+      text-decoration: $df-tabs-hover-text-decoration; // add
+      background-color: $df-tabs-hover-bg-color; // add
+      border-bottom: $df-tabs-hover-border-bottom; // add
+      border-top: $df-tabs-border-top; // add
+      border-left: $df-tabs-border-left; // add
+      border-right: $df-tabs-border-right; // add
+    }
+
+    &:focus {// override
+      outline: $df-tabs-focus-outline; // add to override default
+      box-shadow: $btn-focus-box-shadow; // add
+      border-bottom: $df-tabs-border-bottom; // add
+      border-top: $df-tabs-border-top; // add
+      border-left: $df-tabs-border-left; // add
+      border-right: $df-tabs-border-right; // add
+    }
+
+    &.disabled {
+      cursor: $df-tabs-disabled-cursor; // add
+      text-decoration: $df-tabs-disabled-text-decoration;
+      border-bottom: $df-tabs-border-bottom; // add
+      border-top: $df-tabs-border-top; // add
+      border-left: $df-tabs-border-left; // add
+      border-right: $df-tabs-border-right; // add
+      @include hover {
+        background-color: $df-tabs-disabled-bg-color;
+      }
+    }
+  }
+
+  .nav-item + .nav-item { // add
+    margin-left: $df-tabs-between-item-margin; // add
+  }
+
+  .nav-link.active,
+  .nav-item.show .nav-link {
+    border-bottom: $df-tabs-active-border-bottom; // add
+    border-top: $df-tabs-border-top; // add
+    border-left: $df-tabs-border-left; // add
+    border-right: $df-tabs-border-right; // add
+  }
+}
+
+%secondary {
+  .nav-link {
+    border-bottom: $df-tabs-secondary-border-bottom; // add
+    border-top: $df-tabs-secondary-border-top; // add
+
+    @include hover {// override
+      border-bottom: $df-tabs-secondary-border-bottom; // add
+      border-top: $df-tabs-secondary-border-top; // add
+    }
+
+    &:focus {// override
+      border-bottom: $df-tabs-secondary-border-bottom; // add
+      border-top: $df-tabs-secondary-border-top; // add
+    }
+
+    &.disabled {
+      border-bottom: $df-tabs-secondary-border-bottom; // add
+      border-top: $df-tabs-secondary-border-top; // add
+    }
+  }
+
+  .nav-link.active,
+  .nav-item.show .nav-link {
+    border-bottom: $df-tabs-secondary-border-bottom; // add
+    border-top: $df-tabs-secondary-active-border-top; // add
+    border-left: $df-tabs-secondary-active-border-left; // add
+    border-right: $df-tabs-secondary-active-border-right; // add
+    margin-bottom: -1px; // add
+  }
+}
+
+// For ng-bootstrap tab
+.secondary {
+  .nav-tabs {
+    @extend %secondary;
+  }
+}
+
+// For bootstrap tab
+.nav-tabs.secondary {
+  @extend %secondary;
+}
+
+.tab-content {
+  > .tab-pane {
+    padding: $df-tabcontent-tabpane-padding;//add
+  }
+}
+
+%secondary-content {
+    border-style: $df-tab-content-border-style;//add
+    border-color: $df-tab-content-border-color;//add
+    border-width: $df-tab-content-border-width;//add
+}
+
+// For ng-bootstrap tab
+.secondary {
+  .tab-content {
+    @extend %secondary-content;
+  }
+}
+
+// For bootstrap tab
+.tab-content.secondary {
+  @extend %secondary-content;
+}

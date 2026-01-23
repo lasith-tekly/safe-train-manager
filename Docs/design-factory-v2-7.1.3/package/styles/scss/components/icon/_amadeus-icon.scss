@@ -1,0 +1,22 @@
+
+@mixin df-svg-color($parent, $color) {
+  #{$parent} {
+    background: df-getSVGasURL($df-amadeuslogo, $color, #fff, #fff) no-repeat center center;
+    background-size: contain;
+  }
+}
+
+@each $color, $value in $theme-colors {
+  @include df-svg-color(".df-amadeuslogo-#{$color}", $value);
+}
+
+@each $color, $value in $colors {
+  @include df-svg-color(".df-amadeuslogo-#{$color}", $value);
+}
+
+@include df-svg-color(".df-amadeuslogo-black", $black);
+
+.df-logo-dim {
+  height: $df-brand-amadeus-logo-height;
+  width: $df-brand-amadeus-logo-width;
+}

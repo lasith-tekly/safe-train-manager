@@ -1,0 +1,24 @@
+.df-skip-links {
+  position: fixed;
+  top: $df-skip-links--top;
+  left: $df-skip-links--left;
+  z-index: $df-skip-links--zindex;
+}
+.df-skip-links__wrap {
+  min-width: $df-skip-links--min-width;
+  background: $white;
+  border-radius: $df-skip-links--border-radius;
+  box-shadow: $df-skip-links--shadow;
+
+  &:not(.focus) {
+    @include sr-only();
+  }
+
+  > * {
+    margin-bottom: -$list-group-border-width;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}

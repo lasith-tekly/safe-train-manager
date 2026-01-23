@@ -1,0 +1,35 @@
+.container {
+  max-width: 1400px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.holidayList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.holidayName {
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 80px;
+  display: inline-block;
+}
+
+.calendarCard {
+  margin-top: 16px;
+}

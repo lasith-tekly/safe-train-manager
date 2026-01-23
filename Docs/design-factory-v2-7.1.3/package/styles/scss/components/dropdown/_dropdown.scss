@@ -1,0 +1,66 @@
+@import "dropdown.mixins";
+
+.dropdown, & { //Dropdown is default
+  @include df-dropdown-toggle('.show', '');
+}
+.dropup {
+  @include df-dropdown-toggle('', '.show');
+}
+
+@include ltr {
+  @include df-dropdown-orientation('right', 'left');
+}
+@include rtl {
+  @include df-dropdown-orientation('left', 'right');
+}
+
+&, .dropdown, .dropup {
+  .dropdown-toggle {
+    display: flex;
+    align-items: center;
+    &:after {
+      border: none;
+      font-family: $df-dropdown-toggle-font;
+      font-size: $df-dropdown-toggle-font-size;
+      line-height: $df-dropdown-toggle-line-height; //Fix Chrome bug
+    }
+  }
+  .dropdown-toggle-split.dropdown-toggle-split {
+    padding-left: $df-dropdown-toggle-split-padding-x;
+    padding-right: $df-dropdown-toggle-split-padding-x;
+    &:after {
+      margin: 0;
+    }
+  }
+}
+
+.dropdown-menu {
+  hr {
+    margin-top: $df-dropdown-separator-margin-y;
+    margin-bottom: $df-dropdown-separator-margin-y;
+    border-color: $df-dropdown-separator-color;
+  }
+}
+.dropdown-item {
+  border: $border-width solid transparent;
+  &:focus,
+  &.focus {
+    @extend .df-focused;
+    border-radius: $df-dropdown-item-focus-border-radius;
+    text-decoration: $df-dropdown-item-hover-text-decoration;
+  }
+  &:hover {
+    text-decoration: $df-dropdown-item-hover-text-decoration;
+  }
+  &.disabled,
+  &:disabled {
+    cursor: $df-dropdown-disabled-pointer;
+    color: $df-dropdown-disabled-color;
+    text-decoration: none;
+    pointer-events: auto; // override of ng-bootstrap
+  }
+  &:not(:disabled):not(.disabled).active {
+    background-color: $df-dropdown-item-active-background-color;
+    color: $df-dropdown-item-active-color;
+  }
+}

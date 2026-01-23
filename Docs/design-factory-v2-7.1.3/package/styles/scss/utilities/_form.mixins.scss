@@ -1,0 +1,25 @@
+$df-check-label-adjust-padding-left: 0.125rem !default;
+// mixins for radio and checkbox position
+@mixin df-checkboxradio-pos($df-margin-bottom) {
+  display: inline-block;
+  position: relative;
+  &:not(.col-form-label) {
+    margin-bottom: $df-margin-bottom;
+  }
+  @include ltr {
+    padding-left: $form-check-input-gutter + $df-check-label-adjust-padding-left; // add
+    margin-left: -$form-check-input-gutter; // add
+  }
+  
+  @include rtl {
+    padding-right: $form-check-input-gutter + $df-check-label-adjust-padding-left; // add
+    margin-right: -$form-check-input-gutter; // add
+  }
+
+  &::before {// add
+    position: absolute; // idem as custom-control-input from bootstrap to hide the browser input (mandatory)
+    top: 50%; // New trick to use to center the icon with the title (works
+              // with the transform on the element and display: inline-block, position: relative on the parent)
+    transform: translateY(-50%);
+  }
+}

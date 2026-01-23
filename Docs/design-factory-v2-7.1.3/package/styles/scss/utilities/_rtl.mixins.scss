@@ -1,0 +1,17 @@
+@mixin rtl  {
+  @if $df-enable-rtl {
+    [dir=rtl] & {
+      @content;
+    }
+  }
+}
+
+@mixin ltr {
+  @if $df-enable-rtl {
+    :not([dir=rtl]) & {
+      @content;
+    }
+  } @else {
+      @content;
+  }
+}

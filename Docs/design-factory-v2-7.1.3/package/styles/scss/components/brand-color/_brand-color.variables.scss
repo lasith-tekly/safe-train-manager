@@ -1,0 +1,78 @@
+
+/**
+ * Primary colors
+ */
+$dark-primary: #004485 !default;
+$dark-orange: #e95326 !default;
+$light-blue: #9bcaeb !default;
+$brown: #9e6900 !default;
+
+$colors: () !default;
+$colors: map-merge((
+  "primary": $primary,
+  "cyan": $cyan,
+  "dark-primary": $dark-primary,
+  "teal": $teal,
+  "light-blue": $light-blue,
+  "red": $red,
+  "orange": $orange,
+  "dark-orange": $dark-orange,
+  "yellow": $yellow,
+  "green": $green,
+  "white": $white,
+  "pink": $pink,
+  "brown": $brown,
+  "purple": $purple,
+  "black": $black
+), $colors);
+
+/**
+ * Grayscale
+ */
+$gray-50: #f2f2f2 !default;
+
+$grays: () !default;
+$grays: map-merge((
+  "50": $gray-50,
+  "100": $gray-100,
+  "200": $gray-200,
+  "300": $gray-300,
+  "400": $gray-400,
+  "500": $gray-500,
+  "600": $gray-600,
+  "700": $gray-700,
+  "800": $gray-800,
+  "900": $gray-900
+), $grays);
+
+/**
+ * Theme colors
+ */
+$light: $gray-50 !default;
+$mystery: $purple !default;
+$love: $pink !default;
+$pacific: $light-blue !default;
+
+$theme-colors: () !default;
+$theme-colors: map-merge((
+  "primary": $primary,
+  "success": $success,
+  "info": $info,
+  "warning": $warning,
+  "danger": $danger,
+  "light": $light,
+  "dark": $dark,
+  "mystery": $mystery,
+  "love": $love,
+  "pacific": $pacific
+), $theme-colors);
+
+/**
+ * Gradients
+ */
+$gradients : () !default;
+$gradients: map-merge((
+  "gradient-blue": ("from":$blue, "to":$cyan)
+), $gradients);
+
+$df-primary-lighten-60: lighten(theme-color("primary"), 60) !default;

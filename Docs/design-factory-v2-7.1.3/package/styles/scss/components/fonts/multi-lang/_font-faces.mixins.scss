@@ -1,0 +1,467 @@
+@mixin df-fonts-multi-lang-typo-fonts(
+  $parent-selector,
+  $body-font-stack,
+  $headings-font-stack
+) {
+  #{$parent-selector} {
+    font-family: $body-font-stack;
+
+    body {
+      font-family: $body-font-stack;
+    }
+
+    h1, h2, h3, h4, h5, h6,
+    .h1, .h2, .h3, .h4, .h5, .h6 {
+      font-family: $headings-font-stack;
+    }
+  }
+}
+
+@mixin df-fonts-multi-lang-font-faces-source-sans-pro-full() {
+  @font-face {
+    font-family: 'Source Sans Pro Full';
+    src: url("#{$font-path}/source-sans-pro-full/sourcesanspro-full-light.woff2") format('woff2'),
+    url("#{$font-path}/source-sans-pro-full/sourcesanspro-full-light.woff") format('woff');
+    font-weight: 300;
+    font-style: normal;
+  }
+  @font-face {
+    font-family: 'Source Sans Pro Full';
+    src: url("#{$font-path}/source-sans-pro-full/sourcesanspro-full-lightitalic.woff2") format('woff2'),
+    url("#{$font-path}/source-sans-pro-full/sourcesanspro-full-lightitalic.woff") format('woff');
+    font-weight: 300;
+    font-style: italic;
+  }
+  @font-face {
+    font-family: 'Source Sans Pro Full';
+    src: url("#{$font-path}/source-sans-pro-full/sourcesanspro-full-regular.woff2") format('woff2'),
+    url("#{$font-path}/source-sans-pro-full/sourcesanspro-full-regular.woff") format('woff');
+    font-weight: normal;
+    font-style: normal;
+  }
+  @font-face {
+    font-family: 'Source Sans Pro Full';
+    src: url("#{$font-path}/source-sans-pro-full/sourcesanspro-full-italic.woff2") format('woff2'),
+    url("#{$font-path}/source-sans-pro-full/sourcesanspro-full-italic.woff") format('woff');
+    font-weight: normal;
+    font-style: italic;
+  }
+  @font-face {
+    font-family: 'Source Sans Pro Full';
+    src: url("#{$font-path}/source-sans-pro-full/sourcesanspro-full-bold.woff2") format('woff2'),
+    url("#{$font-path}/source-sans-pro-full/sourcesanspro-full-bold.woff") format('woff');
+    font-weight: bold;
+    font-style: normal;
+  }
+  @font-face {
+    font-family: 'Source Sans Pro Full';
+    src: url("#{$font-path}/source-sans-pro-full/sourcesanspro-full-bolditalic.woff2") format('woff2'),
+    url("#{$font-path}/source-sans-pro-full/sourcesanspro-full-bolditalic.woff") format('woff');
+    font-weight: bold;
+    font-style: italic;
+  }
+}
+
+@mixin df-fonts-multi-lang-font-faces-amadeus-full() {
+  @font-face {
+    font-family: 'Amadeus Full';
+    src: url("#{$font-path}/amadeus-full/amadeus-full-thin.woff2") format('woff2'),
+    url("#{$font-path}/amadeus-full/amadeus-full-thin.woff") format('woff');
+    font-weight: 100;
+    font-style: normal;
+  }
+  @font-face {
+    font-family: 'Amadeus Full';
+    src: url("#{$font-path}/amadeus-full/amadeus-full-thinitalic.woff2") format('woff2'),
+    url("#{$font-path}/amadeus-full/amadeus-full-thinitalic.woff") format('woff');
+    font-weight: 100;
+    font-style: italic;
+  }
+  @font-face {
+    font-family: 'Amadeus Full';
+    src: url("#{$font-path}/amadeus-full/amadeus-full-light.woff2") format('woff2'),
+    url("#{$font-path}/amadeus-full/amadeus-full-light.woff") format('woff');
+    font-weight: 300;
+    font-style: normal;
+  }
+  @font-face {
+    font-family: 'Amadeus Full';
+    src: url("#{$font-path}/amadeus-full/amadeus-full-lightitalic.woff2") format('woff2'),
+    url("#{$font-path}/amadeus-full/amadeus-full-lightitalic.woff") format('woff');
+    font-weight: 300;
+    font-style: italic;
+  }
+  @font-face {
+    font-family: 'Amadeus Full';
+    src: url("#{$font-path}/amadeus-full/amadeus-full-regular.woff2") format('woff2'),
+    url("#{$font-path}/amadeus-full/amadeus-full-regular.woff") format('woff');
+    font-weight: normal;
+    font-style: normal;
+  }
+  @font-face {
+    font-family: 'Amadeus Full';
+    src: url("#{$font-path}/amadeus-full/amadeus-full-italic.woff2") format('woff2'),
+    url("#{$font-path}/amadeus-full/amadeus-full-italic.woff") format('woff');
+    font-weight: normal;
+    font-style: italic;
+  }
+  @font-face {
+    font-family: 'Amadeus Full';
+    src: url("#{$font-path}/amadeus-full/amadeus-full-bold.woff2") format('woff2'),
+    url("#{$font-path}/amadeus-full/amadeus-full-bold.woff") format('woff');
+    font-weight: bold;
+    font-style: normal;
+  }
+  @font-face {
+    font-family: 'Amadeus Full';
+    src: url("#{$font-path}/amadeus-full/amadeus-full-bolditalic.woff2") format('woff2'),
+    url("#{$font-path}/amadeus-full/amadeus-full-bolditalic.woff") format('woff');
+    font-weight: bold;
+    font-style: italic;
+  }
+}
+
+@mixin df-fonts-multi-lang-font-faces-noto-sans() {
+  @font-face {
+    font-family: 'Noto Sans';
+    src: url("#{$font-path}/noto/notosans-thin.woff2") format('woff2'),
+    url("#{$font-path}/noto/notosans-thin.woff") format('woff');
+    font-weight: 100;
+    font-style: normal;
+  }
+  @font-face {
+    font-family: 'Noto Sans';
+    src: url("#{$font-path}/noto/notosans-thinitalic.woff2") format('woff2'),
+    url("#{$font-path}/noto/notosans-thinitalic.woff") format('woff');
+    font-weight: 100;
+    font-style: italic;
+  }
+  @font-face {
+    font-family: 'Noto Sans';
+    src: url("#{$font-path}/noto/notosans-light.woff2") format('woff2'),
+    url("#{$font-path}/noto/notosans-light.woff") format('woff');
+    font-weight: 300;
+    font-style: normal;
+  }
+  @font-face {
+    font-family: 'Noto Sans';
+    src: url("#{$font-path}/noto/notosans-lightitalic.woff2") format('woff2'),
+    url("#{$font-path}/noto/notosans-lightitalic.woff") format('woff');
+    font-weight: 300;
+    font-style: italic;
+  }
+  @font-face {
+    font-family: 'Noto Sans';
+    src: url("#{$font-path}/noto/notosans-regular.woff2") format('woff2'),
+    url("#{$font-path}/noto/notosans-regular.woff") format('woff');
+    font-weight: normal;
+    font-style: normal;
+  }
+  @font-face {
+    font-family: 'Noto Sans';
+    src: url("#{$font-path}/noto/notosans-italic.woff2") format('woff2'),
+    url("#{$font-path}/noto/notosans-italic.woff") format('woff');
+    font-weight: normal;
+    font-style: italic;
+  }
+  @font-face {
+    font-family: 'Noto Sans';
+    src: url("#{$font-path}/noto/notosans-bold.woff2") format('woff2'),
+    url("#{$font-path}/noto/notosans-bold.woff") format('woff');
+    font-weight: bold;
+    font-style: normal;
+  }
+  @font-face {
+    font-family: 'Noto Sans';
+    src: url("#{$font-path}/noto/notosans-bolditalic.woff2") format('woff2'),
+    url("#{$font-path}/noto/notosans-bolditalic.woff") format('woff');
+    font-weight: bold;
+    font-style: italic;
+  }
+}
+
+@mixin df-fonts-multi-lang-font-faces-noto-sans-hebrew() {
+  @font-face {
+    font-family: 'Noto Sans';
+    src: url("#{$font-path}/noto/notosanshebrew-thin.woff2") format('woff2'),
+    url("#{$font-path}/noto/notosanshebrew-thin.woff") format('woff');
+    font-weight: 100;
+    font-style: normal;
+    unicode-range: U+0590-05FF;
+  }
+  @font-face {
+    font-family: 'Noto Sans';
+    src: url("#{$font-path}/noto/notosanshebrew-light.woff2") format('woff2'),
+    url("#{$font-path}/noto/notosanshebrew-light.woff") format('woff');
+    font-weight: 300;
+    font-style: normal;
+    unicode-range: U+0590-05FF;
+  }
+  @font-face {
+    font-family: 'Noto Sans';
+    src: url("#{$font-path}/noto/notosanshebrew-regular.woff2") format('woff2'),
+    url("#{$font-path}/noto/notosanshebrew-regular.woff") format('woff');
+    font-weight: normal;
+    font-style: normal;
+    unicode-range: U+0590-05FF;
+  }
+
+  @font-face {
+    font-family: 'Noto Sans';
+    src: url("#{$font-path}/noto/notosanshebrew-bold.woff2") format('woff2'),
+    url("#{$font-path}/noto/notosanshebrew-bold.woff") format('woff');
+    font-weight: bold;
+    font-style: normal;
+    unicode-range: U+0590-05FF;
+  }
+
+  @font-face {
+    font-family: 'Noto Sans';
+    src: url("#{$font-path}/noto/notosanshebrew-thin.woff2") format('woff2'),
+    url("#{$font-path}/noto/notosanshebrew-thin.woff") format('woff');
+    font-weight: 100;
+    font-style: italic;
+    unicode-range: U+0590-05FF;
+  }
+
+  @font-face {
+    font-family: 'Noto Sans';
+    src: url("#{$font-path}/noto/notosanshebrew-light.woff2") format('woff2'),
+    url("#{$font-path}/noto/notosanshebrew-light.woff") format('woff');
+    font-weight: 300;
+    font-style: italic;
+    unicode-range: U+0590-05FF;
+  }
+
+  @font-face {
+    font-family: 'Noto Sans';
+    src: url("#{$font-path}/noto/notosanshebrew-regular.woff2") format('woff2'),
+    url("#{$font-path}/noto/notosanshebrew-regular.woff") format('woff');
+    font-weight: normal;
+    font-style: italic;
+    unicode-range: U+0590-05FF;
+  }
+
+  @font-face {
+    font-family: 'Noto Sans';
+    src: url("#{$font-path}/noto/notosanshebrew-bold.woff2") format('woff2'),
+    url("#{$font-path}/noto/notosanshebrew-bold.woff") format('woff');
+    font-weight: bold;
+    font-style: italic;
+    unicode-range: U+0590-05FF;
+  }
+}
+
+
+@mixin df-fonts-multi-lang-font-faces-noto-sans-arabic() {
+  @font-face {
+    font-family: 'Noto Sans';
+    src: url("#{$font-path}/noto/notosansarabic-thin.woff2") format('woff2'),
+    url("#{$font-path}/noto/notosansarabic-thin.woff") format('woff');
+    font-weight: 100;
+    font-style: italic;
+    unicode-range: U+0600-06FF;
+  }
+
+  @font-face {
+    font-family: 'Noto Sans';
+    src: url("#{$font-path}/noto/notosansarabic-thin.woff2") format('woff2'),
+    url("#{$font-path}/noto/notosansarabic-thin.woff") format('woff');
+    font-weight: 100;
+    font-style: normal;
+    unicode-range: U+0600-06FF;
+  }
+  @font-face {
+    font-family: 'Noto Sans';
+    src: url("#{$font-path}/noto/notosansarabic-light.woff2") format('woff2'),
+    url("#{$font-path}/noto/notosansarabic-light.woff") format('woff');
+    font-weight: 300;
+    font-style: normal;
+    unicode-range: U+0600-06FF;
+  }
+  @font-face {
+    font-family: 'Noto Sans';
+    src: url("#{$font-path}/noto/notosansarabic-regular.woff2") format('woff2'),
+    url("#{$font-path}/noto/notosansarabic-regular.woff") format('woff');
+    font-weight: normal;
+    font-style: normal;
+    unicode-range: U+0600-06FF;
+  }
+  @font-face {
+    font-family: 'Noto Sans';
+    src: url("#{$font-path}/noto/notosansarabic-bold.woff2") format('woff2'),
+    url("#{$font-path}/noto/notosansarabic-bold.woff") format('woff');
+    font-weight: bold;
+    font-style: normal;
+    unicode-range: U+0600-06FF;
+  }
+  @font-face {
+    font-family: 'Noto Sans';
+    src: url("#{$font-path}/noto/notosansarabic-regular.woff2") format('woff2'),
+    url("#{$font-path}/noto/notosansarabic-regular.woff") format('woff');
+    font-weight: normal;
+    font-style: italic;
+    unicode-range: U+0600-06FF;
+  }
+
+  @font-face {
+    font-family: 'Noto Sans';
+    src: url("#{$font-path}/noto/notosansarabic-bold.woff2") format('woff2'),
+    url("#{$font-path}/noto/notosansarabic-bold.woff") format('woff');
+    font-weight: bold;
+    font-style: italic;
+    unicode-range: U+0600-06FF;
+  }
+
+  @font-face {
+    font-family: 'Noto Sans';
+    src: url("#{$font-path}/noto/notosansarabic-light.woff2") format('woff2'),
+    url("#{$font-path}/noto/notosansarabic-light.woff") format('woff');
+    font-weight: 300;
+    font-style: italic;
+    unicode-range: U+0600-06FF;
+  }
+}
+
+@mixin df-fonts-multi-lang-font-faces-noto-sans-georgian() {
+  @font-face {
+    font-family: 'Noto Sans';
+    src: url("#{$font-path}/noto/notosansgeorgian-thin.woff2") format('woff2'),
+    url("#{$font-path}/noto/notosansgeorgian-thin.woff") format('woff');
+    font-weight: 100;
+    font-style: normal;
+    unicode-range: U+10A0-10FF;
+  }
+
+  @font-face {
+    font-family: 'Noto Sans';
+    src: url("#{$font-path}/noto/notosansgeorgian-light.woff2") format('woff2'),
+    url("#{$font-path}/noto/notosansgeorgian-light.woff") format('woff');
+    font-weight: 300;
+    font-style: normal;
+    unicode-range: U+10A0-10FF;
+  }
+  @font-face {
+    font-family: 'Noto Sans';
+    src: url("#{$font-path}/noto/notosansgeorgian-regular.woff2") format('woff2'),
+    url("#{$font-path}/noto/notosansgeorgian-regular.woff") format('woff');
+    font-weight: normal;
+    font-style: normal;
+    unicode-range: U+10A0-10FF;
+  }
+  @font-face {
+    font-family: 'Noto Sans';
+    src: url("#{$font-path}/noto/notosansgeorgian-bold.woff2") format('woff2'),
+    url("#{$font-path}/noto/notosansgeorgian-bold.woff") format('woff');
+    font-weight: bold;
+    font-style: normal;
+    unicode-range: U+10A0-10FF;
+  }
+  @font-face {
+    font-family: 'Noto Sans';
+    src: url("#{$font-path}/noto/notosansgeorgian-bold.woff2") format('woff2'),
+    url("#{$font-path}/noto/notosansgeorgian-bold.woff") format('woff');
+    font-weight: bold;
+    font-style: italic;
+    unicode-range: U+10A0-10FF;
+  }
+
+  @font-face {
+    font-family: 'Noto Sans';
+    src: url("#{$font-path}/noto/notosansgeorgian-regular.woff2") format('woff2'),
+    url("#{$font-path}/noto/notosansgeorgian-regular.woff") format('woff');
+    font-weight: normal;
+    font-style: italic;
+    unicode-range: U+10A0-10FF;
+  }
+
+  @font-face {
+    font-family: 'Noto Sans';
+    src: url("#{$font-path}/noto/notosansgeorgian-light.woff2") format('woff2'),
+    url("#{$font-path}/noto/notosansgeorgian-light.woff") format('woff');
+    font-weight: 300;
+    font-style: italic;
+    unicode-range: U+10A0-10FF;
+  }
+
+  @font-face {
+    font-family: 'Noto Sans';
+    src: url("#{$font-path}/noto/notosansgeorgian-thin.woff2") format('woff2'),
+    url("#{$font-path}/noto/notosansgeorgian-thin.woff") format('woff');
+    font-weight: 100;
+    font-style: italic;
+    unicode-range: U+10A0-10FF;
+  }
+}
+
+@mixin df-fonts-multi-lang-font-faces-noto-sans-armenian() {
+  @font-face {
+    font-family: 'Noto Sans';
+    src: url("#{$font-path}/noto/notosansarmenian-thin.woff2") format('woff2'),
+    url("#{$font-path}/noto/notosansarmenian-thin.woff") format('woff');
+    font-weight: 100;
+    font-style: normal;
+    unicode-range: U+0530-058F;
+  }
+  @font-face {
+    font-family: 'Noto Sans';
+    src: url("#{$font-path}/noto/notosansarmenian-light.woff2") format('woff2'),
+    url("#{$font-path}/noto/notosansarmenian-light.woff") format('woff');
+    font-weight: 300;
+    font-style: normal;
+    unicode-range: U+0530-058F;
+  }
+  @font-face {
+    font-family: 'Noto Sans';
+    src: url("#{$font-path}/noto/notosansarmenian-regular.woff2") format('woff2'),
+    url("#{$font-path}/noto/notosansarmenian-regular.woff") format('woff');
+    font-weight: normal;
+    font-style: normal;
+    unicode-range: U+0530-058F;
+  }
+  @font-face {
+    font-family: 'Noto Sans';
+    src: url("#{$font-path}/noto/notosansarmenian-thin.woff2") format('woff2'),
+    url("#{$font-path}/noto/notosansarmenian-thin.woff") format('woff');
+    font-weight: 100;
+    font-style: italic;
+    unicode-range: U+0530-058F;
+  }
+
+  @font-face {
+    font-family: 'Noto Sans';
+    src: url("#{$font-path}/noto/notosansarmenian-light.woff2") format('woff2'),
+    url("#{$font-path}/noto/notosansarmenian-light.woff") format('woff');
+    font-weight: 300;
+    font-style: italic;
+    unicode-range: U+0530-058F;
+  }
+
+
+  @font-face {
+    font-family: 'Noto Sans';
+    src: url("#{$font-path}/noto/notosansarmenian-bold.woff2") format('woff2'),
+    url("#{$font-path}/noto/notosansarmenian-bold.woff") format('woff');
+    font-weight: bold;
+    font-style: italic;
+    unicode-range: U+0530-058F;
+  }
+
+  @font-face {
+    font-family: 'Noto Sans';
+    src: url("#{$font-path}/noto/notosansarmenian-regular.woff2") format('woff2'),
+    url("#{$font-path}/noto/notosansarmenian-regular.woff") format('woff');
+    font-weight: normal;
+    font-style: italic;
+    unicode-range: U+0530-058F;
+  }
+
+  @font-face {
+    font-family: 'Noto Sans';
+    src: url("#{$font-path}/noto/notosansarmenian-bold.woff2") format('woff2'),
+    url("#{$font-path}/noto/notosansarmenian-bold.woff") format('woff');
+    font-weight: bold;
+    font-style: normal;
+    unicode-range: U+0530-058F;
+  }
+}

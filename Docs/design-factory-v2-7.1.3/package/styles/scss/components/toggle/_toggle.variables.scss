@@ -1,0 +1,52 @@
+$df-toggle-bottom: 0 !default;
+$df-toggle-height: 1.5rem !default;
+$df-toggle-width: 3rem !default;
+$df-toggle-border-width: 0.0625rem !default;
+$df-toggle-border-style: solid !default;
+$df-toggle-border-radius: 1.5rem !default;
+$df-toggle-label-padding-left: 2rem !default;
+$df-toggle-inner-label-padding-left: 2rem + $form-check-input-gutter !default;
+$df-toggle-inner-label-font-weight: normal !default;
+$df-toggle-label-font-weight: 500 !default;
+$df-toggle-left: 0 !default;
+$df-toggle-transition: .4s !default;
+$df-toggle-label-margin-bottom: 0 !default;
+
+$df-toggle-circle-border-radius: 50% !default;
+$df-toggle-circle-height: 1rem !default;
+$df-toggle-circle-width: 1rem !default;
+$df-toggle-circle-bottom: ($df-toggle-height - $df-toggle-circle-height)/2 + $df-toggle-bottom !default;
+$df-toggle-circle-left: ($df-toggle-width / 2 - $df-toggle-circle-width) / 2 !default; //0.25rem
+
+$df-toggle-label-color: $gray-900 !default;
+$df-toggle-disabled-label-color: $gray-400 !default;
+$df-toggle-label-name-margin-left: -$form-check-input-gutter !default;
+
+$df-toggle-active-background-color: theme-color("primary") !default;
+$df-toggle-active-border-color: $df-toggle-active-background-color !default;
+$df-toggle-active-dot-color: $white !default;
+
+$df-toggle-disabled-active-background-color: $gray-200 !default;
+$df-toggle-disabled-active-border-color: $gray-200 !default;
+$df-toggle-disabled-active-dot-color: $gray-400 !default;
+
+$df-toggle-inactive-background-color: $white !default;
+$df-toggle-inactive-border-color: $gray-400 !default;
+$df-toggle-inactive-dot-color: $gray-600 !default;
+
+$df-toggle-disabled-inactive-background-color: $white !default;
+$df-toggle-disabled-inactive-border-color: $gray-200 !default;
+$df-toggle-disabled-inactive-dot-color: $gray-400 !default;
+
+$df-toggle-sm-bottom: 0.125rem !default;
+$df-toggle-sm-height: 1rem !default;
+$df-toggle-sm-width: 2rem !default;
+$df-toggle-sm-border-radius: 1.5rem !default;
+$df-toggle-sm-label-padding-left: 1rem !default;
+$df-toggle-sm-inner-label-padding-left: 1rem + $form-check-input-gutter !default;
+$df-toggle-sm-circle-height: 0.625rem !default;
+$df-toggle-sm-circle-width: 0.625rem !default;
+$df-toggle-sm-circle-bottom: ($df-toggle-sm-height - $df-toggle-sm-circle-height)/2 + $df-toggle-sm-bottom !default;
+$df-toggle-sm-circle-left: ($df-toggle-sm-width / 2 - $df-toggle-sm-circle-width) / 2 !default;
+
+$df-toggle-disabled-cursor: $df-disabled-cursor !default;

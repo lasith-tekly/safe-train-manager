@@ -1,0 +1,67 @@
+ngb-rating {
+  font-size: $df-rating-font-size;
+  color: $df-rating-color;
+  $star-margin: $df-rating-star-to-star-distance / 2;
+  margin: $df-rating-number-to-stars-distance - $star-margin;
+  span {
+    margin: $star-margin;
+  }
+
+  //focus properties, avoid resizing of element
+  outline: $df-rating-focus-outline;
+  border: $df-rating-border;
+  border-radius: $df-rating-border-radius;
+  box-shadow: $df-rating-box-shadow;
+  border-color: $df-rating-border-color-transparent;
+  box-shadow: $df-rating-box-shadow-transparent;
+
+  &:not([aria-disabled = "true"]):focus {
+    border: $df-rating-border;
+    box-shadow: $df-rating-box-shadow;
+  }
+
+  &:hover {
+    color: $df-rating-hover-color;
+  }
+
+  &:active {
+    color: $df-rating-active-color;
+  }
+
+  &[aria-disabled = "true"] {
+    color: $df-rating-disabled-color;
+    cursor: $df-rating-disabled-cursor;
+    span {
+      cursor: $df-rating-disabled-cursor !important;
+    }
+  }
+
+  &.ng-invalid {
+    @extend .text-danger;
+  }
+
+  //the 0px margins belows ensure that the full stars overlap the empty ones
+  .df-rating-decimal {
+    margin-right: 0px;
+    margin-bottom: 0px;
+    position: relative;
+    display: inline-block;
+    .df-rating-decimal-half {
+      margin-left: 0px;
+      margin-top: 0px;
+      position: absolute;
+      display: inline-block;
+      overflow: hidden;
+    }
+  }
+
+  .df-rating-tiny {
+    color: $df-rating-tiny-color;
+  }
+}
+
+@each $extension, $ratio in $df-size-ratios {
+  ngb-rating.df-rating-#{$extension} {
+    font-size: $ratio * $df-rating-font-size;
+  }
+}

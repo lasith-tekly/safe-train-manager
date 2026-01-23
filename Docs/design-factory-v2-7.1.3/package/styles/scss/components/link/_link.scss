@@ -1,0 +1,36 @@
+@import "link.mixins";
+
+p, ul:not([class]), ol:not([class]) {
+  a {
+    @include df-link();
+  }
+}
+
+.df-link-more {
+  @include df-link-more-normal();
+
+  &:focus {
+    @include df-link-more-focus();
+  }
+
+  &:hover {
+    @include df-link-more-hover();
+  }
+}
+
+.df-link-more-disabled {
+  @include df-link-more-disabled();
+
+  &:hover, focus {
+    @include df-link-more-disabled();
+  }
+
+}
+
+.df-link-more-sm {
+  font-size: $font-size-sm;
+}
+
+.df-link-more-lg {
+  font-size: $font-size-lg;
+}

@@ -1,0 +1,53 @@
+/* Variables created from ng5-slider */
+$df-slider-margin: 0.9375rem !default; // $sliderMargin
+$df-slider-margin-with-label: 2.1875rem !default; // $sliderMarginWithLabel
+
+// Bar
+$df-slider-bar-selected-color: theme-color("primary") !default; // $barFillColor
+$df-slider-bar-color: $gray-300 !default; // $barNormalColor
+$df-slider-bar-size: 0.25rem !default; // $barDimension
+$df-slider-bar-disabled-color: $gray-300 !default; // $barDisabledFillColor
+$df-slider-bar-leftout-selection-color: $red !default; // $barLeftOutSelectionColor
+$df-slider-bar-rightout-selection-color: $green !default; // $barRightOutSelectionColor
+
+// Pointer
+$df-slider-pointer-color: theme-color("primary") !default; // $handleBgColor
+$df-slider-pointer-size: 1.25rem !default; // $handleSize
+$df-slider-pointer-disabled-color: $gray-300 !default; // $handleDisabledColor
+$df-slider-pointer-hover-color: theme-color("primary") !default; // $handleHoverColor
+$df-slider-pointer-active-color: theme-color("primary") !default; // $handleActiveColor
+
+// Labels
+$df-slider-bubble-padding-y: 0.0625rem !default; // $bubblePaddingVertical
+$df-slider-bubble-padding-x: 0.1875rem !default; // $bubblePaddingHorizontal
+$df-slider-label-color: inherit !default; // $labelTextColor
+$df-slider-label-size: 1rem !default; // $labelFontSize
+$df-slider-label-limit-color: $df-slider-label-color !default; // $limitLabelTextColor
+
+// Tick
+$df-slider-tick-height: 0.625rem !default; // $ticksHeigh
+$df-slider-tick-width: 0.625rem !default; // $ticksWidth
+$df-slider-tick-value-position: -2.125rem !default; // $ticksValuePosition
+$df-slider-tick-value-position-vertical: 1.5rem !default; // $ticksValuePositionOnVertical
+$df-slider-tick-color: $df-slider-bar-color !default; // $ticksColor
+$df-slider-tick-selected-color: $df-slider-bar-selected-color !default; // $selectedTicksColor
+$df-slider-tick-legend-position: 1.5rem !default; // $ticksLegendPosition
+$df-slider-tick-legend-max-width: 3.125rem !default; // $tickLegendMaxWidth
+
+/* New variable */
+// Bar
+$df-slider-bar-size-sm: 0.25rem !default;
+$df-slider-bar-size-lg: 0.3125rem !default;
+
+// Pointer
+$df-slider-pointer-size-sm: 1rem !default;
+$df-slider-pointer-size-lg: 1.5rem !default;
+$df-slider-pointer-hover-border-color: $white !default;
+$df-slider-pointer-hover-border-width: 0.0625rem !default;
+
+// Labels
+$df-slider-label-size-sm: 0.875rem !default;
+$df-slider-label-size-lg: 1.125rem !default;
+$df-slider-label-disabled-color: $gray-400 !default;
+/* Layout */
+$df-slider-group-margin: 1rem !default;

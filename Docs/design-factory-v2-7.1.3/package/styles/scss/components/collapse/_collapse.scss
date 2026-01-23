@@ -1,0 +1,29 @@
+a.df-collapse[aria-disabled="true"] {
+  color: $df-collapse-disabled-color;
+  display: $df-collapse-disabled-display;
+  cursor: $df-collapse-disabled-cursor;
+  text-decoration: $df-collapse-disabled-text-decoration;
+
+  // Links styles override
+  border: none;
+}
+
+// Links styles override
+a.df-collapse {
+  &:link, &:visited {
+    color: $df-link-color;
+    text-decoration: $link-decoration;
+    border: none;
+  }
+
+  &:hover, &:active, &:visited:hover {
+    color: $link-hover-color;
+    text-decoration: $link-hover-decoration;
+    background: none;
+    border: none;
+  }
+
+  [class^="icon-"], [class*=" icon-"] {
+    vertical-align: inherit;
+  }
+}

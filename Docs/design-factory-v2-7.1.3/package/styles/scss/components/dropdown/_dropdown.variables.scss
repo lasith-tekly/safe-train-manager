@@ -1,0 +1,16 @@
+$df-dropdown-separator-margin-y: 0.5rem !default;
+$df-dropdown-separator-color: $gray-500 !default;
+$df-dropdown-item-active-color: $white !default;
+$df-dropdown-item-active-background-color: $primary !default;
+$df-dropdown-item-hover-text-decoration: underline !default;
+$df-dropdown-item-focus-border-radius: 0 !default;
+$df-dropdown-toggle-font: Design-Factory-icon !default;
+$df-dropdown-toggle-font-size-number: 1.5 !default;
+$df-dropdown-toggle-font-size: #{$df-dropdown-toggle-font-size-number}em !default;
+$df-dropdown-toggle-padding: 0.75em !default;
+$df-dropdown-toggle-split-padding-x: 0.5em !default;
+$df-dropdown-toggle-margin: $df-dropdown-toggle-padding / $df-dropdown-toggle-font-size-number !default;
+$df-dropdown-toggle-line-height: 1rem !default;
+$df-dropdown-toggle-border-color-primary:  lighten(desaturate($primary, 44.17), 31.96) !default;
+$df-dropdown-disabled-pointer: $df-disabled-cursor !default;
+$df-dropdown-disabled-color: $df-btn-outline-disabled-text-color !default;

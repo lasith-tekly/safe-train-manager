@@ -1,0 +1,40 @@
+// import is for the clearance look
+@import '../inputs/inputs.variables';
+/* Select native */
+$df-select-indicator-disabled: str-replace(url("data:image/svg+xml;charset=utf8,%3Csvg version='1.1' viewBox='0 0 1792 1792' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='#{$gray-400}' d='m1408 704q0 26-19 45l-448 448q-19 19-45 19t-45-19l-448-448q-19-19-19-45t19-45 45-19h896q26 0 45 19t19 45z'/%3E%3C/svg%3E"), "#", "%23") !default;
+/* Ngselect variables*/
+$df-icon-caret-down: "\e9ff"; // .icon-caret-down
+$df-select-single-optionselected-background-color: theme-color("primary") !default;
+$df-select-optionselected-background-color: $df-primary-lighten-60 !default; // override
+$df-select-value-color: $custom-select-color !default; // $input-color
+$df-select-option-textdecoration-hover: underline !default;
+$df-select-option-hover: $gray-100 !default;
+$df-select-disabled-cursor: $df-disabled-cursor !default;
+$df-select-disabled-color: $custom-select-disabled-color !default; // gray-400
+$df-select-disabled-bg: $custom-select-disabled-bg !default; // gray-100
+$df-select-readonly-bg: $df-select-disabled-bg !default;
+$df-select-readonly-color: $gray-900 !default;
+$df-select-value-lefticon-border-right: $border-width solid $light-blue !default;
+$df-select-value-righticon-border-left: none !default;
+$df-select-highlight-color: theme-color("primary") !default;
+$df-select-panel-min-width: 100% !default;
+$df-select-value-height: $font-size-base * $line-height-base !default;
+$df-select-value-height-sm: $font-size-sm * $line-height-sm !default;
+$df-select-value-height-lg: $font-size-lg * $line-height-lg !default;
+$df-select-clear-width: 1.5rem !default;
+$df-select-arrow-pos: 1.5rem !default;
+$df-select-single-input-padding: $df-select-arrow-pos + $input-padding-x !default;
+$df-select-single-clear-input-padding: $df-select-single-input-padding + $df-select-clear-width  !default;
+$df-select-clear-button-margin-right: 0.2rem !default;
+$df-select-clear-button-padding: 0.25rem !default; // to allow focus to work in the future
+$df-select-border: $input-border-width solid $input-border-color !default;
+$df-select-border-radius: $custom-select-border-radius !default;
+$df-select-border-radius-sm: $df-select-border-radius * map-get($df-size-ratios, "sm") !default;
+$df-select-border-radius-lg: $df-select-border-radius * map-get($df-size-ratios, "lg") !default;
+$df-select-value-margin: $custom-select-padding-y !default;
+$df-select-value-margin-sm: $input-padding-y-sm !default;
+$df-select-value-margin-lg: $input-padding-y-lg !default;
+$df-select-panel-border-radius: 2px !default;
+$df-select-optgroup-border: $border-width solid $gray-200 !default;
+$df-select-icon-color: $custom-select-indicator-color !default;
+$df-custom-select-background-rtl: $custom-select-indicator no-repeat left $custom-select-padding-x center / $custom-select-bg-size !default; 

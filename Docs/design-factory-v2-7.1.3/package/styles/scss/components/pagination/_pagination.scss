@@ -1,0 +1,156 @@
+@mixin df-pagination-size(
+  $size,
+  $border-radius,
+  $font-size,
+  $icon-left-offset
+) {
+  .page-item {
+    .page-link {
+      height: $size;
+      min-width: $size;
+      border-radius: $border-radius;
+      line-height: $size;
+      font-size: $font-size;
+    }
+    .page-link[aria-label] {
+      span:after {
+        font-size: $font-size !important; // needs to override the styles of @extend %df-icon-style;
+        @include ltr {
+          left: $icon-left-offset !important; // needs to override the styles of @extend %df-icon-style;
+        }
+        @include rtl {
+          right: $icon-left-offset !important;
+        }
+        line-height: $size !important;
+        // needs to override the styles of @extend %df-icon-style;
+      }
+    }
+  }
+}
+@mixin replace-span-innertext-with-icon($iconContent) {
+  .page-link[aria-label] {
+    span {
+      font-size: 0px; // use this trick because visibility: hidden is not working correctly on IE (it also hides the :after content)
+      text-decoration: none;
+    }
+    span:after {
+      color: black;
+      @extend %df-icon-style;
+      position: absolute;
+      content: unicode($iconContent);
+    }
+  }
+}
+ngb-pagination {
+  .page-item {
+    .page-link {
+      border: none;
+      text-align: center;
+      margin: 0 0.0625rem; // 0.0625rem = 1px with font-size=16
+      &:hover {
+        z-index: 1;
+        text-decoration: underline;
+      }
+      &:focus {
+        z-index: 2;
+      }
+      z-index: initial; // overides z-index: 2 so that it is below the active page link
+    }
+    &.disabled {
+      cursor: $df-pagination-disabled-cursor;
+    }
+    .page-link[aria-label] {
+      &:hover {
+        span:after {
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+  .page-item.active .page-link {
+    z-index: 2;
+  }
+  .page-item.disabled .page-link span:after {
+    color: $pagination-disabled-color !important;
+  }
+  // TODO: When icons customization feature will be added to ngbootstrap, use it and remove following css
+  // Link to ngbootsrap issue : https://github.com/ng-bootstrap/ng-bootstrap/issues/899
+  // css style to modify the arrow texts with DF icons
+  // first case: boundaryLinks = false
+  li.page-item:nth-of-type(1) {
+    @include ltr {
+      @include replace-span-innertext-with-icon($df-pagination-previous-icon-code);
+    }
+    @include rtl {
+      @include replace-span-innertext-with-icon($df-pagination-next-icon-code);
+    }
+  }
+  li.page-item:nth-last-of-type(1) {
+    @include ltr {
+      @include replace-span-innertext-with-icon($df-pagination-next-icon-code);
+    }
+    @include rtl {
+      @include replace-span-innertext-with-icon($df-pagination-previous-icon-code);
+    }
+  }
+  // second case: boundaryLinks = true
+  &.with-boundary-links {
+    .page-item:nth-of-type(1) {
+      @include ltr {
+        @include replace-span-innertext-with-icon($df-pagination-first-icon-code);
+      }
+      @include rtl {
+        @include replace-span-innertext-with-icon($df-pagination-last-icon-code);
+      }
+    }
+    .page-item:nth-of-type(2) {
+      @include ltr {
+        @include replace-span-innertext-with-icon($df-pagination-previous-icon-code);
+      }
+      @include rtl {
+        @include replace-span-innertext-with-icon($df-pagination-next-icon-code);
+      }
+    }
+    .page-item:nth-last-of-type(2) {
+      @include ltr {
+        @include replace-span-innertext-with-icon($df-pagination-next-icon-code);
+      }
+      @include rtl {
+        @include replace-span-innertext-with-icon($df-pagination-previous-icon-code);
+      }
+    }
+    .page-item:nth-last-of-type(1) {
+      @include ltr {
+        @include replace-span-innertext-with-icon($df-pagination-last-icon-code);
+      }
+      @include rtl {
+        @include replace-span-innertext-with-icon($df-pagination-first-icon-code);
+      }
+    }
+  }
+  // css style to handle the different sizes of pagination (sm, lg, ...)
+  .pagination {
+    @include df-pagination-size(
+      $df-pagination-size-base,
+      $df-pagination-border-radius-base,
+      $font-size-base,
+      $df-pagination-icon-left-offset-base
+    );
+    &.pagination-lg {
+      @include df-pagination-size(
+        $df-pagination-size-lg,
+        $df-pagination-border-radius-lg,
+        $font-size-lg,
+        $df-pagination-icon-left-offset-lg
+      );
+    }
+    &.pagination-sm {
+      @include df-pagination-size(
+        $df-pagination-size-sm,
+        $df-pagination-border-radius-sm,
+        $font-size-sm,
+        $df-pagination-icon-left-offset-sm
+      );
+    }
+  }
+}

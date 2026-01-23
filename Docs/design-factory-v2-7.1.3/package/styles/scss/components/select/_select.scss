@@ -1,0 +1,628 @@
+/* Native select */
+.custom-select {
+  &:focus { // override
+    border-color: $input-focus-border-color;
+  }
+
+  &:not([disabled]) { // add
+    cursor: pointer;
+
+    > option:checked {
+      background-color: $custom-select-disabled-bg;
+    }
+  }
+
+  &:disabled { // override
+    cursor: $df-select-disabled-cursor;
+  }
+
+  &:not([multiple]):disabled { // override
+    @include ltr {
+      background: $custom-select-disabled-bg $df-select-indicator-disabled no-repeat right $custom-select-padding-x center;
+      background-size: $custom-select-bg-size;
+    }
+    @include rtl {
+      background: $custom-select-disabled-bg $df-select-indicator-disabled no-repeat left $custom-select-padding-x center;
+      background-size: $custom-select-bg-size;
+    }
+  }
+}
+
+.custom-select[multiple],
+.custom-select[size]:not([size="1"]) {
+  @include rtl {
+    background-image: none;
+    padding-left: $input-padding-x;
+  }
+}
+
+// TODO rtl feature see ng-select new theme
+@mixin ngs-root($child) {
+  @at-root #{selector-replace(&, ".ng-select", ".ng-select" + $child)} {
+    @content;
+  }
+}
+
+/* Ng-select select */
+// Use this to remove the arrow from the ng-select widget.
+.df-selectno-arrow {
+  > .ng-select-container {
+    > .ng-arrow-wrapper {
+      display: none;
+    }
+  }
+}
+
+.highlighted {
+  color: $df-select-highlight-color;
+  text-decoration: inherit !important;
+}
+
+// ng-select
+// style taken directly from the scss file of the library
+// Override is elements that was changed from the default look
+// TODO make a pull request to the library to deliver scss configurable
+// (this is why I did not add my own $df- variable here currently)
+.ng-select {
+  &.form-control { // add
+    padding: 0;
+    border: none;
+    height: initial;
+  }
+  &.form-control-lg { // add
+    padding: 0;
+    .ng-select-container {
+      border-radius: $df-select-border-radius-lg;
+    }
+  }
+  &.form-control-sm { // add
+    padding: 0;
+    .ng-select-container {
+      border-radius: $df-select-border-radius-sm;
+    }
+  }
+  &:not(.ng-select-multiple) { // override
+    .ng-dropdown-panel .ng-dropdown-panel-items {
+      .ng-optgroup, .ng-option {
+        &.ng-option-marked:not(.ng-option-selected) {
+          background-color: $df-select-option-hover;
+          color: color-yiq($df-select-option-hover);
+        }
+        &.ng-option-selected {
+          background-color: $df-select-single-optionselected-background-color;
+          color: color-yiq($df-select-single-optionselected-background-color);
+        }
+      }
+    }
+  }
+  &.ng-select-multiple {
+    .ng-dropdown-panel .ng-dropdown-panel-items {
+      .ng-optgroup, .ng-option {
+        &.ng-option-selected {
+          background-color: $df-select-optionselected-background-color;
+          &.ng-option-marked { // add
+            background-color: $df-select-optionselected-background-color;
+          }
+        }
+      }
+    }
+  }
+  &:hover:not([disabled]):not(.df-ng-select-readonly) { // override
+    .ng-input {
+      cursor: pointer;
+      & > input {
+        cursor: pointer !important;
+      }
+    }
+  }
+  .ng-value { // override
+    .badge {
+      cursor: inherit;
+    }
+  }
+  .ng-input {
+    top: $df-select-value-margin;
+    @include ngs-root(".form-control-lg") { // add
+      top: $df-select-value-margin-lg;
+    }
+    @include ngs-root(".form-control-sm") { // add
+      top: $df-select-value-margin-sm;
+    }
+  }
+  &.ng-select-opened {
+    > .ng-select-container {
+      background: #fff;
+      border-color: #b3b3b3 #ccc #d9d9d9;
+      .ng-arrow {
+        &:before { // add
+          font-family: $df-font-family;
+          content: $df-icon-caret-down;
+          color: $df-select-icon-color;
+        }
+      }
+    }
+  }
+  &.ng-select-focused {
+    > .ng-select-container { // override
+      color: $input-focus-color;
+      background-color: $input-focus-bg;
+      border-color: $custom-select-focus-border-color;
+      outline: 0;
+      // Avoid using mixin so we can pass custom focus shadow properly
+      @if $enable-shadows {
+        box-shadow: $input-box-shadow, $input-focus-box-shadow;
+      } @else {
+        box-shadow: $input-focus-box-shadow;
+      }
+    }
+  }
+  &.ng-select-disabled {
+    > .ng-select-container {
+      background-color: $df-select-disabled-bg; // override
+      color: $df-select-disabled-color; // add
+      cursor: $df-select-disabled-cursor;
+
+      .ng-arrow-wrapper { // override
+        cursor: $df-select-disabled-cursor;
+      }
+
+      .ng-value {
+        background-color: $df-select-disabled-bg !important; // override
+        .badge { // add
+          cursor: $df-select-disabled-cursor;
+          background-color: $df-select-disabled-bg;
+          color: $df-select-disabled-color;
+        }
+      }
+    }
+  }
+  &.df-ng-select-readonly { // add
+    > .ng-select-container {
+      background-color: $df-select-readonly-bg;
+      color: $df-select-readonly-color;
+
+      .badge { // add
+        background-color: $df-select-readonly-bg;
+        color: $df-select-readonly-color;
+      }
+
+      .ng-arrow-wrapper { // override
+        cursor: default;
+      }
+    }
+  }
+  &.is-invalid {
+    > .ng-select-container {
+      border-color: $form-feedback-invalid-color;
+    }
+    &.ng-select-focused {
+      > .ng-select-container {
+        border-color: $form-feedback-invalid-color;
+        box-shadow: 0 0 0 0.2rem rgba($form-feedback-invalid-color, 0.25);
+      }
+    }
+  }
+  &.is-valid { // add
+    > .ng-select-container {
+      border-color: $form-feedback-valid-color;
+    }
+    &.ng-select-focused {
+      > .ng-select-container {
+        border-color: $form-feedback-valid-color;
+        box-shadow: 0 0 0 0.2rem rgba($form-feedback-valid-color, 0.25);
+      }
+    }
+  }
+  &.is-warning { // add
+    > .ng-select-container {
+      border-color: $form-feedback-warning-color;
+    }
+    &.ng-select-focused {
+      > .ng-select-container {
+        border-color: $form-feedback-warning-color;
+        box-shadow: 0 0 0 0.2rem rgba($form-feedback-warning-color, 0.25);
+      }
+    }
+  }
+  .ng-has-value .ng-placeholder {
+    display: none;
+  }
+  .ng-select-container {
+    background-color: #fff;
+    border-radius: $df-select-border-radius; // override
+    border: $df-select-border; // override
+    align-items: center;
+    .ng-value-container {
+      max-width: 100%; // add
+      overflow: hidden; // add
+      align-items: center;
+      .ng-placeholder {
+        font-style: italic;
+        color: $input-placeholder-color;
+        // Override Firefox's unusual default opacity; see https://github.com/twbs/bootstrap/pull/11526.
+        opacity: 1;
+      }
+    }
+  }
+  &.ng-select-single {
+    &.form-control-lg { // add
+      .ng-select-container {
+        height: $input-height-lg; // in single case we will only have one line
+      }
+    }
+    &.form-control-sm { // add
+      .ng-select-container {
+        height: $input-height-sm; // in single case we will only have one line
+      }
+    }
+    .ng-select-container {
+      height: $input-height;
+      .ng-value-container {
+        @include ltr {
+          padding-left: $input-padding-x; // override
+        }
+        @include rtl {
+          padding-right: $input-padding-x; // override
+        }
+        .ng-input {
+          @include ltr {
+            left: 0;
+            padding-left: $input-padding-x;
+            // TODO custom padding-right depending on .df-selectno-arrow and on sizes
+            padding-right: $df-select-single-input-padding;
+          }
+          @include rtl {
+            right: 0;
+            padding-right: $input-padding-x;
+            // TODO custom padding-right depending on .df-selectno-arrow and on sizes
+            padding-left: $df-select-single-input-padding;
+          }
+          @include ngs-root(".ng-select-clearable") {
+            @include ltr {
+              padding-right: $df-select-single-clear-input-padding;
+            }
+            @include rtl {
+              padding-left: $df-select-single-clear-input-padding;
+            }
+          }
+        }
+      }
+    }
+  }
+  &.ng-select-multiple {
+    &.form-control-lg { // add
+      height: initial; // in single case we will only have one line
+    }
+    &.form-control-sm { // add
+      height: initial; // in single case we will only have one line
+    }
+    &.ng-select-disabled {
+      > .ng-select-container .ng-value-container .ng-value {
+        background-color: $df-select-disabled-bg; // override
+        color: $df-select-disabled-color; // add
+      }
+    }
+    &:not([disabled]):not(.df-ng-select-readonly) .ng-select-container {
+      cursor: $df-cursor-type;
+    }
+    .ng-select-container {
+      .ng-value-container {
+        .ng-placeholder {
+          top: $df-select-value-margin;
+          @include ngs-root(".form-control-lg") { // add
+            top: $df-select-value-margin-lg;
+          }
+          @include ngs-root(".form-control-sm") { // add
+          }
+            top: $df-select-value-margin-sm;
+        }
+        @include ltr {
+          padding-left: $input-padding-x; // override  check if we should use input padding left here todo change it with sizing
+        }
+        @include rtl {
+          padding-right: $input-padding-x; // override  check if we should use input padding left here todo change it with sizing
+        }
+        height: fit-content;
+        .ng-value {
+          display: flex;
+          align-items: center;
+          margin-top: $df-select-value-margin; // override todo depend on sizing
+          margin-bottom: $df-select-value-margin; // override
+          @include ltr {
+            padding-right: $input-padding-x;
+          }
+          @include rtl {
+            padding-left: $input-padding-x;
+          }
+          @include ngs-root(".form-control-lg") { // add
+            margin-top: $df-select-value-margin-lg; // override todo depend on sizing
+            margin-bottom: $df-select-value-margin-lg; // override
+            @include ltr {
+              padding-right: $input-padding-x-lg;
+            }
+            @include rtl {
+              padding-left: $input-padding-x-lg;
+            }
+          }
+          @include ngs-root(".form-control-sm") { // add
+            margin-top: $df-select-value-margin-sm; // override todo depend on sizing
+            margin-bottom: $df-select-value-margin-sm; // override
+            @include ltr {
+              padding-right: $input-padding-x-sm;
+            }
+            @include rtl {
+              padding-left: $input-padding-x-sm;
+            }
+          }
+          color: $df-select-value-color; // add
+          &.ng-value-disabled {
+            background-color: $white; // override
+            border: 1px solid $white; // override
+            cursor: $df-select-disabled-cursor;
+          }
+          .ng-value-label {
+            display: inline-block;
+          }
+          .ng-value-icon:not(.df-ym):not(.icon-times) {
+            display: inline-block;
+            padding: 0 0.3125rem; // TODO work on this?
+            &:hover {
+              background-color: $df-select-option-hover;
+            }
+            &.left {
+              @include ltr {
+                border-right: $df-select-value-lefticon-border-right;
+              }
+              @include rtl {
+                border-left: $df-select-value-lefticon-border-right;
+              }
+            }
+            &.right {
+              @include ltr {
+                border-left: $df-select-value-righticon-border-left;
+              }
+              @include rtl {
+                border-right: $df-select-value-righticon-border-left;
+              }
+            }
+          }
+        }
+        .ng-input {
+          margin-top: $df-select-value-margin; // override depend on sizing
+          margin-bottom: $df-select-value-margin; // override
+          @include ngs-root(".form-control-lg") { // add
+            margin-top: $df-select-value-margin-lg; // override
+            margin-bottom: $df-select-value-margin-lg; // override
+          }
+          @include ngs-root(".form-control-sm") { // add
+            margin-top: $df-select-value-margin-sm; // add
+            margin-bottom: $df-select-value-margin-sm;; // add
+          }
+          > input {
+            padding: 0; // add
+          }
+        }
+      }
+    }
+
+    &.form-control-lg {
+      > .ng-select-container .ng-value-container .ng-value {
+        font-size: inherit;
+      }
+    }
+
+    &.form-control-sm {
+      > .ng-select-container {
+        height: inherit;
+      }
+    }
+  }
+  // .ng-clear is added here compared to original css
+  .ng-clear-wrapper {
+    width: initial; // override
+    @include ltr {
+      margin-right: $df-select-clear-button-margin-right; // add
+    }
+    @include rtl {
+      margin-left: $df-select-clear-button-margin-right;
+    }
+    &:after { //add
+      padding: $df-select-clear-button-padding;
+      @include ltr {
+        margin-left: $df-focused-cross-margin-left;
+        margin-right: $df-focused-cross-margin-right;
+      }
+      @include rtl {
+        margin-right: $df-focused-cross-margin-left;
+        margin-left: $df-focused-cross-margin-right;
+      }
+      content: $df-focused-cross-icon;
+      font-family: $df-font-family;
+      font-size: $df-focused-cross-font-size; // TODO does it need to be changed for sm and lg?
+      border-radius: $df-focused-cross-border-radius;
+      display: $df-iwi-icon-display;
+      width: $df-iwi-icon-width;
+      line-height: $df-iwi-cross-line-height;
+      text-align: $df-iwi-icon-text-align;
+    }
+    &:hover {
+      &:after {
+        background-color: $df-focused-cross-hover-background-color;
+        cursor: $df-cursor-type;
+      }
+    }
+    &:focus {
+      outline: none; // override mandatory
+      &:after {
+        box-shadow: $df-focused-box-shadow;
+      }
+    }
+    > .ng-clear { // add
+      display: none;
+    }
+  }
+  .ng-spinner-zone {
+    padding-right: 0.3125rem; // todo check when feature is needed
+    padding-top: 0.3125rem; // todo check when feature is needed
+  }
+  .ng-spinner-loader {
+    border-left: 2px solid $primary;
+  }
+  .ng-arrow-wrapper {
+    width: $df-select-arrow-pos; // override
+    display: flex;
+    align-items: center;
+    &:hover {
+      .ng-arrow {
+        &:before { // add
+          font-family: $df-font-family;
+          content: $df-icon-caret-down;
+        }
+      }
+    }
+    .ng-arrow {
+      &:before { // add
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        font-family: $df-font-family;
+        content: $df-icon-caret-down;
+      }
+    }
+  }
+
+  .ng-dropdown-panel {
+    background-color: #fff;
+    border: none; // override
+    border-radius: $df-select-panel-border-radius; // add
+    box-shadow: 0 0 0.5rem 0 rgba(0, 0, 0, 0.32); // override
+    width: initial; // override
+    min-width: $df-select-panel-min-width; // add
+    .ng-option + .ng-optgroup { // add
+      border-top: $df-select-optgroup-border;
+    }
+    &.ng-select-bottom {
+      top: calc(100% + #{$input-btn-focus-width} + 1px); // override
+      border-bottom-right-radius: 0.25rem;
+      border-bottom-left-radius: 0.25rem;
+      border-top-color: #e6e6e6;
+      .ng-dropdown-panel-items {
+        .ng-option {
+          white-space: initial; // override
+          &:last-child {
+            border-bottom-right-radius: 0.25rem;
+            border-bottom-left-radius: 0.25rem;
+          }
+        }
+      }
+    }
+    &.ng-select-top {
+      bottom: calc(100% + #{$input-btn-focus-width} + 1px);
+      border-top-right-radius: 0.25rem;
+      border-top-left-radius: 0.25rem;
+      border-bottom-color: #e6e6e6;
+      margin-bottom: -1px;
+      .ng-dropdown-panel-items {
+        .ng-option {
+          &:first-child {
+            border-top-right-radius: 0.25rem;
+            border-top-left-radius: 0.25rem;
+          }
+        }
+      }
+    }
+    .ng-dropdown-header { // todo check when needed
+      border-bottom: 1px solid #ccc;
+      padding: 0.3125rem 0.4375rem;
+    }
+    .ng-dropdown-footer { // todo check when needed
+      border-top: 1px solid #ccc;
+      padding: 0.3125rem 0.4375rem;
+    }
+    .ng-dropdown-panel-items {
+      margin-bottom: 0px; // override
+      .ng-optgroup, .ng-option { // add
+        overflow: hidden;
+        text-overflow: ellipsis;
+        .form-check {
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      }
+      .ng-optgroup {
+        user-select: none;
+        padding: 0.325rem 1rem;
+        @include ngs-root(".form-control-lg") { // add
+          padding: 0.525rem 1rem;
+        }
+        @include ngs-root(".form-control-sm") { // add
+          padding: 0.138rem 1rem;
+        }
+        font-weight: 500;
+        font-family: $font-family-sans-serif; // add
+        cursor: pointer;
+        &.ng-option-disabled {
+          font-family: $font-family-sans-serif; // add
+          cursor: default; // override
+        }
+        &.ng-option-marked {
+          // ng-option-marked is equivalent to hover
+          background-color: $df-select-option-hover; // override
+          text-decoration: $df-select-option-textdecoration-hover; // add
+          > .form-check > .form-check-label { // add
+            text-decoration: $df-select-option-textdecoration-hover;
+          }
+        }
+        &.ng-option-selected {
+          font-weight: 400; // override
+        }
+      }
+      .ng-option {
+        background-color: #fff;
+        padding: 0.325rem 1rem;
+        @include ngs-root(".form-control-lg") { // add
+          padding: 0.525rem 1rem;
+        }
+        @include ngs-root(".form-control-sm") { // add
+          padding: 0.138rem 1rem;
+        }
+        .ng-option-label { // add
+          display: block;
+          @include ngs-root(".form-control-lg") {
+            height: 1.95rem;
+          }
+          @include ngs-root(".form-control-sm") {
+            height: 1.6rem;
+          }
+        }
+        &.ng-option-selected {
+          .ng-option-label {
+            font-weight: 400; // override
+          }
+        }
+        &.ng-option-marked {
+          // ng-option-marked is equivalent to hover
+          background-color: $df-select-option-hover;
+          text-decoration: $df-select-option-textdecoration-hover; // add
+          > .form-check > .form-check-label { // add
+            text-decoration: $df-select-option-textdecoration-hover;
+          }
+        }
+        &.ng-option-disabled {
+          color: $gray-400; // add
+          cursor: $df-select-disabled-cursor; // add
+        }
+        .ng-tag-label { // todo check when feature is needed
+          @include ltr {
+            padding-right: 0.3125rem;
+          }
+          @include rtl {
+            padding-left: 0.3125rem;
+          }
+          font-size: 80%;
+          font-weight: 400;
+        }
+      }
+    }
+  }
+}

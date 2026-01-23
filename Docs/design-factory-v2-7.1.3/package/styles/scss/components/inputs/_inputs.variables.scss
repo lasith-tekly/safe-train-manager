@@ -1,0 +1,33 @@
+// iwi is for input with icon
+// TODO factorize the common variables from this?
+$df-iwi-group-margin-between: -2px !default;
+$df-iwi-group-append-margin-left: $df-iwi-group-margin-between !default;
+$df-iwi-group-prepend-margin-right: $df-iwi-group-margin-between !default;
+$df-iwi-focused-box-shadow: $df-focused-box-shadow !default;
+$df-iwi-append-text-padding-right: .25rem !default;
+$df-iwi-append-text-padding-left: .25rem !default;
+$df-iwi-prepend-text-padding-right: .375rem !default;
+$df-iwi-prepend-text-padding-left: .375rem !default;
+$df-iwi-input-group-text-bg-color: $input-bg !default;
+$df-iwi-emptyspace-padding: 1px !default; // to maintain the border radius visible it can not be 0px
+$df-iwi-border-between-color: transparent !default;
+$df-iwi-focused-border-between-color: $df-iwi-border-between-color !default;
+$df-iwi-icon-hover-bg-color: $gray-100 !default;
+$df-iwi-icon-font-size: 1rem !default;
+$df-iwi-icon-height: 1.5rem !default;
+$df-iwi-icon-width: 1.5rem !default;
+$df-iwi-icon-border-radius: 50% !default;
+$df-iwi-icon-line-height: 1.5rem !default;
+$df-iwi-focused-border-color: $input-focus-border-color !default;
+$df-iwi-icon-display: inline-block !default;
+$df-iwi-icon-text-align: center !default;
+$df-iwi-cross-line-height: 1rem !default;
+
+// Deprecated (those variables will be removed) --> migration needed to iwi general case with cross-icon class.
+$df-focused-cross-margin-left: 0.188rem !default; // 3px same as box-shadow width
+$df-focused-cross-margin-right: 0.188rem !default; // 3px same as box-shadow width
+$df-focused-cross-icon: "\ee5c" !default; // icon-times from DF icons
+$df-focused-cross-font-size: $df-iwi-icon-font-size !default;
+$df-focused-cross-border-radius: $df-iwi-icon-border-radius !default;
+$df-focused-cross-hover-background-color: $df-iwi-icon-hover-bg-color !default;
+$df-focused-border-color: $input-focus-border-color !default;

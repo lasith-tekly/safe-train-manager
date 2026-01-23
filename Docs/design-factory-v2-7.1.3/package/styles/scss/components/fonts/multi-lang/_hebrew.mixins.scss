@@ -1,0 +1,9 @@
+@import "font-faces.mixins";
+
+@mixin df-fonts-multi-lang-hebrew($parent-selector) {
+  $headings-font-stack: "Amadeus", "Noto Sans", sans-serif;
+  $body-font-stack: "Source Sans Pro", "Noto Sans", sans-serif;
+
+  @include df-fonts-multi-lang-font-faces-noto-sans-hebrew();
+  @include df-fonts-multi-lang-typo-fonts($parent-selector, $body-font-stack, $headings-font-stack);
+}

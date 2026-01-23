@@ -1,0 +1,24 @@
+$df-modal-backdrop-opacity: 0.4 !default;
+$df-modal-box-shadow: 0px 0px 4px 4px transparentize($color: $black, $amount: 0.8) !default;
+$df-modal-border-radius: $border-radius-lg !default;
+$df-modal-border: none !default;
+
+$df-modal-header-padding-y: 0.75rem !default;
+$df-modal-header-padding-left: 1.5rem !default;
+$df-modal-header-title-break-word: break-word !default;
+$df-modal-header-button-close-padding-y: 0.5rem !default;
+$df-modal-header-button-close-margin-top: -0.25rem !default;
+
+$df-modal-body-padding-x: $df-modal-header-padding-left !default;
+$df-modal-body-alert-icon-size: 2.5rem !default;
+
+$df-modal-body-alert-border-style: 2px solid !default;
+
+$df-modal-footer-padding-y: $df-modal-header-padding-y !default;
+
+$df-modal-xs-padding: 0.5rem !default;
+$df-modal-xs-content-padding-y: 4rem !default;
+$df-modal-xs-header-padding-right: 1.5rem !default;
+$df-modal-xs-button-close-position-top: 1rem !default;
+$df-modal-xs-button-close-position-right: $df-modal-xs-button-close-position-top !default;
+$df-modal-xs-footer-margin-top: 0.9375rem !default;

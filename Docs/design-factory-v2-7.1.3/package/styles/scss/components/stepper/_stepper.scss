@@ -1,0 +1,83 @@
+@import "stepper.mixins";
+
+.df-stepper {
+  align-items: stretch;
+  display: flex;
+  flex-direction: row;
+  .df-stepper-step {
+    height: $df-stepper-step-height;
+    display: flex;
+    flex-direction: column;
+    min-width: $df-stepper-step-min-width; // TO work with the negative margin even in mobile version
+    // put it depending of the button padding and as the btn-sm size
+    padding: $df-stepper-step-padding-y $df-stepper-step-padding-x;
+    align-items: center;
+    .df-stepper-icon-wrapper {
+      align-items: center;
+      display: flex;
+      flex-direction: column;
+      width: $df-stepper-icon-width;
+      height: $df-stepper-icon-height;
+    }
+  }
+  .df-stepper-line-wrapper {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    .df-stepper-line {
+      display: flex;
+      flex-direction: row;
+      flex-grow: 1;
+      align-items: center;
+      .df-stepper-horizontal-line {
+        flex-grow: 1;
+        border-top: $df-stepper-line-border-color;
+        height: $df-stepper-hl-height;
+        margin: $df-stepper-hl-margin;
+        z-index: $df-stepper-line-zindex;
+      }
+    }
+  }
+  .df-stepper-label {
+    display: block;
+    white-space: nowrap;
+    max-width: $df-stepper-label-max-width;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+
+  // TODO there is still an opacity 0.65 on disable button...how to do it
+  [aria-disabled="true"].df-stepper-step, [disabled].df-stepper-step {
+    color: $df-stepper-disabled-color;
+    opacity: $df-stepper-disabled-opacity;
+    &:hover {
+      color: $df-stepper-disabled-color;
+    }
+    > .df-stepper-label {
+      color: $df-stepper-disabled-color;
+    }
+  }
+
+  /* stepper icon color*/
+  @each $color, $value in $theme-colors {
+    @include df-stepper-icon-variant($color, $value);
+  }
+
+  @each $color, $value in $colors {
+    @include df-stepper-icon-variant($color, $value);
+  }
+
+  @each $color, $value in $grays {
+    @include df-stepper-icon-variant($color, $value);
+  }
+
+  // Stepper sizing
+  &.df-stepper-sm {
+    @include df-stepper-size($df-stepper-step-padding-y-sm, $df-stepper-step-padding-x-sm, $df-stepper-font-size-sm, $df-stepper-icon-width-sm, $df-stepper-icon-height-sm);
+  }
+
+  &.df-stepper-lg {
+    @include df-stepper-size($df-stepper-step-padding-y-lg, $df-stepper-step-padding-x-lg, $df-stepper-font-size-lg, $df-stepper-icon-width-lg, $df-stepper-icon-height-lg);
+  }
+}

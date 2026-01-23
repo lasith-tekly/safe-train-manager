@@ -1,0 +1,332 @@
+import React, { useState, useEffect } from 'react';
+import { Table, Button, Tag, message, Input, Empty, Skeleton, Typography } from 'antd';
+import { SearchOutlined } from '@ant-design/icons';
+import { TeamFormPanel } from './TeamFormPanel';
+import { TeamMembersPanel } from './TeamMembersPanel';
+import { IterationCapacityView } from './IterationCapacityView';
+import { PIAllocationsPanel } from './PIAllocationsPanel';
+import { TeamSetupWizard } from './TeamSetupWizard';
+import { ManageTeamPanel } from './ManageTeamPanel';
+import { TeamDetailView } from './TeamDetailView';
+import { getTeams, createTeam, updateTeam, updateTeamCapacity, getTeamCapacitySummary } from '../../../services/api';
+import type { TeamCapacitySummary } from '../../../types';
+import type { Team, TeamCreate, TeamUpdate } from '../../../types';
+import styles from './TeamsTab.module.css';
+
+const currentYear = new Date().getFullYear();
+
+export const TeamsTab: React.FC = () => {
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchText, setSearchText] = useState('');
+  const [showPanel, setShowPanel] = useState(false);
+  const [editingTeam, setEditingTeam] = useState<Team | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [showMembersPanel, setShowMembersPanel] = useState(false);
+  const [selectedTeamForMembers, setSelectedTeamForMembers] = useState<Team | null>(null);
+  const [showCapacityPanel, setShowCapacityPanel] = useState(false);
+  const [selectedTeamForCapacity, setSelectedTeamForCapacity] = useState<Team | null>(null);
+  const [showPIAllocationsPanel, setShowPIAllocationsPanel] = useState(false);
+  const [selectedTeamForPIAllocations, setSelectedTeamForPIAllocations] = useState<Team | null>(null);
+  const [showWizard, setShowWizard] = useState(false);
+  const [showManagePanel, setShowManagePanel] = useState(false);
+  const [selectedTeamForManage, setSelectedTeamForManage] = useState<Team | null>(null);
+  const [teamCapacities, setTeamCapacities] = useState<Record<string, TeamCapacitySummary>>({});
+  const [selectedTeamForView, setSelectedTeamForView] = useState<Team | null>(null);
+
+  useEffect(() => {
+    loadTeams();
+  }, []);
+
+  const loadTeams = async (showLoading = true) => {
+    if (showLoading) setLoading(true);
+    try {
+      const response = await getTeams('active', undefined, currentYear);
+      setTeams(response.data);
+      
+      // Auto-select first team for two-column view
+      if (response.data.length > 0 && !selectedTeamForView) {
+        setSelectedTeamForView(response.data[0]);
+      }
+      
+      // Load capacity summaries for each team
+      const capacities: Record<string, TeamCapacitySummary> = {};
+      for (const team of response.data) {
+        try {
+          const summary = await getTeamCapacitySummary(team.id);
+          capacities[team.id] = summary;
+        } catch {
+          // Skip if capacity not available
+        }
+      }
+      setTeamCapacities(capacities);
+    } catch (error) {
+      message.error('Failed to load teams');
+    } finally {
+      if (showLoading) setLoading(false);
+    }
+  };
+  
+  // Refresh teams without showing loading state (for member updates)
+  const refreshTeams = () => loadTeams(false);
+
+  const handleSave = async (values: TeamCreate | TeamUpdate, capacityValues?: { q1: number; q2: number; q3: number; q4: number }) => {
+    setSaving(true);
+    try {
+      if (editingTeam) {
+        await updateTeam(editingTeam.id, values as TeamUpdate);
+        if (capacityValues) {
+          await updateTeamCapacity(editingTeam.id, currentYear, {
+            q1_capacity: capacityValues.q1,
+            q2_capacity: capacityValues.q2,
+            q3_capacity: capacityValues.q3,
+            q4_capacity: capacityValues.q4,
+          });
+        }
+        message.success('Team updated');
+      } else {
+        await createTeam(values as TeamCreate);
+        message.success('Team created');
+      }
+      setShowPanel(false);
+      setEditingTeam(null);
+      loadTeams();
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { detail?: string } } };
+      message.error(err.response?.data?.detail || 'Failed to save team');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Note: Team deletion is handled via Edit Team panel if needed
+  // const handleDelete = async (team: Team) => {
+  //   try {
+  //     await deleteTeam(team.id);
+  //     message.success('Team deleted');
+  //     loadTeams();
+  //   } catch (error: unknown) {
+  //     const err = error as { response?: { data?: { detail?: string } } };
+  //     message.error(err.response?.data?.detail || 'Failed to delete team');
+  //   }
+  // };
+
+  const handleCloseMembersPanel = () => {
+    setShowMembersPanel(false);
+    setSelectedTeamForMembers(null);
+    refreshTeams(); // Refresh to update member counts without flickering
+  };
+
+
+  const filteredTeams = teams.filter(team =>
+    team.name.toLowerCase().includes(searchText.toLowerCase()) ||
+    team.short_code.toLowerCase().includes(searchText.toLowerCase())
+  );
+
+  const columns = [
+    {
+      title: 'Team',
+      key: 'team',
+      width: '25%',
+      render: (_: unknown, record: Team) => (
+        <div>
+          <div className={styles.teamName}>{record.name}</div>
+          <div className={styles.teamCode}>{record.short_code}</div>
+        </div>
+      ),
+    },
+    {
+      title: 'SM',
+      key: 'scrum_master',
+      width: '15%',
+      render: (_: unknown, record: Team) => (
+        <span style={{ color: record.scrum_master_name ? '#333' : '#bfbfbf' }}>
+          {record.scrum_master_name || '-'}
+        </span>
+      ),
+    },
+    {
+      title: 'PO',
+      key: 'product_owner',
+      width: '15%',
+      render: (_: unknown, record: Team) => (
+        <span style={{ color: record.product_owner_name ? '#333' : '#bfbfbf' }}>
+          {record.product_owner_name || '-'}
+        </span>
+      ),
+    },
+    {
+      title: 'Status',
+      dataIndex: 'status',
+      key: 'status',
+      width: '10%',
+      align: 'center' as const,
+      render: (status: string) => (
+        <Tag color={status === 'active' ? 'success' : 'default'}>
+          {status.charAt(0).toUpperCase() + status.slice(1)}
+        </Tag>
+      ),
+    },
+    {
+      title: 'Members',
+      key: 'members',
+      width: '10%',
+      align: 'center' as const,
+      render: (_: unknown, record: Team) => (
+        <span>{record.member_count}</span>
+      ),
+    },
+    {
+      title: 'Capacity',
+      key: 'total_capacity',
+      width: '15%',
+      align: 'center' as const,
+      render: (_: unknown, record: Team) => {
+        const cap = teamCapacities[record.id];
+        if (!cap) return <span className={styles.noCapacity}>-</span>;
+        return <strong>{cap.total_capacity_days.toFixed(1)} eD</strong>;
+      },
+    },
+  ];
+
+  if (loading) {
+    return <Skeleton active paragraph={{ rows: 8 }} />;
+  }
+
+  return (
+    <div className={styles.container}>
+      {/* Page Header */}
+      <div className={styles.pageHeader}>
+        <Typography.Title level={3} style={{ margin: 0 }}>Team Capacity Management</Typography.Title>
+      </div>
+
+      {filteredTeams.length === 0 && !searchText ? (
+        <Empty
+          description="No teams configured. Please add teams in Settings > Train Teams."
+          style={{ marginTop: 48 }}
+        />
+      ) : (
+        <div className={styles.mainLayout}>
+          {/* Team List Section - Always 45% when teams exist */}
+          <div className={styles.teamListSection}>
+            <div className={styles.teamListHeader}>
+              <h3 className={styles.teamListTitle}>Teams ({filteredTeams.length})</h3>
+              <Input
+                placeholder="Search teams..."
+                prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />}
+                value={searchText}
+                onChange={e => setSearchText(e.target.value)}
+                allowClear
+                style={{ maxWidth: 280 }}
+              />
+            </div>
+            <Table
+              dataSource={filteredTeams}
+              columns={columns}
+              rowKey="id"
+              pagination={false}
+              size="middle"
+              showHeader={true}
+              rowClassName={(record) => 
+                `${styles.teamRow} ${record.id === selectedTeamForView?.id ? styles.teamRowSelected : ''}`
+              }
+              onRow={(record) => ({
+                onClick: () => {
+                  setSelectedTeamForView(record);
+                }
+              })}
+            />
+          </div>
+          
+          {/* Capacity View Section - Using new TeamDetailView */}
+          {selectedTeamForView && (
+            <div className={styles.capacitySection}>
+              <TeamDetailView
+                team={selectedTeamForView}
+                onClose={() => setSelectedTeamForView(null)}
+                onManageMembers={() => {
+                  setSelectedTeamForManage(selectedTeamForView);
+                  setShowManagePanel(true);
+                }}
+                onPIAllocations={() => {
+                  setSelectedTeamForPIAllocations(selectedTeamForView);
+                  setShowPIAllocationsPanel(true);
+                }}
+              />
+            </div>
+          )}
+        </div>
+      )}
+
+      <TeamFormPanel
+        visible={showPanel}
+        team={editingTeam}
+        year={currentYear}
+        onSave={handleSave}
+        onClose={() => {
+          setShowPanel(false);
+          setEditingTeam(null);
+        }}
+        saving={saving}
+      />
+
+      <TeamMembersPanel
+        visible={showMembersPanel}
+        team={selectedTeamForMembers}
+        year={currentYear}
+        onClose={handleCloseMembersPanel}
+      />
+
+      {/* Iteration Capacity Panel */}
+      {showCapacityPanel && selectedTeamForCapacity && (
+        <div className={styles.capacityPanel}>
+          <div className={styles.capacityPanelHeader}>
+            <Button onClick={() => {
+              setShowCapacityPanel(false);
+              setSelectedTeamForCapacity(null);
+            }}>
+              ← Back to Teams
+            </Button>
+          </div>
+          <IterationCapacityView
+            team={selectedTeamForCapacity}
+            year={currentYear}
+          />
+        </div>
+      )}
+
+      {/* PI Allocations Panel */}
+      <PIAllocationsPanel
+        visible={showPIAllocationsPanel}
+        team={selectedTeamForPIAllocations}
+        year={currentYear}
+        onClose={() => {
+          setShowPIAllocationsPanel(false);
+          setSelectedTeamForPIAllocations(null);
+        }}
+      />
+
+      {/* Team Setup Wizard */}
+      <TeamSetupWizard
+        visible={showWizard}
+        onClose={() => setShowWizard(false)}
+        onComplete={() => {
+          setShowWizard(false);
+          loadTeams();
+        }}
+      />
+
+      {/* Manage Team Panel */}
+      <ManageTeamPanel
+        visible={showManagePanel}
+        team={selectedTeamForManage}
+        year={currentYear}
+        onClose={() => {
+          setShowManagePanel(false);
+          setSelectedTeamForManage(null);
+        }}
+        onUpdate={refreshTeams}
+      />
+    </div>
+  );
+};

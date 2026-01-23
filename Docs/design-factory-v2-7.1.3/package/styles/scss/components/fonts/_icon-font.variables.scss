@@ -1,0 +1,14 @@
+$df-icon-vertical-align: -10% !default;
+$df-icon-light-font-weight: 300 !default;
+$df-icon-solid-font-weight: 900 !default;
+
+%df-icon-style {
+  font-family: 'Design-Factory-icon' !important;
+  speak: none;
+  font-style: normal;
+  font-weight: $df-icon-light-font-weight;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  vertical-align: $df-icon-vertical-align;
+}

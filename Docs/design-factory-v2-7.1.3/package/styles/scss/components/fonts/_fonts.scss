@@ -1,0 +1,50 @@
+h1, .h1 { // add
+  letter-spacing: $df-h1-letter-spacing
+}
+h2, .h2 { // add
+  letter-spacing: $df-h2-letter-spacing
+}
+h3, .h3 { // add
+  letter-spacing: $df-h3-letter-spacing
+}
+h4, .h4 { // add
+  letter-spacing: $df-h4-letter-spacing
+}
+h5, .h5 { // add
+  letter-spacing: $df-h5-letter-spacing
+}
+h6, .h6 { // add
+  letter-spacing: $df-h6-letter-spacing
+}
+
+.display-1 { // add
+  letter-spacing: $df-display1-letter-spacing
+}
+.display-2 { // add
+  letter-spacing: $df-display2-letter-spacing
+}
+.display-3 { // add
+  letter-spacing: $df-display3-letter-spacing
+}
+.display-4 { // add
+  letter-spacing: $df-display4-letter-spacing
+}
+
+caption { // add
+  font-size: $df-caption-font-size;
+  letter-spacing: $df-caption-letter-spacing
+}
+
+blockquote { //add
+  font-style: $df-blockquote-font-style;
+  letter-spacing: $df-blockquote-letter-spacing;
+  line-height: $df-blockquote-line-height;
+}
+
+mark { //add
+  color: $df-mark-color;
+}
+
+.df-font-weight-semi-bold {
+  font-weight: $df-font-weight-semi-bold;
+}

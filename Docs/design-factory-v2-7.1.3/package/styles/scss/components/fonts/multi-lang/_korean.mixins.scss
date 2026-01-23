@@ -1,0 +1,8 @@
+@import "font-faces.mixins";
+
+@mixin df-fonts-multi-lang-korean($parent-selector) {
+  $headings-font-stack: 'Amadeus', 'Apple SD Gothic Neo', 'NanumBarunGothic', '맑은 고딕', 'Malgun Gothic', '굴림', 'Gulim', '돋움', 'Dotum', 'Helvetica Neue', 'Helvetica', Arial, sans-serif;
+  $body-font-stack: 'Source Sans Pro', 'Apple SD Gothic Neo', 'NanumBarunGothic', '맑은 고딕', 'Malgun Gothic', '굴림', 'Gulim', '돋움', 'Dotum', 'Helvetica Neue', 'Helvetica', Arial, sans-serif;
+
+  @include df-fonts-multi-lang-typo-fonts($parent-selector, $body-font-stack, $headings-font-stack);
+}

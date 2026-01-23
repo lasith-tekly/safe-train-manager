@@ -1,0 +1,202 @@
+@if $df-enable-rtl {
+  [dir="rtl"] & {
+    .nav {
+      padding-right: 0;
+    }
+    .alert-dismissible {
+      .close {
+        left: 0;
+        right: auto;
+      }
+    } 
+    .navbar-nav {
+      padding-right: 0;
+    }
+
+    .list-group,
+    .list-unstyled,
+    .pagination {
+      padding-right: 0;
+    }
+
+    // Form and input styles override start
+    .form-check {
+      padding-left: 0;
+      padding-right: $form-check-input-gutter;
+    }
+
+    .form-check-inline {
+      margin-right: 0;
+      margin-left: $form-check-inline-margin-x;
+    }
+
+    .input-group-prepend {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+
+    .input-group.df-input-prepend {
+      input.df-input-withicon.prepend {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+        border-top-left-radius: $border-radius;
+        border-bottom-left-radius: $border-radius;
+
+        &:focus {
+          border-top-right-radius: 0;
+          border-bottom-right-radius: 0;
+          border-top-left-radius: $border-radius;
+          border-bottom-left-radius: $border-radius;
+        }
+      }
+    }
+
+    input.df-input-withicon.append {
+      border-top-right-radius: $border-radius;
+      border-bottom-right-radius: $border-radius;
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+    // Form and input styles override end
+
+    // Modal styles override start
+    .modal {
+      .modal-dialog {
+        .modal-content {
+          .modal-footer {
+            > :not(:first-child) {
+              margin-right: .25rem;
+            }
+        
+            > :not(:last-child) {
+              margin-left: .25rem;
+            }
+        
+            > :first-child {
+              margin-right: 0;
+            }
+        
+            > :last-child {
+              margin-left: 0;
+            }
+          }
+        }
+      }
+    }
+    // Modal styles override end
+
+    .breadcrumb-item {
+      + .breadcrumb-item {
+        padding-left: 0;
+        padding-right: $breadcrumb-item-padding;
+    
+        &::before {
+          padding-right: 0;
+          padding-left: $breadcrumb-item-padding;
+        }
+      }
+    }
+
+    // Pagination styles override start
+    .page-link {
+      margin-left: 0;
+      margin-right: -$pagination-border-width;
+    }
+
+    page-item {
+      &:first-child {
+        .page-link {
+          margin-right: 0;
+          @include border-right-radius($border-radius);
+        }
+      }
+      &:last-child {
+        .page-link {
+          @include border-left-radius($border-radius);
+        }
+      }
+    }
+    // Pagination styles override end
+
+    .dropdown-toggle {
+      &::after {
+        margin-left: 0;
+        margin-right: $caret-spacing;
+      }
+    }
+    .btn-group > .btn:first-child:not(:last-child):not(.dropdown-toggle),
+    .btn-group > .btn-group:not(:last-child) > .btn
+    {
+      border-radius: 0 $border-radius $border-radius 0;
+    }
+    
+    .btn-group > .btn:last-child:not(:first-child),
+    .btn-group > .dropdown-toggle:not(:first-child) {
+      border-radius: $border-radius 0 0 $border-radius;
+    }
+    
+    .btn-group > .btn-group:last-child:not(:first-child) > .btn:first-child {
+      border-radius: $border-radius 0 0 $border-radius;
+    }
+
+    @if $enable-grid-classes {
+      @include make-grid-columns-rtl();
+    }
+    
+    // stylelint-disable declaration-no-important
+    @each $breakpoint in map-keys($grid-breakpoints) {
+      @include media-breakpoint-up($breakpoint) {
+        $infix: breakpoint-infix($breakpoint, $grid-breakpoints);
+
+        @each $prop, $abbrev in (margin: m, padding: p) {
+          @each $size, $length in $spacers {
+            .#{$abbrev}r#{$infix}-#{$size} {
+              #{$prop}-right: 0 !important;
+              #{$prop}-left: $length !important;
+            }
+            .#{$abbrev}l#{$infix}-#{$size} {
+              #{$prop}-left: 0 !important;
+              #{$prop}-right: $length !important;
+            }
+            #{$abbrev}x#{$infix}-#{$size} {
+              #{$prop}-left: $length !important;
+              #{$prop}-right: $length !important;
+            }
+          }
+        }
+
+        .mr#{$infix}-auto {
+          margin-right: 0 !important;
+          margin-left: auto !important;
+        }
+        .ml#{$infix}-auto {
+          margin-right: auto !important;
+          margin-left: 0 !important;
+        }
+        .mx#{$infix}-auto {
+          margin-right: auto !important;
+          margin-left: auto !important;
+        }
+      }
+    }
+    
+    @each $breakpoint in map-keys($grid-breakpoints) {
+      @include media-breakpoint-up($breakpoint) {
+        $infix: breakpoint-infix($breakpoint, $grid-breakpoints);
+        
+        .text#{$infix}-right {
+          text-align: left !important;
+        }
+        .text#{$infix}-left {
+          text-align: right !important;
+        }
+        .float#{$infix}-left  {
+           float: right !important;
+        }
+        .float#{$infix}-right { 
+          float: left !important;
+        }
+      }
+    }
+  }
+}

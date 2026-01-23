@@ -1,0 +1,109 @@
+@import "variables";
+@import "~bootstrap/scss/mixins";
+@import "bootstrap/mixins-override";
+@import "~bootstrap/scss/root";
+@import "components/fonts/fonts-family";
+@import "components/fonts/multi-lang.mixins";
+@import "common.mixins";
+
+
+.design-factory-v2 {
+  @import "~bootstrap/scss/reboot";
+  @import "~bootstrap/scss/type";
+  @import "~bootstrap/scss/images";
+  @import "~bootstrap/scss/code";
+  @import "~bootstrap/scss/grid";
+  @import "~bootstrap/scss/tables";
+  @import "~bootstrap/scss/forms";
+  @import "~bootstrap/scss/buttons";
+  @import "~bootstrap/scss/transitions";
+  @import "~bootstrap/scss/dropdown";
+  @import "~bootstrap/scss/button-group";
+  @import "~bootstrap/scss/input-group";
+  @import "~bootstrap/scss/custom-forms";
+  @import "~bootstrap/scss/nav";
+  @import "~bootstrap/scss/navbar";
+  @import "~bootstrap/scss/card";
+  @import "~bootstrap/scss/breadcrumb";
+  @import "~bootstrap/scss/pagination";
+  @import "~bootstrap/scss/badge";
+  @import "~bootstrap/scss/jumbotron";
+  @import "~bootstrap/scss/alert";
+  @import "~bootstrap/scss/progress";
+  @import "~bootstrap/scss/media";
+  @import "~bootstrap/scss/list-group";
+  @import "~bootstrap/scss/close";
+  @import "~bootstrap/scss/modal";
+  @import "~bootstrap/scss/tooltip";
+  @import "~bootstrap/scss/popover";
+  @import "~bootstrap/scss/carousel";
+  @import "~bootstrap/scss/spinners";
+  @import "~bootstrap/scss/utilities";
+  @import "common";
+  @import "components/accordion/accordion";
+  @import "components/fonts/icon-font";
+  @import "components/fonts/fonts";
+  @import "components/separator/separator";
+  @import "components/button/button";
+  @import "components/media/media";
+  @import "components/modal/modal";
+  @import "components/typeahead/typeahead";
+  @import "components/alert/alert";
+  @import "components/datepicker/datepicker";
+  @import "components/form/form";
+  @import "components/pagination/pagination";
+  @import "components/badge/badge";
+  @import "components/icon/amadeus-icon";
+  @import "components/navbar/navbar";
+  @import "components/tabs/tabs";
+  @import "components/checkbox/checkbox";
+  @import "components/radio/radio";
+  @import "components/toggle/toggle";
+  @import "components/inputs/inputs";
+  @import "components/card/card";
+  @import "components/list-group/list-group";
+  @import "components/brand-color/brand-color";
+  @import "components/link/link";
+  @import "components/table/table";
+  @import "components/fieldset/fieldset";
+  @import "components/popover/popover";
+  @import "components/slider/slider";
+  @import "components/select/select";
+  @import "components/dropdown/dropdown";
+  @import "components/collapse/collapse";
+  @import "components/progressbar/progressbar";
+  @import "components/spinner/spinner";
+  @import "components/tooltip/tooltip";
+  @import "components/rating/rating";
+  @import "components/speechbubble/speechbubble";
+  @import "components/list/list";
+  @import "components/skip-links/skip-links";
+  @import "components/breadcrumbs/breadcrumbs";
+
+  @import "bootstrap/rtl-styles-override";
+  @import "components/stepper/stepper";
+  @import "bootstrap/modifiers";
+  @import "bootstrap/close";
+
+  -webkit-text-size-adjust: 100%; // 4
+  -ms-text-size-adjust: 100%; // 4
+  -ms-overflow-style: scrollbar; // 5
+  -webkit-tap-highlight-color: rgba(0,0,0,0); // 6
+  margin: 0; // 1
+  font-family: $font-family-base;
+  font-size: $font-size-base;
+  font-weight: $font-weight-base;
+  line-height: $line-height-base;
+  color: $body-color;
+  background-color: $body-bg; // 2
+}
+
+@import "components/popover/popover_container";
+
+// TO DO fix this workaround
+@import "bootstrap/print";
+
+// this css is needed when modal are open to have no scroll on the background.
+.df-modal-open {
+  overflow: hidden;
+}

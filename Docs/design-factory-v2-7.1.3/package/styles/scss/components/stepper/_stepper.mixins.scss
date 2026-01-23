@@ -1,0 +1,55 @@
+@mixin df-stepper-plain-icon($color, $bg-color, $border-color) {
+  border-color: $border-color;
+  background-color: $bg-color;
+  color: $color;
+}
+
+@mixin df-stepper-common-icon() {
+  border-radius: $df-stepper-icon-border-radius;
+  text-align: $df-stepper-icon-text-align;
+  padding: $df-stepper-icon-padding;
+  border-style: $df-stepper-icon-border-style;
+  border-width: $border-width;
+  width: 100%;
+  height: 100%;
+}
+
+@mixin df-stepper-icon-variant($color, $value) {
+  .df-stepper-step-#{$color} {
+    color: $value;
+    &:hover { // override the btn-link feature
+      color: $value;
+    }
+  }
+  [aria-disabled="true"].df-stepper-step, [disabled].df-stepper-step {
+    .df-stepper-icon-#{$color} {
+      @include df-stepper-plain-icon($df-stepper-icon-disabled-color, $df-stepper-icon-disabled-bg-color, $df-stepper-icon-disabled-border-color);
+    }
+    // outline variant
+    .df-stepper-outline-icon-#{$color} {
+      @include df-stepper-plain-icon($df-stepper-icon-disabled-color, $df-stepper-icon-disabled-bg-color, $df-stepper-icon-disabled-border-color);
+    }
+  }
+  // outline variant
+  .df-stepper-outline-icon-#{$color} {
+    @include df-stepper-common-icon();
+    @include df-stepper-plain-icon($value, $df-stepper-outline-bg-color, $value);
+  }
+  .df-stepper-icon-#{$color} {
+    @include df-stepper-common-icon();
+    @include df-stepper-plain-icon($df-stepper-icon-color, $value, $value);
+  }
+}
+
+// Stepper sizes
+@mixin df-stepper-size($padding-y, $padding-x, $font-size, $stepper-icon-width, $stepper-icon-height) {
+  @include font-size($font-size);
+  .df-stepper-step {
+    padding: $padding-y $padding-x;
+    .df-stepper-icon-wrapper {
+      width: $stepper-icon-width;
+      height: $stepper-icon-height;
+    }
+  }
+}
+

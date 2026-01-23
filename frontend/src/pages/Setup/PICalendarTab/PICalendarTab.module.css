@@ -1,0 +1,96 @@
+.container {
+  max-width: 1400px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.statsRow {
+  margin-bottom: 24px;
+}
+
+.weekBadge {
+  display: inline-block;
+  padding: 2px 8px;
+  background: #f0f0f0;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #595959;
+  margin-top: 4px;
+}
+
+.iterationChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.iterationTag {
+  margin: 0;
+  font-size: 11px;
+}
+
+.timeline {
+  margin-bottom: 24px;
+  overflow-x: auto;
+}
+
+.timelineHeader {
+  display: flex;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+}
+
+.monthLabel {
+  font-weight: 600;
+  font-size: 12px;
+  color: #595959;
+}
+
+.weekLabel {
+  font-size: 11px;
+  color: #8c8c8c;
+  text-align: center;
+  width: 24px;
+}
+
+.weekLabel.current {
+  background: #1890ff;
+  color: white;
+  border-radius: 4px;
+}
+
+.piBlock {
+  background: white;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.piBlock:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.piBlock.active {
+  border-color: #52c41a;
+  border-width: 2px;
+}
+
+.piBlock.completed {
+  opacity: 0.7;
+}

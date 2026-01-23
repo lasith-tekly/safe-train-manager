@@ -1,0 +1,67 @@
+// mix($color, $white, x%) is equivalent to transparentize($color, x%) but it makes the color opaque
+$df-success-background: mix($success, $white, 7%) !default;
+$df-danger-background: mix($danger, $white, 4%) !default;
+$df-warning-background: mix($warning, $white, 7%) !default;
+$df-info-background: mix($info, $white, 7%) !default;
+$df-tip-background: $white !default;
+$df-tip-border-color: $gray-200 !default;
+
+// For page alert
+$df-page-alert-zindex: $zindex-fixed + 8 !default; // on top of all fixed elements but below modal and navbar
+$df-page-alert-width: 100% !default;
+$df-page-alert-padding-left: 12% !default;
+$df-page-alert-border-width: 0px 0px 2px 0px !default;
+$df-page-alert-start-distance: 0px !default;
+
+// For card alert
+$df-card-alert-border-width: $df-page-alert-border-width !default;
+$df-card-alert-border-radius: 0 !default;
+
+// Alert
+$df-alert-icon-font-weight: $df-icon-solid-font-weight !default;
+
+// Size default
+$df-alert-size-default-insert-alert-icon: 2.5rem !default;
+$df-alert-size-default-font-size: 1rem !default;
+$df-alert-size-default-padding-top: 0.7rem !default;
+$df-alert-size-default-padding-bottom: 0.7rem !default;
+$df-alert-size-default-padding-left: 3.5rem !default;
+$df-alert-size-default-padding-right: 3.5rem !default;
+$df-alert-size-default-icon-top: 0.9375rem !default;
+$df-alert-size-default-icon-margin-left: -1.358rem !default;
+$df-alert-tip-size-default-icon-margin-left: -1.20175rem !default;
+$df-alert-size-default-close-font: 2rem !default;
+$df-alert-size-default-close-padding-y: 0.44rem !default;
+$df-alert-size-default-close-padding-x: 1rem !default;
+$df-alert-size-default-close-padding: $df-alert-size-default-close-padding-y $df-alert-size-default-close-padding-x !default;
+$df-alert-size-default-close-height: 100% !default;
+
+// Size sm
+$df-alert-size-sm-insert-alert-icon: $df-alert-size-default-insert-alert-icon * map-get($df-size-ratios, 'sm') !default;
+$df-alert-size-sm-font-size: $df-alert-size-default-font-size * map-get($df-size-ratios, 'sm') !default;
+$df-alert-size-sm-padding-top: $df-alert-size-default-padding-top * map-get($df-size-ratios, 'sm') !default;
+$df-alert-size-sm-padding-bottom: $df-alert-size-default-padding-bottom * map-get($df-size-ratios, 'sm') !default;
+$df-alert-size-sm-padding-left: $df-alert-size-default-padding-left * map-get($df-size-ratios, 'sm') !default;
+$df-alert-size-sm-padding-right: $df-alert-size-default-padding-right * map-get($df-size-ratios, 'sm') !default;
+$df-alert-size-sm-icon-top: $df-alert-size-default-icon-top * map-get($df-size-ratios, 'sm') !default;
+$df-alert-size-sm-icon-margin-left: $df-alert-size-default-icon-margin-left * map-get($df-size-ratios, 'sm') !default;
+$df-alert-tip-size-sm-icon-margin-left: $df-alert-tip-size-default-icon-margin-left * map-get($df-size-ratios, 'sm') !default;
+$df-alert-size-sm-close-font: $df-alert-size-default-close-font * map-get($df-size-ratios, 'sm') !default;
+$df-alert-size-sm-close-padding-y: $df-alert-size-default-close-padding-y * map-get($df-size-ratios, 'sm') !default;
+$df-alert-size-sm-close-padding-x: $df-alert-size-default-close-padding-x * map-get($df-size-ratios, 'sm') !default;
+$df-alert-size-sm-close-padding: $df-alert-size-sm-close-padding-y $df-alert-size-sm-close-padding-x !default;
+
+// Size lg
+$df-alert-size-lg-insert-alert-icon: $df-alert-size-default-insert-alert-icon * map-get($df-size-ratios, 'lg') !default;
+$df-alert-size-lg-font-size: $df-alert-size-default-font-size * map-get($df-size-ratios, 'lg') !default;
+$df-alert-size-lg-padding-top: $df-alert-size-default-padding-top * map-get($df-size-ratios, 'lg') !default;
+$df-alert-size-lg-padding-bottom: $df-alert-size-default-padding-bottom * map-get($df-size-ratios, 'lg') !default;
+$df-alert-size-lg-padding-left: $df-alert-size-default-padding-left * map-get($df-size-ratios, 'lg') !default;
+$df-alert-size-lg-padding-right: $df-alert-size-default-padding-right * map-get($df-size-ratios, 'lg') !default;
+$df-alert-size-lg-icon-top: $df-alert-size-default-icon-top * map-get($df-size-ratios, 'lg') !default;
+$df-alert-size-lg-icon-margin-left: $df-alert-size-default-icon-margin-left * map-get($df-size-ratios, 'lg') !default;
+$df-alert-tip-size-lg-icon-margin-left: $df-alert-tip-size-default-icon-margin-left * map-get($df-size-ratios, 'lg') !default;
+$df-alert-size-lg-close-font: $df-alert-size-default-close-font * map-get($df-size-ratios, 'lg') !default;
+$df-alert-size-lg-close-padding-y: $df-alert-size-default-close-padding-y * map-get($df-size-ratios, 'lg') !default;
+$df-alert-size-lg-close-padding-x: $df-alert-size-default-close-padding-x * map-get($df-size-ratios, 'lg') !default;
+$df-alert-size-lg-close-padding: $df-alert-size-lg-close-padding-y $df-alert-size-lg-close-padding-x !default;

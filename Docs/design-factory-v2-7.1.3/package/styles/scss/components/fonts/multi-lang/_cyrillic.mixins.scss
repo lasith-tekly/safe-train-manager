@@ -1,0 +1,10 @@
+@import "font-faces.mixins";
+
+// Russian, Ukrainian, Belarusian, Bulgarian, Macedonian languages
+@mixin df-fonts-multi-lang-cyrillic($parent-selector) {
+  $headings-font-stack: "Amadeus Full", sans-serif;
+  $body-font-stack: "Source Sans Pro Full", sans-serif;
+  @include df-fonts-multi-lang-font-faces-amadeus-full();
+  @include df-fonts-multi-lang-font-faces-source-sans-pro-full();
+  @include df-fonts-multi-lang-typo-fonts($parent-selector, $body-font-stack, $headings-font-stack);
+}

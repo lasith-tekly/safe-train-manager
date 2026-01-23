@@ -1,0 +1,210 @@
+@import 'inputs.mixin';
+
+input[type='search']::-webkit-search-cancel-button,
+input[type='search']::-webkit-search-decoration {
+  display: none;
+}
+
+input.df-input-withicon.append {
+  @include ltr {
+    border-right-color: $df-iwi-border-between-color; // override mandatory
+  }
+  @include rtl {
+    border-left-color: $df-iwi-border-between-color; // override mandatory
+  }
+
+  box-shadow: none; // override mandatory
+  &:focus {
+    @include ltr {
+      border-right-color: $df-iwi-border-between-color; // override mandatory
+    }
+    @include rtl {
+      border-left-color: $df-iwi-border-between-color; // override mandatory
+    }
+    box-shadow: none; // override mandatory
+  }
+  ~ .input-group-append {
+    @include transition($input-transition); // default bootstrap input has this property
+    background-color: $input-bg;
+    @include ltr {
+      margin-left: $df-iwi-group-append-margin-left;
+      border-right: $input-border-width solid $input-border-color;
+      border-radius: $input-border-radius;
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+    @include rtl {
+      margin-right: $df-iwi-group-append-margin-left;
+      border-left: $input-border-width solid $input-border-color;
+      border-radius: $input-border-radius 0 0 $input-border-radius;
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+    padding-left: $df-iwi-append-text-padding-left;
+    padding-right: $df-iwi-append-text-padding-right;
+    align-items: center;
+    border-top: $input-border-width solid $input-border-color;
+    border-bottom: $input-border-width solid $input-border-color;
+
+
+    &.df-is-empty {
+      padding-left: $df-iwi-emptyspace-padding;
+      padding-right: $df-iwi-emptyspace-padding;
+      .input-group-text {
+        display: none;
+      }
+    }
+
+    .input-group-text {
+      height: fit-content;
+      width: fit-content;
+      border: none;
+      padding: 0;
+      &:hover {
+        &:before {
+          background-color: $df-iwi-icon-hover-bg-color;
+          cursor: $df-cursor-type;
+        }
+      }
+      &:before {
+        display: inline-block;
+        font-family: $df-font-family;
+        font-size: $df-iwi-icon-font-size;
+        height: $df-iwi-icon-height;
+        width: $df-iwi-icon-width;
+        border-radius: $df-iwi-icon-border-radius;
+        line-height: $df-iwi-icon-line-height;
+      }
+      background-color: $df-iwi-input-group-text-bg-color;
+      &:focus {
+        outline: none; // override mandatory
+        &:before {
+          display: block !important;
+          box-shadow: $df-iwi-focused-box-shadow;
+        }
+      }
+    }
+  }
+}
+
+input.df-input-withicon.append:focus ~ .input-group-append {
+  border-color: $df-iwi-focused-border-color;
+  @include ltr {
+    border-left-color: $df-iwi-focused-border-between-color;
+  }
+  @include rtl {
+    border-right-color: $df-iwi-focused-border-between-color;
+  }
+}
+
+.input-group.df-input-append {
+  @each $state, $data in $form-validation-states {
+    @include df-input-with-icon-validation-state($state, map-get($data, color), 'append');
+  }
+}
+
+.input-group.df-input-prepend {
+  input.df-input-withicon.prepend {
+    @include ltr {
+      border-left-color: $df-iwi-border-between-color; // override mandatory
+    }
+    @include rtl {
+      border-right-color: $df-iwi-border-between-color; // override mandatory
+    }
+    box-shadow: none; // override mandatory
+    padding-left: 0px; // override mandatory
+    &:focus {
+      @include ltr {
+        border-left-color: $df-iwi-border-between-color; // override mandatory
+      }
+      @include rtl {
+        border-right-color: $df-iwi-border-between-color; // override mandatory
+      }
+      box-shadow: none; // override mandatory
+    }
+  }
+
+  @each $state, $data in $form-validation-states {
+    @include df-input-with-icon-validation-state($state, map-get($data, color), 'prepend');
+  }
+
+  .input-group-prepend {
+    @include transition($input-transition); // default bootstrap input has this property
+    background-color: $input-bg;
+    @include ltr {
+      border-left: $input-border-width solid $input-border-color;
+      margin-right: $df-iwi-group-prepend-margin-right;
+      padding-left: $df-iwi-prepend-text-padding-left;
+      padding-right: $df-iwi-prepend-text-padding-right;
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+    @include rtl {
+      border-right: $input-border-width solid $input-border-color;
+      margin-left: $df-iwi-group-prepend-margin-right;
+      padding-right: $df-iwi-prepend-text-padding-left;
+      padding-left: $df-iwi-prepend-text-padding-right;
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+
+
+    align-items: center;
+    border-top: $input-border-width solid $input-border-color;
+    border-bottom: $input-border-width solid $input-border-color;
+    border-radius: $input-border-radius;
+
+    &.df-is-empty {
+      padding-left: $df-iwi-emptyspace-padding;
+      padding-right: $df-iwi-emptyspace-padding;
+      .input-group-text {
+        display: none;
+      }
+    }
+
+    .input-group-text {
+      height: fit-content;
+      width: fit-content;
+      border: none;
+      padding: 0;
+      &:hover {
+        &:before {
+          background-color: $df-iwi-icon-hover-bg-color;
+          cursor: $df-cursor-type;
+        }
+      }
+      &:before {
+        font-family: $df-font-family;
+        font-size: $df-iwi-icon-font-size;
+        height: $df-iwi-icon-height;
+        width: $df-iwi-icon-width;
+        border-radius: $df-iwi-icon-border-radius;
+        line-height: $df-iwi-icon-line-height;
+      }
+      background-color: $df-iwi-input-group-text-bg-color;
+      &:focus {
+        outline: none; // override mandatory
+        &:before {
+          box-shadow: $df-iwi-focused-box-shadow;
+        }
+      }
+    }
+  }
+}
+
+.input-group.df-input-prepend.df-focused .input-group-prepend {
+  border-color: $df-iwi-focused-border-color;
+
+  @include ltr {
+    border-right-color: $df-iwi-focused-border-between-color;
+  }
+  @include rtl {
+    border-left-color: $df-iwi-focused-border-between-color;
+  }
+}
+
+// To fix https://stackoverflow.com/questions/14007655/remove-ie10s-clear-field-x-button-on-certain-inputs
+input::-ms-clear {
+  display: none;
+}
+

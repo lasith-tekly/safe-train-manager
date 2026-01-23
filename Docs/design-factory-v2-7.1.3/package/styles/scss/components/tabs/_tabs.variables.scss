@@ -1,0 +1,30 @@
+$df-tabs-color: $gray-900 !default;
+$df-tabs-active-color: theme-color("primary") !default; // TODO unused variable - remove it in future version
+$df-tabs-border-bottom: 2px solid transparent !default;
+$df-tabs-border-top: none !default;
+$df-tabs-border-left: none !default;
+$df-tabs-border-right: none !default;
+$df-tabs-hover-border-bottom: 2px solid transparent !default;
+$df-tabs-hover-text-decoration: underline !default;
+$df-tabs-hover-bg-color: $gray-100 !default;
+$df-tabs-disabled-text-decoration: none !default;
+$df-tabs-disabled-cursor: $df-disabled-cursor !default;
+$df-tabs-between-item-margin: 3px !default;
+$df-tabs-active-border-bottom: 3px solid $blue !default;
+$df-tabs-disabled-color: $gray-400 !default;
+$df-tabs-disabled-bg-color: transparent !default;
+$df-tabs-focus-outline: none !default;
+
+$df-tabs-secondary-border-bottom: $df-tabs-border-top !default;
+$df-tabs-secondary-border-top: $df-tabs-border-bottom !default;
+$df-tabs-secondary-active-border-top: $df-tabs-active-border-bottom !default;
+$df-tabs-secondary-active-border-left: 1px solid $gray-300 !default;
+$df-tabs-secondary-active-border-right: 1px solid $gray-300 !default;
+
+
+// Tab-content
+$df-tab-content-border-style: solid !default;
+$df-tab-content-border-color: $gray-300 !default;
+$df-tab-content-border-width: 0px $nav-tabs-border-width $nav-tabs-border-width $nav-tabs-border-width !default;
+$df-tabcontent-tabpane-padding: 1.5rem 1rem !default;
+

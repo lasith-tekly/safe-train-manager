@@ -1,0 +1,270 @@
+/* SideNavLayout Styles */
+/* Amadeus Elevate - Side Navigation Layout */
+
+.layout {
+  min-height: 100vh;
+}
+
+/* ============================================
+   SIDEBAR
+   ============================================ */
+
+.sider {
+  background: linear-gradient(180deg, var(--amadeus-primary-dark) 0%, var(--amadeus-primary) 100%) !important;
+  box-shadow: var(--shadow-sidebar);
+  position: fixed !important;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: var(--z-fixed);
+  display: flex;
+  flex-direction: column;
+}
+
+.sider :global(.ant-layout-sider-children) {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Logo */
+.logo {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-md);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.logoIcon {
+  font-family: var(--font-family-brand);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--white);
+  background: linear-gradient(135deg, var(--amadeus-cyan) 0%, var(--amadeus-light-blue) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.logoFull {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.1;
+}
+
+.logoBrand {
+  font-family: var(--font-family-brand);
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 2px;
+}
+
+.logoName {
+  font-family: var(--font-family-brand);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: 3px;
+}
+
+/* Menu */
+.menu {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: transparent !important;
+  border-right: none !important;
+  padding: var(--spacing-sm) 0;
+}
+
+.menu :global(.ant-menu-item),
+.menu :global(.ant-menu-submenu-title) {
+  margin: 2px 8px !important;
+  border-radius: var(--border-radius) !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.menu :global(.ant-menu-item:hover),
+.menu :global(.ant-menu-submenu-title:hover) {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: var(--white) !important;
+}
+
+.menu :global(.ant-menu-item-selected) {
+  background: var(--amadeus-cyan) !important;
+  color: var(--white) !important;
+}
+
+.menu :global(.ant-menu-item-selected::after) {
+  display: none;
+}
+
+.menu :global(.ant-menu-sub) {
+  background: rgba(0, 0, 0, 0.15) !important;
+}
+
+.menu :global(.ant-menu-sub .ant-menu-item) {
+  padding-left: 48px !important;
+}
+
+.menu :global(.ant-menu-submenu-arrow) {
+  color: rgba(255, 255, 255, 0.65) !important;
+}
+
+.menu :global(.ant-menu-item .anticon),
+.menu :global(.ant-menu-submenu-title .anticon) {
+  font-size: 16px;
+}
+
+/* Collapse Button */
+.collapseBtn {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.65);
+  cursor: pointer;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.collapseBtn:hover {
+  color: var(--white);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================
+   MAIN LAYOUT
+   ============================================ */
+
+.mainLayout {
+  margin-left: 240px;
+  transition: margin-left var(--transition-normal);
+  min-height: 100vh;
+  background: var(--gray-50);
+}
+
+.sider:global(.ant-layout-sider-collapsed) + .mainLayout,
+:global(.ant-layout-sider-collapsed) ~ .mainLayout {
+  margin-left: 64px;
+}
+
+/* Header */
+.header {
+  background: var(--white) !important;
+  padding: 0 var(--spacing-lg) !important;
+  height: var(--header-height) !important;
+  line-height: var(--header-height) !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.headerIcon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: 18px;
+  color: var(--gray-600);
+}
+
+.headerIcon:hover {
+  background: var(--gray-100);
+  color: var(--amadeus-primary);
+}
+
+.userMenu {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.userMenu:hover {
+  background: var(--gray-100);
+}
+
+.avatar {
+  background: var(--amadeus-primary) !important;
+}
+
+.userName {
+  font-weight: 500;
+  color: var(--gray-700);
+}
+
+/* Content */
+.content {
+  padding: var(--spacing-lg);
+  min-height: calc(100vh - var(--header-height) - 48px);
+}
+
+/* Footer */
+.footer {
+  padding: var(--spacing-md) var(--spacing-lg);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--gray-200);
+  background: var(--white);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+  .sider {
+    position: fixed !important;
+    z-index: 1001;
+  }
+
+  .mainLayout {
+    margin-left: 0 !important;
+  }
+
+  .userName {
+    display: none;
+  }
+}
+
+/* ============================================
+   COLLAPSED STATE ADJUSTMENTS
+   ============================================ */
+
+:global(.ant-layout-sider-collapsed) .logoFull {
+  display: none;
+}
+
+:global(.ant-layout-sider-collapsed) .menu :global(.ant-menu-submenu-title) {
+  padding-left: 24px !important;
+}

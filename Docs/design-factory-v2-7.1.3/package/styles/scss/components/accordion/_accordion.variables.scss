@@ -1,0 +1,32 @@
+$df-accordion-padding: 0.5625rem !default;
+$df-accordion-border-width: 1px !default;
+$df-accordion-padding-right: 2.2rem !default;
+$df-accordion-padding-left: 1rem !default;
+$df-accordion-padding-top: $df-accordion-padding !default;
+$df-accordion-padding-bottom: $df-accordion-padding !default;
+$df-accordion-card-header-margin-bottom: 0px !default;
+$df-accordion-link-color: $gray-900 !default;
+$df-accordion-link-hover-color: $gray-900 !default;
+$df-accordion-icon-font-family: Design-Factory-icon !default;
+$df-accordion-font-family: "Source Sans Pro" !default;
+$df-accordion-disabled-bg-color: $df-disabled-bg-color !default;
+$df-accordion-disabled-color: $df-disabled-color !default;
+$df-accordion-disabled-opacity: $df-disabled-opacity !default;
+$df-accordion-disabled-cursor: $df-disabled-cursor !default;
+// icon-chevron-down
+$df-accordion-icon-down-content:  "\ea31" !default;
+// icon-chevron-up
+$df-accordion-icon-up-content: "\ea38" !default;
+$df-accordion-border-color: $gray-300 !default;
+$df-accordion-icon-font-size: 1.07rem !default;
+$df-accordion-icon-float: right !default;
+$df-accordion-border: $df-accordion-border-width solid $df-accordion-border-color !default;
+$df-accordion-cardheader-padding: 0 0 0 0 !default;
+$df-accordion-line-height: inherit !default;
+$df-accordion-expanded-link-border-radius: 0px !default;
+$df-accordion-border-hover-color: $df-accordion-border-width solid $gray-400 !default;
+$df-accordion-title-number-color: $gray-600 !default;
+$df-accordion-icon-top: 50% !default;
+$df-accordion-icon-translateY: translateY(-50%) !default;
+$df-accordion-title-white-space: normal !default;
+$df-accordion-icon-position-right: 1rem !default;

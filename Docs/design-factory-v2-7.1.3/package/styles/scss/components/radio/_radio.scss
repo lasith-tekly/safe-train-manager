@@ -1,0 +1,115 @@
+div[role="radiogroup"] {
+  > span {
+    font-weight: bold;
+    font-size: $df-fieldset-legend-font-size;
+    display: block;
+    margin-bottom: $df-radiogroup-legend-margin-bottom;
+  }
+}
+
+.form-check {// add
+
+  > input[type="radio"] {// same as custom-control-input from bootstrap to hide the browser input (mandatory)
+    position: absolute;
+    opacity:0;
+    z-index: -1;
+  }
+
+  > input[type="radio"]:not(:checked) ~ .form-check-label {
+    cursor: pointer;
+  }
+
+  > input[type="radio"] ~ .form-check-label {
+    @include df-checkboxradio-pos($df-radio-margin-bottom);
+  }
+
+  > input[type="radio"] ~ .form-check-label::before {
+    @include ltr {
+      left: 0; // idem as custom-control-input from bootstrap to hide the browser input (mandatory)
+    }
+    @include rtl {
+      right: 0; // idem as custom-control-input from bootstrap to hide the browser input (mandatory)
+    }
+    display: block; // idem as custom-control-input from bootstrap to hide the browser input (mandatory)
+    border-radius: 50%; // idem as custom-control-input from bootstrap to hide the browser input (mandatory)
+    width: $df-sprite-radio-width;
+    height: $df-sprite-radio-height;
+    border-width: $df-radio-border-width;
+    border-style: $df-radio-border-style;
+    @extend %df-icon-style;
+    color: $df-high-contrast-color;
+    content: $df-radio-high-contrast-unchecked-content;
+  }
+
+  > input[type="radio"] ~ .form-check-label::before {
+      background-color: $df-radio-background-color;
+      border-color: $df-radio-border-color;
+  }
+
+  > input[type="radio"] ~ .form-check-label::after {
+      position: absolute; // idem as custom-control-input from bootstrap to hide the browser input (mandatory)
+      top: 50%; // New trick to use to center an element (with the transform, display: inline-block , position: relative )
+      transform: translateY(-50%);
+      @include ltr {
+        left: 0; // idem as custom-control-input from bootstrap to hide the browser input (mandatory)
+      }
+      @include rtl {
+        right: 0;
+      }
+      display: block; // idem as custom-control-input from bootstrap to hide the browser input (mandatory)
+      width: $df-sprite-radio-width;
+      height: $df-sprite-radio-height;
+      background-image: $df-radio-svg-normal;
+      content: ""; // mandatory
+  }
+
+  > input[type="radio"]:checked ~ .form-check-label::before {
+    border-color: $df-radio-checked-color;
+    content: $df-radio-high-contrast-checked-content;
+  }
+
+  > input[type="radio"]:checked ~ .form-check-label::after {
+    background-image: $df-radio-svg-checked;
+  }
+
+  > input[type="radio"]:focus ~ .form-check-label::before {
+    box-shadow: $btn-focus-box-shadow; // override
+  }
+
+  > input[type="radio"]:disabled ~ .form-check-label::after {
+    background-image: $df-radio-svg-disabled;
+  }
+
+  > input[type="radio"]:disabled ~ .form-check-label::before {
+    border-color: $df-radio-disabled-border-color;
+    background-color: $df-radio-disabled-background-color;
+  }
+
+  > input[type="radio"]:disabled:checked ~ .form-check-label::after {
+    background-image: $df-radio-svg-disabled-checked;
+  }
+
+  > input[type="radio"]:disabled:checked ~ .form-check-label::before {
+    border-color: $df-radio-disabled-border-color;
+    background-color: $df-radio-background-color;
+  }
+
+  > input[type="radio"]:checked ~ .form-check-label::before {
+    background-image: $df-radio-svg-checked;
+  }
+
+  > input[type="radio"]:disabled ~ .form-check-label {
+    color: $df-radio-label-disabled-color;
+    cursor: $df-radio-disabled-cursor;
+  }
+
+  > input[type="radio"] ~ .invalid-feedback {
+    @include ltr {
+      margin-left: -$form-check-input-gutter;
+    }
+    @include rtl {
+      margin-right: -$form-check-input-gutter;
+    }
+    margin-bottom: $df-checkbox-margin-bottom;
+  }
+}

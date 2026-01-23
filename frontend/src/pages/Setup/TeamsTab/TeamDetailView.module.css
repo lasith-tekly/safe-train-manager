@@ -1,0 +1,365 @@
+.container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.header {
+  padding: 16px 20px;
+  background: #fafafa;
+  border-bottom: 1px solid #d9d9d9;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.headerContent {
+  flex: 1;
+}
+
+.teamName {
+  font-size: 18px;
+  font-weight: 600;
+  color: #262626;
+  margin: 0 0 4px 0;
+}
+
+.teamSubtitle {
+  font-size: 14px;
+  color: #8c8c8c;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.piSelector {
+  padding: 8px 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fafafa;
+}
+
+.piLabel {
+  font-size: 13px;
+  color: #8c8c8c;
+  font-weight: 500;
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px;
+}
+
+.summaryRow {
+  margin-bottom: 20px;
+}
+
+.statCard {
+  text-align: center;
+  border-radius: 8px;
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.statCardBlue {
+  border-left: 4px solid #1890ff;
+}
+
+.statCardBlue .statValue {
+  color: #1890ff;
+}
+
+.statCardGreen {
+  border-left: 4px solid #52c41a;
+}
+
+.statCardGreen .statValue {
+  color: #52c41a;
+}
+
+.statCardPurple {
+  border-left: 4px solid #722ed1;
+}
+
+.statCardPurple .statValue {
+  color: #722ed1;
+}
+
+.statSubLabel {
+  font-size: 10px;
+  color: #8c8c8c;
+  margin-top: 2px;
+}
+
+.statValue {
+  font-size: 24px;
+  font-weight: 700;
+  color: #262626;
+  line-height: 1.2;
+}
+
+.statLabel {
+  font-size: 11px;
+  color: #8c8c8c;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+}
+
+.roleCountRow {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.roleCount {
+  white-space: nowrap;
+}
+
+.section {
+  margin-bottom: 20px;
+}
+
+.sectionTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: #262626;
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid #1890ff;
+  display: inline-block;
+}
+
+.roleCard {
+  background: #ffffff;
+  border: 1px solid #d9d9d9;
+  border-left: 4px solid #1890ff;
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+}
+
+.roleValue {
+  font-size: 20px;
+  font-weight: 700;
+  color: #262626;
+}
+
+.roleLabel {
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.roleMemberCount {
+  font-size: 11px;
+  color: #8c8c8c;
+  margin-top: 2px;
+}
+
+.allocationRow {
+  margin-bottom: 12px;
+}
+
+.allocationHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+  font-size: 13px;
+}
+
+.allocationDays {
+  font-weight: 600;
+  color: #262626;
+}
+
+/* Merged Allocation Bar */
+.mergedAllocationBar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.allocationBarContainer {
+  flex: 1;
+  display: flex;
+  height: 32px;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.allocationSegment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.2s;
+  min-width: 20px;
+}
+
+.allocationSegment:hover {
+  opacity: 0.85;
+  transform: scaleY(1.05);
+}
+
+.segmentLabel {
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.allocationTotal {
+  font-size: 14px;
+  font-weight: 700;
+  color: #262626;
+  white-space: nowrap;
+  min-width: 70px;
+  text-align: right;
+}
+
+.allocationLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #595959;
+}
+
+.legendDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.legendItemActive {
+  font-weight: 600;
+  color: #262626;
+}
+
+.segmentActive {
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px currentColor;
+}
+
+/* Expanded Utilization Section */
+.expandedUtilization {
+  background: #fafafa;
+  border: 1px solid #e8e8e8;
+  border-left: 4px solid #1890ff;
+  border-radius: 4px;
+  padding: 12px 16px;
+  margin: 12px 0;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.expandedHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.expandedTitle {
+  font-weight: 600;
+  font-size: 14px;
+  color: #262626;
+}
+
+.utilizationStat {
+  text-align: center;
+}
+
+.utilizationValue {
+  font-size: 18px;
+  font-weight: 700;
+  color: #262626;
+}
+
+.utilizationLabel {
+  font-size: 11px;
+  color: #8c8c8c;
+  margin-top: 2px;
+}
+
+.roleBreakdown {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e8e8e8;
+}
+
+.roleBreakdownTitle {
+  font-size: 12px;
+  color: #8c8c8c;
+  margin-bottom: 6px;
+}
+
+.roleBreakdownItems {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+}
+
+.comingSoonBanner {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: #fffbe6;
+  border: 1px solid #ffe58f;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #ad8b00;
+}
+
+.actionButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+  margin-top: 8px;
+}
+
+.actionButtons button {
+  flex: 1;
+  min-width: 120px;
+}
+
+@media (max-width: 600px) {
+  .actionButtons {
+    flex-direction: column;
+  }
+  
+  .actionButtons button {
+    width: 100%;
+  }
+}

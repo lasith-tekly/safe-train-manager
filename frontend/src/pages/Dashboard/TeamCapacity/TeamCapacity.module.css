@@ -1,0 +1,33 @@
+.container {
+  padding: 24px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.tableCard {
+  margin-bottom: 16px;
+}
+
+.quarterCell {
+  text-align: center;
+}
+
+.capacityValue {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.legend {
+  margin-top: 16px;
+  padding: 12px;
+  background: #fafafa;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

@@ -1,0 +1,203 @@
+// CSS for nav
+.navbar {
+  //add
+  box-shadow: $df-navbar-boxshadow;
+  z-index: $df-navbar-zindex;
+  .navbar-text {
+    white-space: $df-navbartext-white-space;
+    overflow: $df-navbartext-overflow;
+    text-overflow: $df-navbartext-text-overflow;
+    margin-left: $df-navbartext-margin-left;
+  }
+  > .navbar-collapse {
+    overflow: $df-navbar-collapse-overflow;
+  }
+}
+
+.navbar-toggler-icon { // override from _navbar.scss there is no variables for this in BS
+  width: $df-navbar-toggle-icon-width;
+  height: $df-navbar-toggle-icon-height;
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  padding-right: $df-navbarbrand-padding-right; // add
+  padding-left: $df-navbarbrand-padding-left; // add
+  padding-top: $df-navbarbrand-padding-top; // override
+  padding-bottom: $df-navbarbrand-padding-bottom; // override
+  margin-right: $df-navbarbrand-margin-right; // override
+  font-family: $df-navbar-font-family; // add
+  min-height: $df-navbarbrand-min-height;
+}
+
+.navbar {
+  .navbar-nav {
+    // add
+    .nav-link {
+      padding-right: $df-navbar-nav-link-padding-right; // add
+      padding-left: $df-navbar-nav-link-padding-left; // add
+      padding-top: $df-navbar-nav-link-padding-top; // add
+      padding-bottom: $df-navbar-nav-link-padding-bottom; // add
+    }
+  }
+}
+
+.navbar-light {
+  .navbar-nav {
+    .nav-link {
+      border-color: transparent;
+
+      &:focus {
+        // add
+        color: $navbar-light-color; // override
+        background: $white; // add
+        box-shadow: $btn-focus-box-shadow; //add
+      }
+
+      @include hover {
+        // add
+        color: $navbar-light-hover-color; // override
+        background: $df-navbar-light-background-hover-color; // add
+        border-color: transparent; // add
+        &:focus {
+          //add
+          color: $navbar-light-hover-color; //override
+        }
+      }
+    }
+
+    .show > .nav-link,
+    .active > .nav-link,
+    .nav-link.show,
+    .nav-link.active {
+      border-color: theme-color("primary"); // add
+      font-weight: $df-active-font-weight; // add
+      @include hover {
+        color: $navbar-light-hover-color; // override
+        &:focus {
+          color: $navbar-light-hover-color; // override
+        }
+      }
+    }
+  }
+  .navbar-text {
+    color: $df-navbarlight-text-color;
+  }
+}
+
+.navbar-dark {
+  // override (not all) and add
+  .navbar-nav {
+    .nav-link {
+      border-color: transparent; // add
+
+      @include hover-focus {
+        // add
+        background: $df-navbar-background-hover-color; // add
+        border-color: transparent; // add
+      }
+      @include hover {
+        color: $navbar-dark-hover-color; // add
+      }
+      &:focus {
+        // override
+        color: $df-navbar-dark-focus-color; // override
+        box-shadow: $btn-focus-box-shadow; // add
+      }
+    }
+
+    .show > .nav-link,
+    .active > .nav-link,
+    .nav-link.show,
+    .nav-link.active {
+      border-color: $df-navbar-dark-active-border-color;
+      font-weight: $df-active-font-weight; // add
+    }
+  }
+}
+
+.navbar-toggler {
+  margin-left: $df-navbar-toggle-margin-left; // add
+  margin-right: $df-navbar-toggle-margin-right; // add
+}
+
+// Generate series of `.navbar-expand-*` responsive classes for configuring
+// where your navbar collapses.
+.navbar-expand {
+  // override
+  @each $breakpoint in map-keys($grid-breakpoints) {
+    $next: breakpoint-next($breakpoint, $grid-breakpoints);
+    $infix: breakpoint-infix($next, $grid-breakpoints);
+
+    &#{$infix} {
+      @include media-breakpoint-down($breakpoint) {
+        .navbar-nav {
+          .nav-link {
+            border-left-width: $df-active-border-width;
+            border-left-style: $df-active-border-style;
+            padding-bottom: $df-navbar-nav-link-expanded-padding-bottom;
+          }
+        }
+      }
+
+      @include media-breakpoint-up($next) {
+        .navbar-nav {
+          // add
+          .nav-link {
+            border-bottom-width: $df-active-border-width; // add
+            border-bottom-style: $df-active-border-style; // add
+            padding-right: $df-navbar-nav-link-padding-right; // override
+            padding-left: $df-navbar-nav-link-padding-left; // override
+          }
+        }
+      }
+    }
+  }
+}
+
+// fix to remove 1px indentation below the white border in the navbar header
+@include media-breakpoint-up(lg) {
+  .navbar-brand,
+  .navbar-collapse,
+  .navbar-nav,
+  .navbar-nav .nav-item,
+  .navbar-nav .nav-link {
+    height: 100%;
+  }
+}
+
+.navbar-expand {
+  // override to remove the !important not allowing override!!
+  @each $breakpoint in map-keys($grid-breakpoints) {
+    $next: breakpoint-next($breakpoint, $grid-breakpoints);
+    $infix: breakpoint-infix($next, $grid-breakpoints);
+    &#{$infix} {
+      @include media-breakpoint-up($next) {
+        .navbar-collapse.d {
+          @each $breakpoint2 in map-keys($grid-breakpoints) {
+            $next2: breakpoint-next($breakpoint2, $grid-breakpoints);
+            $infix2: breakpoint-infix($next2, $grid-breakpoints);
+            &#{$infix2}-none {
+              display: none !important; // override
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Superheader
+.df-superheader {
+  box-shadow: $df-navbar-boxshadow; // add
+  z-index: $df-navbar-zindex;
+  .navbar {
+    box-shadow: $df-superheader-navbar-boxshadow; // override above settings
+  }
+  header:first-of-type {
+    //add
+    border-bottom: $df-superheader-border-bottom;
+    padding: $df-superheader-firstnav-padding;
+  }
+}

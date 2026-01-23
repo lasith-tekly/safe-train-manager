@@ -1,0 +1,115 @@
+.container {
+  padding: 24px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.summaryRow {
+  margin-bottom: 16px;
+}
+
+.piInfo {
+  margin-bottom: 16px;
+  background: #f6ffed;
+  border-color: #b7eb8f;
+}
+
+.tableCard {
+  margin-bottom: 16px;
+}
+
+.totalRow {
+  background-color: #fafafa;
+  font-weight: 600;
+}
+
+.totalRow td {
+  border-top: 2px solid #1890ff !important;
+}
+
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #fafafa;
+  border-radius: 4px;
+}
+
+.legendTitle {
+  font-weight: 500;
+  margin-right: 8px;
+}
+
+.expandedRow {
+  background: #f9f9f9;
+  padding: 16px;
+}
+
+.sectionTitle {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #1890ff;
+}
+
+.detailTable {
+  font-size: 12px;
+}
+
+.detailTable th {
+  background: #fafafa !important;
+  font-weight: 500;
+}
+
+.categoryCell {
+  font-weight: 500;
+  padding-left: 8px;
+}
+
+.categoryPeople {
+  background-color: #fff7e6;
+  border-left: 3px solid #fa8c16;
+}
+
+.categoryUnavailable {
+  background-color: #fff1f0;
+  border-left: 3px solid #f5222d;
+}
+
+.categoryTheoretical {
+  background-color: #f5f5f5;
+  border-left: 3px solid #d9d9d9;
+}
+
+.categoryTeamLife {
+  background-color: #fffbe6;
+  border-left: 3px solid #fadb14;
+}
+
+.categoryNet {
+  background-color: #f0f0f0;
+  border-left: 3px solid #8c8c8c;
+}
+
+.categoryProductive {
+  background-color: #f6ffed;
+  border-left: 3px solid #52c41a;
+}
+
+.categoryAllocation {
+  background-color: #e6f7ff;
+  border-left: 3px solid #1890ff;
+}

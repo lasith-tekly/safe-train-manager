@@ -1,0 +1,27 @@
+.df-media-button-interactive {
+  @include ltr {
+    text-align: left;
+  }
+  @include rtl {
+    text-align: right;
+  }
+  width: inherit;
+  padding: $df-interactive-media-padding;
+  border: none;
+  background-color: $df-interactive-media-background-color;
+
+  &:hover,
+  &:focus {
+    background-color: $df-interactive-media-focused-background-color;
+    text-decoration: underline;
+  }
+}
+
+.df-img-mr {
+  @include ltr {
+    margin-right: $df-media-mr;
+  }
+  @include rtl {
+    margin-left: $df-media-mr;
+  }
+}

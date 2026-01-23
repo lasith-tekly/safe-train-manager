@@ -1,0 +1,41 @@
+ngb-typeahead-window.dropdown-menu {
+    box-shadow: $dropdown-box-shadow;
+    border-style: none;
+    max-width: 40rem;
+    width: max-content;
+    .dropdown-item {
+        line-height: 1.75rem;
+        white-space: normal;
+        cursor: pointer;
+        // Hover of a typeahead item uses active state of the dropdown item
+        &:not(:disabled):not(.disabled).active {
+            color: $df-typeahead-hover-color;
+            background-color: $df-typeahead-hover-bg;
+
+            &:active {
+              color: color-yiq(darken($df-typeahead-hover-bg, 10%));
+              background-color: darken($df-typeahead-hover-bg, 10%);
+            }
+
+            *:not([class^="icon-"]) {
+                text-decoration: underline;
+            }
+        }
+        .ngb-highlight {
+            color: $blue;
+            font-family: $font-family-sans-serif;
+            font-weight: bold;
+        }
+        span[class^="icon-"] {
+            position: relative;
+            top: 0.1rem;
+        }
+    }
+}
+
+// for small and extra small device only
+@include media-breakpoint-down(sm) {
+    ngb-typeahead-window.dropdown-menu {
+        max-width: 90vw;
+    }
+}

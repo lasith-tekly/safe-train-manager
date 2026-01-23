@@ -1,0 +1,37 @@
+$df-stepper-line-border-color: $border-width solid $gray-600 !default;
+$df-stepper-icon-border-radius: 50% !default;
+$df-stepper-icon-border-style: solid !default;
+$df-stepper-icon-color: white !default;
+$df-stepper-icon-text-align: center !default;
+$df-stepper-icon-disabled-color: white !default;
+$df-stepper-icon-width: 28px !default;
+$df-stepper-icon-height: 28px !default;
+$df-stepper-icon-width-sm: $df-stepper-icon-width * map-get($df-size-ratios, "sm") !default;
+$df-stepper-icon-height-sm: $df-stepper-icon-height * map-get($df-size-ratios, "sm") !default;
+$df-stepper-icon-width-lg: $df-stepper-icon-width * map-get($df-size-ratios, "lg") !default;
+$df-stepper-icon-height-lg: $df-stepper-icon-height * map-get($df-size-ratios, "lg") !default;
+$df-stepper-icon-padding: 0 !default;
+$df-stepper-outline-bg-color: white !default;
+$df-stepper-disabled-color: $gray-300 !default;
+$df-stepper-icon-disabled-bg-color: $df-stepper-disabled-color !default;
+$df-stepper-icon-disabled-border-color: $df-stepper-icon-disabled-bg-color !default;
+$df-stepper-step-min-width: 5.625rem !default;
+$df-stepper-step-padding-y: $btn-padding-y !default;
+$df-stepper-step-padding-x: $btn-padding-x !default;
+// TODO put a link in this ot the ratios of the button? Must be the same
+$df-stepper-step-padding-y-sm: $btn-padding-y * map-get($df-sizing-ratios, "sm") !default;
+$df-stepper-step-padding-x-sm: $btn-padding-x * map-get($df-size-ratios, "sm") !default;
+$df-stepper-step-padding-y-lg: $btn-padding-y * map-get($df-sizing-ratios, "lg") !default;
+$df-stepper-step-padding-x-lg: $btn-padding-x * map-get($df-size-ratios, "lg") !default;
+$df-stepper-step-padding-y-xl: $btn-padding-y * map-get($df-sizing-ratios, "xl") !default;
+$df-stepper-step-padding-x-xl: $btn-padding-x * map-get($df-size-ratios, "xl") !default;
+$df-stepper-step-height: initial !default;
+$df-stepper-hl-height: 0px !default;
+$df-stepper-hl-margin: 0 -1rem !default;
+$df-stepper-label-max-width: 13.75rem !default;
+$df-stepper-disabled-opacity: $btn-disabled-opacity !default;
+// Attention stepper may not work in modal or other element with a zindex higher.
+$df-stepper-line-zindex: 1 !default;
+$df-stepper-font-size: $font-size-base !default;
+$df-stepper-font-size-sm: $font-size-sm !default;
+$df-stepper-font-size-lg: $font-size-lg !default;

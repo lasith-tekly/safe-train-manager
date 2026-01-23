@@ -1,0 +1,193 @@
+@import "link.variables";
+
+@mixin df-link-normal {
+  color: $df-link-color;
+  border-bottom: $df-link-border-bottom;
+  text-decoration: none;
+}
+
+@mixin df-link-hover {
+  color: $df-link-color;
+  background-color: $df-link-hover-background;
+  border-bottom: $df-link-hover-border-bottom;
+  text-decoration: none;
+}
+
+@mixin df-link-visited {
+  color: $df-link-visited-color;
+  border-bottom: $df-link-visited-border-bottom;
+  text-decoration: none;
+}
+
+@mixin df-link-focus {
+  outline: $df-link-focus-outline;
+  outline-offset: $df-link-focus-outline-offset;
+  box-shadow: $df-link-focus-box-shadow;
+}
+
+@mixin df-link-visited-hover {
+  background-color: $df-link-visited-hover-background;
+  border-bottom-width: $df-link-visited-hover-border-bottom-width;
+}
+
+@mixin df-link-disabled {
+  color: $df-link-disabled-color;
+  display: $df-link-disabled-display;
+  cursor: $df-link-disabled-cursor;
+  text-decoration: $df-link-disabled-text-decoration;
+  border-bottom: $df-link-disabled-border-bottom;
+  background-color: $df-link-disabled-background;
+  outline: none;
+  box-shadow: none;
+}
+
+@mixin df-link-active {
+  color: $df-link-active-color;
+  border-bottom: $df-link-active-border-bottom;
+  background-color: $df-link-active-background;
+}
+
+@mixin df-link-external-content {
+  content: $df-link-external-icon;
+  font-family: $df-font-family;
+  position: relative;
+  bottom: $df-link-external-icon-bottom;
+  font-size: $df-link-external-icon-size;
+}
+
+@mixin df-link {
+  &:link {
+    @include df-link-normal;
+  }
+
+  &:hover {
+    @include df-link-hover;
+  }
+
+  &:visited {
+    @include df-link-visited;
+  }
+
+  &:visited:hover {
+    @include df-link-visited-hover;
+  }
+
+  &:active {
+    @include df-link-active;
+  }
+
+  &:visited:active {
+    @include df-link-active;
+  }
+
+  &:focus {
+    @include df-link-focus;
+  }
+
+  &[href*='//'], &.df-link-external {
+    .icon-external-link { // TODO remove this rule after all icons elements which will be affected for these styles will be deleted
+      display: none;
+    }
+
+    &:after {
+      @include df-link-external-content;
+    }
+  }
+
+  &[aria-disabled="true"] {
+    &:hover, &:active, &:visited, &:visited:hover, &:link {
+      @include df-link-disabled;
+    }
+  }
+}
+
+@mixin df-link-more-normal {
+  text-transform: $df-link-more-text-transform;
+  font-weight: $df-font-weight-semi-bold;
+  white-space: nowrap;
+  background-color: $df-link-background;
+
+  .df-link-more-text {
+    white-space: nowrap;
+    color: $df-link-color;
+    text-decoration: none;
+  }
+
+  .df-link-more-icon {
+    position: relative;
+    top: $df-link-more-icon-top;
+    margin-left: $df-link-more-icon-margin-left;
+    vertical-align: inherit;
+  }
+}
+
+@mixin df-link-more-hover {
+  color: $df-link-color;
+  background-color: $df-link-hover-background;
+  text-decoration: none;
+
+  .df-link-more-text {
+    white-space: nowrap;
+    text-decoration: $df-link-more-text-decoration-underline;
+  }
+
+  .df-link-more-icon {
+    text-decoration: none;
+  }
+}
+
+@mixin df-link-more-focus {
+  outline: $df-link-focus-outline;
+  outline-offset: $df-link-focus-outline-offset;
+  box-shadow: $df-link-focus-box-shadow;
+  background-color: $df-link-background;
+
+  .df-link-more-text {
+    white-space: nowrap;
+    text-decoration: $df-link-more-text-decoration-underline;
+  }
+
+  .df-link-more-icon {
+    text-decoration: none;
+  }
+}
+
+@mixin df-link-more-disabled {
+  display: $df-link-disabled-display;
+  cursor: $df-link-disabled-cursor;
+  text-decoration: $df-link-disabled-text-decoration;
+  outline: none;
+  box-shadow: none;
+  background-color: $df-link-disabled-background;
+
+  .df-link-more-text {
+    white-space: nowrap;
+    color: $df-link-disabled-color;
+    text-decoration: $df-link-disabled-text-decoration;
+  }
+
+  .df-link-more-icon {
+    color: $df-link-disabled-color;
+    text-decoration: none;
+  }
+}
+
+@mixin df-link-more {
+  &:link {
+    @include df-link-more-normal;
+  }
+
+  &:hover {
+    @include df-link-more-hover;
+  }
+
+  &:focus {
+    @include df-link-more-focus;
+  }
+
+  &[aria-disabled="true"] {
+    &:hover, &:active, &:link {
+      @include df-link-more-disabled;
+    }
+  }
+}

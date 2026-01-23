@@ -1,0 +1,38 @@
+@mixin df-input-with-icon-validation-state($state, $color, $position) {
+  $ltr-border-side: if($position == 'append','right','left');
+  $rtl-border-side: if($position == 'append','left','right');
+
+  &.is-#{$state} {
+    & ~ .#{$state}-feedback, .#{$state}-tooltip {
+      display: block;
+    }
+
+    .input-group-#{$position} {
+      border-color: $color;
+      @include ltr {
+        border-#{$ltr-border-side}: $input-border-width solid $color;
+      }
+      @include rtl {
+        border-#{$rtl-border-side}: $input-border-width solid $color;
+      }
+    }
+
+    input.df-input-withicon {
+      border-color: $color;
+      @include ltr {
+        border-#{$ltr-border-side}-color: $df-iwi-border-between-color; // override mandatory
+      }
+      @include rtl {
+        border-#{$rtl-border-side}-color: $df-iwi-border-between-color; // override mandatory
+      }
+    }
+
+    &.df-focused {
+      box-shadow: 0 0 0 $input-focus-width rgba($color, 0.25);
+
+      .input-group-#{$position} {
+        border-color: $color;
+      }
+    }
+  }
+}

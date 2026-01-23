@@ -1,0 +1,71 @@
+.container {
+  width: 100%;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg, 24px);
+}
+
+.collapse {
+  background: transparent;
+}
+
+.collapse :global(.ant-collapse-item) {
+  margin-bottom: var(--spacing-md, 16px);
+  border: 1px solid var(--gray-200, #e6e6e6);
+  border-radius: var(--border-radius-lg, 8px) !important;
+  overflow: hidden;
+}
+
+.collapse :global(.ant-collapse-header) {
+  background: var(--white, #fff);
+  padding: var(--spacing-md, 16px) !important;
+}
+
+.collapse :global(.ant-collapse-content) {
+  border-top: 1px solid var(--gray-100, #f0f0f0);
+}
+
+.collapse :global(.ant-collapse-content-box) {
+  padding: var(--spacing-md, 16px) !important;
+}
+
+.countryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding-right: var(--spacing-md, 16px);
+}
+
+.collapse :global(.ant-collapse-header) {
+  align-items: center !important;
+}
+
+.collapse :global(.ant-collapse-extra) {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.collapse :global(.ant-collapse-header-text) {
+  flex: 1;
+}
+
+.flag {
+  font-size: 24px;
+}
+
+.siteRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm, 8px);
+}
+
+.emptyState {
+  padding: var(--spacing-xl, 32px);
+  text-align: center;
+}

@@ -1,0 +1,30 @@
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  padding: 48px;
+}
+
+.icon {
+  font-size: 64px;
+  color: #d9d9d9;
+}
+
+.content {
+  margin-top: 16px;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 500;
+  color: #262626;
+  margin-bottom: 8px;
+}
+
+.description {
+  font-size: 14px;
+  color: #8c8c8c;
+  max-width: 300px;
+  margin: 0 auto;
+}

@@ -1,0 +1,211 @@
+// Work around due to the use of a namespace design-factory-v2
+.form-inline .custom-select {
+  width: 100%;
+}
+
+ngb-datepicker-navigation-select .custom-select {
+  @include ltr {
+    padding-left: 0.5rem;
+    padding-right: 0;
+  }
+  @include rtl {
+    background-position: left 0.25rem center;
+    padding-left: 0;
+    padding-right: 0.5rem;
+  }
+}
+
+.ngb-dp-arrow {
+  justify-content: $df-datepicker-navigation-arrow-justify-contents;
+
+  button {
+    padding-right: 0;
+    padding-left: 0;
+    width: $df-datepicker-day-side;
+    height: $df-datepicker-day-side;
+  }
+
+  .ngb-dp-navigation-chevron {
+    @include rtl {
+      transform: rotate(45deg);
+      margin: 0 0.25rem 0 0;
+    }
+  }
+
+  &.right {
+    .ngb-dp-navigation-chevron {
+      @include rtl {
+        transform: rotate(-135deg);
+        margin: 0 0 0 0.25rem;
+      }
+    }
+  }
+}
+
+ngb-datepicker {
+
+  padding: $df-datepicker-padding;
+  &.dropdown-menu.show {
+    padding: $df-datepicker-padding;
+    box-shadow: $df-datepicker-box-shadow;
+    border: 0;
+    border-radius: $df-datepicker-radius;
+  }
+
+  .ngb-dp- {
+    &header {
+      background-color: inherit;
+      padding-top: $df-datepicker-padding-deactivate;
+    }
+    &month {
+      &:first-child .ngb-dp-week {
+        @include ltr {
+          padding-left: $df-datepicker-padding-deactivate;
+        }
+        @include rtl {
+          padding-right: $df-datepicker-padding-deactivate;
+        }
+      }
+      &:last-child .ngb-dp-week {
+        @include ltr {
+          padding-right: $df-datepicker-padding-deactivate;
+        }
+        @include rtl {
+          padding-left: $df-datepicker-padding-deactivate;
+        }
+      }
+      .ngb-dp-week:last-child {
+        padding-bottom: $df-datepicker-padding-deactivate;
+      }
+      &-name {
+        background-color: inherit;
+        font-size: $df-datepicker-navigation-literal-font-size;
+        font-weight: $df-datepicker-navigation-literal-font-weight;
+        flex: $df-datepicker-navigation-literal-flex;
+      }
+    }
+
+    &arrow {
+      flex: $df-datepicker-navigation-arrow-flex;
+      width: $df-datepicker-day-size;
+      height: $df-datepicker-day-size;
+      button.btn {
+        color: $df-datepicker-navigation-arrow-color;
+      }
+    }
+
+    &weekday {
+      color: inherit;
+      width: $df-datepicker-day-side;
+      font-style: $df-datepicker-weekday-font-style;
+      font-size: $df-datepicker-weekday-font-size;
+      text-transform: $df-datepicker-weekday-text-transform;
+      &s {
+        background-color: inherit !important; //TODO: remove it when not needed (probably next ng-bootstrap upgrade)
+        border: none;
+      }
+    }
+
+    &day {
+      width: $df-datepicker-day-side;
+      height: $df-datepicker-day-side;
+      outline: none;
+    }
+  }
+}
+.df-datepicker-date {
+  height: $df-datepicker-day-size;
+  width: $df-datepicker-day-size;
+  text-align: $df-datepicker-day-text-align;
+  border-radius: $df-datepicker-day-border-radius;
+  display: $df-datepicker-day-display;
+  align-items: $df-datepicker-day-align-items;
+  justify-content: $df-datepicker-day-justify-content;
+  &.df-datepicker-date- {
+    &disabled {
+      color: $df-datepicker-day-disabled-color;
+      opacity: $df-datepicker-day-disabled-opacity;
+      cursor: $df-datepicker-day-disabled-cursor;
+    }
+    &selected {
+      background-color: $df-datepicker-day-active-color;
+      color: color-yiq($df-datepicker-day-active-color);
+      font-weight: $df-datepicker-day-bold;
+    }
+    &focused, .ngb-dp-arrow button:focus {
+      border: 0px none;
+      position: relative;
+      &:after {
+        content: '';
+        display: block;
+        position: absolute;
+        top: -$df-datepicker-day-focus-outline-width;
+        bottom: -$df-datepicker-day-focus-outline-width;
+        left: -$df-datepicker-day-focus-outline-width;
+        right: -$df-datepicker-day-focus-outline-width;
+        border-radius: $df-datepicker-day-border-radius + $df-datepicker-day-focus-outline-width;
+        border: $df-datepicker-day-focus-border;
+      }
+    }
+  }
+  &:not(.df-datepicker-date-disabled):not(.df-datepicker-date-selected):hover {
+    background-color: $df-datepicker-day-hover-color;
+    color: color-yiq($df-datepicker-day-hover-color);
+    text-decoration: $df-datepicker-day-hover-text-decoration;
+  }
+  &.df-datepicker-date-from {
+    border-radius: $df-datepicker-day-border-radius 0 0 $df-datepicker-day-border-radius;
+    &.df-datepicker-date-focused:after {
+      border-radius: $df-datepicker-day-border-radius 0 0 $df-datepicker-day-border-radius;
+    }
+  }
+  &.df-datepicker-date-to {
+    border-radius: 0 $df-datepicker-day-border-radius $df-datepicker-day-border-radius 0;
+    &.df-datepicker-date-focused:after {
+      border-radius: 0 $df-datepicker-day-border-radius $df-datepicker-day-border-radius 0;
+    }
+  }
+  &.df-datepicker-date-between {
+    border-radius: 0;
+    &.df-datepicker-date-focused:after {
+      border-radius: 0;
+    }
+    background-color: $df-datepicker-day-range-background-color;
+    color: $df-datepicker-day-range-color;
+    font-weight: $df-datepicker-day-bold;
+  }
+}
+
+.ngb-dp-today .df-datepicker-date {
+  font-weight: $df-datepicker-day-bold;
+  position: relative;
+  &:before {
+    content: '.';
+    display: inline-block;
+
+    /* position the dot underneath the character */
+    position: absolute;
+    bottom: 0;
+    @include ltr {
+      left: 0;
+    }
+    @include rtl {
+      right: 0;
+    }
+
+    /* center the dot horizontally */
+    text-align: center;
+    width: 100%;
+  }
+}
+
+.df-datepicker-range-popover {
+  transform: none !important;
+  margin: 0;
+  padding: 0;
+  border: none;
+  width: 0;
+  .arrow {
+    display: none;
+  }
+}

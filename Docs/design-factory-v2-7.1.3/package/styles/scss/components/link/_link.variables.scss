@@ -1,0 +1,40 @@
+$df-link-border-bottom-width: $border-width !default;
+$df-link-border-bottom: $df-link-border-bottom-width solid !default;
+$df-link-color: theme-color("primary") !default;
+$df-link-background: transparent !default;
+
+$df-link-hover-border-bottom-width: $df-link-border-bottom-width * 2 !default;
+$df-link-hover-border-bottom: $df-link-hover-border-bottom-width solid !default;
+$df-link-hover-background: $df-primary-lighten-60 !default;
+
+$df-link-visited-color: theme-color("mystery") !default;
+$df-link-visited-border-bottom-width: $df-link-border-bottom-width !default;
+$df-link-visited-hover-border-bottom-width: $df-link-hover-border-bottom-width !default;
+$df-link-visited-border-bottom: $df-link-visited-border-bottom-width solid $df-link-visited-color !default;
+$df-link-visited-hover-background: lighten($df-link-visited-color, 57) !default;
+
+$df-link-focus-outline: 0 !default;
+$df-link-focus-outline-offset: 0 !default;
+$df-link-focus-box-shadow: $btn-focus-box-shadow !default;
+
+$df-link-disabled-color: $df-btn-disabled-color !default;
+$df-link-disabled-display: inline-block !default;
+$df-link-disabled-cursor: $df-disabled-cursor !default;
+$df-link-disabled-text-decoration: none !default;
+$df-link-disabled-border-bottom-width: $df-link-border-bottom-width !default;
+$df-link-disabled-border-bottom: $df-link-disabled-border-bottom-width solid $df-btn-disabled-color !default;
+$df-link-disabled-background: transparent !default;
+
+$df-link-active-color: color("dark-primary") !default;
+$df-link-active-border-bottom-width: $df-link-border-bottom-width * 2 !default;
+$df-link-active-border-bottom: $df-link-active-border-bottom-width solid $df-link-active-color !default;
+$df-link-active-background: transparent !default;
+
+$df-link-external-icon: "\00a0\eb03" !default; // Empty space + .icon-external-link
+$df-link-external-icon-bottom: -0.08em !default;
+$df-link-external-icon-size: small !default;
+
+$df-link-more-text-transform: uppercase !default;
+$df-link-more-text-decoration-underline: underline !default;
+$df-link-more-icon-margin-left: 0.375rem !default;
+$df-link-more-icon-top: 0.125rem !default;

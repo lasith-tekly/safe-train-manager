@@ -1,0 +1,41 @@
+$df-active-border-width: 0.1875rem !default;
+$df-active-border-style: solid !default;
+$df-active-font-weight: bold !default;
+$df-navbar-boxshadow: 0 2px 4px 0 rgba(0,0,0,0.2) !default;
+$df-navbar-zindex: $zindex-fixed + 9 !default; // on top of all fixed elements but below modal
+$df-navbar-height: 3.125rem !default; // 50px
+$df-navbarbrand-padding-right: 1rem !default;
+$df-navbarbrand-padding-left: 1rem !default;
+$df-navbarbrand-padding-top: ($df-navbar-height - ($navbar-brand-font-size * $line-height-base)) / 2 !default;
+$df-navbarbrand-padding-bottom: ($df-navbar-height - ($navbar-brand-font-size * $line-height-base)) / 2 !default;
+$df-navbarbrand-min-height: $df-navbarbrand-padding-top + $df-navbarbrand-padding-bottom + $navbar-brand-font-size * $line-height-base !default;
+$df-navbarbrand-margin-right: 0px !default;
+$df-navbar-background-hover-color: $df-brand-primary-85 !default;
+$df-navbar-light-background-hover-color: $gray-200 !default;
+$df-navbarbrand-border-bottom-hover: $df-active-border-width $df-active-border-style $df-navbar-background-hover-color !default;
+$df-navbar-nav-link-padding-right: $df-navbarbrand-padding-right !default;
+$df-navbar-nav-link-padding-left: $df-navbarbrand-padding-left !default;
+$df-navbar-nav-link-padding-top: ($df-navbar-height - ($font-size-base * $line-height-base)) / 2 !default;
+$df-navbar-nav-link-padding-bottom: ($df-navbar-height - ($font-size-base * $line-height-base)) / 2 - $df-active-border-width !default;
+$df-navbar-nav-link-expanded-padding-bottom: $df-navbar-nav-link-padding-top !default;
+
+$df-navbar-toggle-margin-left: 1rem !default;
+$df-navbar-toggle-margin-right: 1rem !default;
+$df-navbar-font-family: "Amadeus" !default;
+
+$df-navbar-dark-focus-color:  $navbar-dark-color !default;
+$df-navbar-dark-active-border-color: $navbar-dark-color !default;
+$df-navbarlight-text-color: $gray-600 !default;
+$df-navbartext-white-space: nowrap !default;
+$df-navbar-collapse-overflow: hidden !default;
+$df-navbartext-overflow: hidden !default;
+$df-navbartext-text-overflow: ellipsis !default;
+$df-navbartext-margin-left: $df-navbar-nav-link-padding-left !default;
+
+$df-superheader-border-bottom: $border-width solid $gray-300 !default;
+$df-superheader-navbar-boxshadow: none !default;
+$df-superheader-firstnav-padding-y: 0.625rem !default;
+$df-superheader-firstnav-padding-x: 0rem !default;
+$df-superheader-firstnav-padding: $df-superheader-firstnav-padding-y $df-superheader-firstnav-padding-x !default;
+$df-navbar-toggle-icon-width: 1.5rem !default;
+$df-navbar-toggle-icon-height: 1.5rem !default;

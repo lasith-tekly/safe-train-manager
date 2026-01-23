@@ -1,0 +1,13 @@
+$df-infinite-animation-duration: 2.2s !default; // can be changed to speed-up or slow down the infinite animation
+$df-text-color: $gray-600 !default;
+
+/**
+  Color of the progressbar background (~color of the progressbar with 0% progress) for the 'dark background' version
+*/
+$df-darkBackgroundVersion-progressbar-background-color: $dark-primary !default;
+
+/**
+  Color of the progressbar (~color of the progressbar with 100% progress) for the 'dark background' version
+*/
+$df-darkBackgroundVersion-progressbar-color: white !default;
+
