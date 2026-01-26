@@ -583,7 +583,7 @@ export const PIAllocationsPanel: React.FC<PIAllocationsPanelProps> = ({
                     <Space>
                       <UserOutlined />
                       <Text strong>{selectedAllocation.member_name}</Text>
-                      <Text type="secondary">- {selectedAllocation.member_role}</Text>
+                      <Text type="secondary">({selectedAllocation.member_role.toUpperCase()})</Text>
                     </Space>
                   }
                   size="small"
@@ -611,21 +611,19 @@ export const PIAllocationsPanel: React.FC<PIAllocationsPanelProps> = ({
                     </Col>
                     <Col span={12}>
                       <Text strong>Team Roles</Text>
-                      <div style={{ marginTop: 4 }}>
+                      <div style={{ marginTop: 4, display: 'flex', gap: '16px' }}>
                         <Checkbox
                           checked={getCurrentValue('is_scrum_master', selectedAllocation.is_scrum_master)}
                           onChange={(e) => updateMemberChange('is_scrum_master', e.target.checked)}
                         >
                           Scrum Master
                         </Checkbox>
-                        <br />
                         <Checkbox
                           checked={getCurrentValue('is_product_owner', selectedAllocation.is_product_owner)}
                           onChange={(e) => updateMemberChange('is_product_owner', e.target.checked)}
                         >
                           Product Owner
                         </Checkbox>
-                        <br />
                         <Checkbox
                           checked={getCurrentValue('is_other_role', selectedAllocation.is_other_role || false)}
                           onChange={(e) => updateMemberChange('is_other_role', e.target.checked)}
