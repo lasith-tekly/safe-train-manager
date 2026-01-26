@@ -564,7 +564,9 @@ export const PIAllocationsPanel: React.FC<PIAllocationsPanelProps> = ({
                             <Tag color={allocation.member_role === 'developer' ? 'cyan' : allocation.member_role === 'qa' ? 'purple' : 'orange'}>
                               {allocation.member_role.toUpperCase()}
                             </Tag>
-                            <Text type="secondary">{allocation.effective_productivity}%</Text>
+                            {allocation.agile_role_allocation_percent > 0 && (
+                              <Text type="secondary">Agile: {allocation.agile_role_allocation_percent}%</Text>
+                            )}
                           </Space>
                         }
                       />

@@ -710,8 +710,10 @@ class MemberPIAllocationService:
             # Update existing
             allocation.train_allocation_percent = data.train_allocation_percent
             allocation.productivity_percent = data.productivity_percent
+            allocation.agile_role_allocation_percent = data.agile_role_allocation_percent if hasattr(data, 'agile_role_allocation_percent') else 0
             allocation.is_scrum_master = data.is_scrum_master
             allocation.is_product_owner = data.is_product_owner
+            allocation.is_other_role = data.is_other_role if hasattr(data, 'is_other_role') else False
             allocation.transversal_role = data.transversal_role
             allocation.specializations = specializations_json
             allocation.ip_week_deduction = data.ip_week_deduction or 0
@@ -723,8 +725,10 @@ class MemberPIAllocationService:
                 pi_id=pi_id,
                 train_allocation_percent=data.train_allocation_percent,
                 productivity_percent=data.productivity_percent,
+                agile_role_allocation_percent=data.agile_role_allocation_percent if hasattr(data, 'agile_role_allocation_percent') else 0,
                 is_scrum_master=data.is_scrum_master,
                 is_product_owner=data.is_product_owner,
+                is_other_role=data.is_other_role if hasattr(data, 'is_other_role') else False,
                 transversal_role=data.transversal_role,
                 specializations=specializations_json,
                 ip_week_deduction=data.ip_week_deduction or 0,
