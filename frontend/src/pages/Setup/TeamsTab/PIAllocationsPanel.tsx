@@ -417,11 +417,11 @@ export const PIAllocationsPanel: React.FC<PIAllocationsPanelProps> = ({
     <Drawer
       title={`PI Allocations - ${team?.name || ''}`}
       placement="right"
-      width="90%"
+      width="85%"
       onClose={onClose}
       open={visible}
-      getContainer={false}
-      style={{ position: 'absolute' }}
+      mask={true}
+      maskClosable={true}
       styles={{ 
         body: { padding: '24px' }
       }}
