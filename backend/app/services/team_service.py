@@ -436,7 +436,8 @@ class TeamService:
         # Aggregates for IP iteration (raw or with productivity based on setting)
         ip_totals = {'developer': 0.0, 'ba': 0.0, 'qa': 0.0, 'total': 0.0}
         
-        train_productivity = global_settings.global_productivity_percentage / 100.0
+        # Train-level productivity override (1.0 = no override, use member-level productivity)
+        train_productivity = 1.0
         pi_planning_days = global_settings.pi_planning_days
         apply_productivity_to_ip = global_settings.apply_productivity_to_ip
         
