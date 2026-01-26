@@ -40,22 +40,8 @@ def get_team_pi_allocations(team_id: str, pi_id: str, db: Session = Depends(get_
     iteration_working_days = []
     
     if team and pi:
-        # Calculate iteration working days
-        iterations = db.query(Iteration).filter(Iteration.pi_id == pi_id).order_by(Iteration.start_date).all()
-        for iteration in iterations:
-            if iteration.start_date and iteration.end_date:
-                working_days = 0
-                current = iteration.start_date
-                while current <= iteration.end_date:
-                    if current.weekday() < 5:  # Mon-Fri
-                        working_days += 1
-                    current += timedelta(days=1)
-                iteration_working_days.append(PIIterationSummary(
-                    iteration_name=iteration.name,
-                    working_days=working_days
-                ))
-        
-        # Get site-level holidays count
+        # Get site-level holidays first
+        holidays = []
         if team.site_id:
             site = db.query(Site).filter(Site.id == team.site_id).first()
             holidays_query = db.query(Holiday).filter(
@@ -69,8 +55,25 @@ def get_team_pi_allocations(team_id: str, pi_id: str, db: Session = Depends(get_
                 ).all()
             else:
                 holidays = holidays_query.filter(Holiday.team_id == team.id).all()
-            
-            site_holidays_count = len(holidays)
+        
+        site_holidays_count = len(holidays)
+        holiday_dates = {h.date for h in holidays}
+        
+        # Calculate iteration working days (net of holidays)
+        iterations = db.query(Iteration).filter(Iteration.pi_id == pi_id).order_by(Iteration.start_date).all()
+        for iteration in iterations:
+            if iteration.start_date and iteration.end_date:
+                working_days = 0
+                current = iteration.start_date
+                while current <= iteration.end_date:
+                    # Count only Mon-Fri that are not holidays
+                    if current.weekday() < 5 and current not in holiday_dates:
+                        working_days += 1
+                    current += timedelta(days=1)
+                iteration_working_days.append(PIIterationSummary(
+                    iteration_name=iteration.name,
+                    working_days=working_days
+                ))
     
     return MemberPIAllocationListResponse(
         data=allocations, 
