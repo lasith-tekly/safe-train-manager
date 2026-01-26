@@ -571,6 +571,9 @@ export const PIAllocationsPanel: React.FC<PIAllocationsPanelProps> = ({
                             {allocation.agile_role_allocation_percent > 0 && (
                               <Text type="secondary">Agile: {allocation.agile_role_allocation_percent}%</Text>
                             )}
+                            {allocation.effective_productivity > 0 && (
+                              <Text type="secondary">Prod: {allocation.effective_productivity}%</Text>
+                            )}
                           </Space>
                         }
                       />
