@@ -159,23 +159,27 @@ export const PIAllocationsPanel: React.FC<PIAllocationsPanelProps> = ({
     if (!selectedPIObj?.iterations) return;
 
     try {
-      const response = await getTeamIterationLeave(team.id, selectedPI);
       const leavesByMember: Record<string, Record<string, IterationMemberLeave>> = {};
       const trainingByMember: Record<string, Record<string, IterationMemberLeave>> = {};
       const otherByMember: Record<string, Record<string, IterationMemberLeave>> = {};
 
-      response.data.forEach((leave: IterationMemberLeave) => {
-        if (leave.leave_type === 'training') {
-          if (!trainingByMember[leave.member_id]) trainingByMember[leave.member_id] = {};
-          trainingByMember[leave.member_id][leave.iteration_id] = leave;
-        } else if (leave.leave_type === 'other') {
-          if (!otherByMember[leave.member_id]) otherByMember[leave.member_id] = {};
-          otherByMember[leave.member_id][leave.iteration_id] = leave;
-        } else {
-          if (!leavesByMember[leave.member_id]) leavesByMember[leave.member_id] = {};
-          leavesByMember[leave.member_id][leave.iteration_id] = leave;
-        }
-      });
+      // Fetch leaves for each iteration in the PI
+      for (const iteration of selectedPIObj.iterations) {
+        const response = await getTeamIterationLeave(team.id, iteration.id);
+        
+        response.data.forEach((leave: IterationMemberLeave) => {
+          if (leave.leave_type === 'training') {
+            if (!trainingByMember[leave.member_id]) trainingByMember[leave.member_id] = {};
+            trainingByMember[leave.member_id][leave.iteration_id] = leave;
+          } else if (leave.leave_type === 'other') {
+            if (!otherByMember[leave.member_id]) otherByMember[leave.member_id] = {};
+            otherByMember[leave.member_id][leave.iteration_id] = leave;
+          } else {
+            if (!leavesByMember[leave.member_id]) leavesByMember[leave.member_id] = {};
+            leavesByMember[leave.member_id][leave.iteration_id] = leave;
+          }
+        });
+      }
 
       setMemberLeaves(leavesByMember);
       setMemberTraining(trainingByMember);
