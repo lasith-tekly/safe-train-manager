@@ -432,6 +432,13 @@ export const PIAllocationsPanel: React.FC<PIAllocationsPanelProps> = ({
       }}
     >
       <div style={{ width: '100%', margin: 0, padding: 0 }}>
+        {/* Title */}
+        <div style={{ marginBottom: 24, paddingBottom: 16, borderBottom: '2px solid #1890ff' }}>
+          <Title level={3} style={{ margin: 0, color: '#1890ff' }}>
+            PI Allocations - {team?.name || ''}
+          </Title>
+        </div>
+
         {/* PI Selection and Summary */}
         <Row gutter={16} style={{ marginBottom: 16 }}>
           <Col span={6}>
