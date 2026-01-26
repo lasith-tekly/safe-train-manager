@@ -537,11 +537,52 @@ class MemberPIAllocationService:
             component_hat_names = [hat.name for hat in member.component_hats] if member.component_hats else []
             
             if allocation:
-                effective_productivity = (
+                # Calculate effective productivity considering iteration-level overrides
+                from app.models.member_iteration_productivity import MemberIterationProductivity
+                from app.models.pi import Iteration
+                
+                # Get iterations for this PI
+                iterations = db.query(Iteration).filter(Iteration.pi_id == pi_id).all()
+                
+                # Get iteration productivity overrides for this member
+                iter_productivity_records = db.query(MemberIterationProductivity).filter(
+                    MemberIterationProductivity.member_id == member.id,
+                    MemberIterationProductivity.iteration_id.in_([it.id for it in iterations])
+                ).all()
+                iter_productivity_map = {r.iteration_id: r.productivity_percent for r in iter_productivity_records}
+                
+                # Base productivity (PI-level or individual or global)
+                base_productivity = (
                     allocation.productivity_percent 
                     if allocation.productivity_percent is not None 
                     else (member.individual_productivity or global_settings.global_productivity_percentage)
                 )
+                
+                # Calculate weighted average productivity based on iteration working days
+                if iter_productivity_map and iterations:
+                    total_working_days = 0
+                    weighted_productivity_sum = 0
+                    
+                    for iteration in iterations:
+                        # Calculate working days for this iteration
+                        if iteration.start_date and iteration.end_date:
+                            from datetime import timedelta
+                            working_days = 0
+                            current = iteration.start_date
+                            while current <= iteration.end_date:
+                                if current.weekday() < 5:  # Mon-Fri
+                                    working_days += 1
+                                current += timedelta(days=1)
+                            
+                            # Use iteration-specific productivity if set, otherwise base
+                            iter_prod = iter_productivity_map.get(iteration.id, base_productivity)
+                            weighted_productivity_sum += working_days * iter_prod
+                            total_working_days += working_days
+                    
+                    effective_productivity = round(weighted_productivity_sum / total_working_days) if total_working_days > 0 else base_productivity
+                else:
+                    effective_productivity = base_productivity
+                
                 # Parse specializations from JSON string
                 import json
                 specializations = json.loads(allocation.specializations) if allocation.specializations else []
