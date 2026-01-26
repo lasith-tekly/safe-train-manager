@@ -579,6 +579,12 @@ class MemberPIAllocationService:
                 else:
                     effective_productivity = base_productivity
                 
+                # Calculate accumulated productivity: available_capacity × productivity
+                # This represents actual productive capacity for train work relative to total working days
+                agile_role_pct = allocation.agile_role_allocation_percent / 100.0 if allocation.agile_role_allocation_percent else 0.0
+                available_capacity_pct = 1.0 - agile_role_pct
+                accumulated_productivity = round(available_capacity_pct * effective_productivity)
+                
                 # Parse specializations from JSON string
                 import json
                 specializations = json.loads(allocation.specializations) if allocation.specializations else []
@@ -593,7 +599,7 @@ class MemberPIAllocationService:
                     train_allocation_percent=allocation.train_allocation_percent,
                     productivity_percent=allocation.productivity_percent,
                     agile_role_allocation_percent=allocation.agile_role_allocation_percent,
-                    effective_productivity=effective_productivity,
+                    effective_productivity=accumulated_productivity,
                     is_scrum_master=allocation.is_scrum_master,
                     is_product_owner=allocation.is_product_owner,
                     is_other_role=allocation.is_other_role,
@@ -607,7 +613,9 @@ class MemberPIAllocationService:
                 ))
             else:
                 # Return default values for members without PI-specific allocation
-                effective_productivity = member.individual_productivity or global_settings.global_productivity_percentage
+                base_productivity = member.individual_productivity or global_settings.global_productivity_percentage
+                # No agile role allocation for members without PI allocation, so accumulated = base
+                accumulated_productivity = base_productivity
                 results.append(MemberPIAllocationResponse(
                     id="",  # No allocation exists
                     member_id=member.id,
@@ -618,7 +626,7 @@ class MemberPIAllocationService:
                     agile_role_allocation_percent=0,
                     train_allocation_percent=member.train_allocation_percent,
                     productivity_percent=None,
-                    effective_productivity=effective_productivity,
+                    effective_productivity=accumulated_productivity,
                     is_scrum_master=member.is_scrum_master,
                     is_product_owner=member.is_product_owner,
                     is_other_role=False,
