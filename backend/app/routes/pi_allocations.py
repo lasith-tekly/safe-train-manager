@@ -175,7 +175,7 @@ def bulk_create_iteration_productivity(
     data: BulkIterationProductivityCreate,
     db: Session = Depends(get_db)
 ):
-    """Bulk create/update iteration productivity for a team."""
+    """Bulk create/update iteration productivity for a team. Set productivity_percent to null to delete override."""
     results = []
     
     for item in data.items:
@@ -185,7 +185,13 @@ def bulk_create_iteration_productivity(
             MemberIterationProductivity.iteration_id == item.iteration_id
         ).first()
         
-        if existing:
+        if item.productivity_percent is None:
+            # Delete override if exists (null = remove override)
+            if existing:
+                db.delete(existing)
+                db.commit()
+            # Don't add to results - override was deleted
+        elif existing:
             # Update existing
             existing.productivity_percent = item.productivity_percent
             db.commit()

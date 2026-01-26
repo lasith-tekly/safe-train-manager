@@ -955,7 +955,7 @@ export interface MemberIterationProductivity {
 export interface MemberIterationProductivityCreate {
   member_id: string;
   iteration_id: string;
-  productivity_percent: number;
+  productivity_percent: number | null;  // null = delete override
 }
 
 export interface BulkIterationProductivityCreate {

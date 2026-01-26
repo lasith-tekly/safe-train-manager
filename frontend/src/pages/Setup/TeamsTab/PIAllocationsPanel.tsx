@@ -226,13 +226,12 @@ export const PIAllocationsPanel: React.FC<PIAllocationsPanelProps> = ({
     
     const items: MemberIterationProductivityCreate[] = [];
     for (const [iterationId, percent] of Object.entries(memberEdits)) {
-      if (percent !== null && percent !== undefined) {
-        items.push({
-          member_id: memberId,
-          iteration_id: iterationId,
-          productivity_percent: percent
-        });
-      }
+      // Include null values to delete overrides
+      items.push({
+        member_id: memberId,
+        iteration_id: iterationId,
+        productivity_percent: percent === null ? null : percent
+      });
     }
     
     if (items.length > 0) {

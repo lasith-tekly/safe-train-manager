@@ -364,7 +364,7 @@ class BulkPIAllocationCreate(BaseModel):
 # ============================================
 
 class MemberIterationProductivityBase(BaseModel):
-    productivity_percent: int = Field(..., ge=0, le=100, description="Productivity percentage for this iteration")
+    productivity_percent: Optional[int] = Field(None, ge=0, le=100, description="Productivity percentage for this iteration (null = delete override)")
 
 
 class MemberIterationProductivityCreate(MemberIterationProductivityBase):
