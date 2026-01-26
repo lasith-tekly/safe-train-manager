@@ -48,7 +48,7 @@ export const PIAllocationsPanel: React.FC<PIAllocationsPanelProps> = ({
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
-  const [componentHatOptions, setComponentHatOptions] = useState<string[]>([]);
+  const [componentHatOptions, setComponentHatOptions] = useState<Array<{id: string, name: string}>>([]);
   const [specializationSuggestions] = useState<string[]>(['Android', 'iOS', 'Backend', 'Frontend', 'DevOps', 'QA Automation', 'Data']);
   // Leave data by type: { memberId: { iterationId: leave } }
   const [memberLeaves, setMemberLeaves] = useState<Record<string, Record<string, IterationMemberLeave>>>({});
@@ -107,7 +107,7 @@ export const PIAllocationsPanel: React.FC<PIAllocationsPanelProps> = ({
   const loadComponentHats = async () => {
     try {
       const response = await getComponentHats();
-      setComponentHatOptions(response.data.map(h => h.name));
+      setComponentHatOptions(response.data.map(h => ({ id: h.id, name: h.name })));
     } catch {
       // Component hats not available
     }
@@ -316,18 +316,27 @@ export const PIAllocationsPanel: React.FC<PIAllocationsPanelProps> = ({
 
     setSaving(true);
     try {
-      const data: MemberPIAllocationCreate[] = editedAllocations.map(a => ({
-        member_id: a.member_id,
-        pi_id: selectedPI,
-        train_allocation_percent: a.train_allocation_percent,
-        productivity_percent: a.productivity_percent,
-        is_scrum_master: a.is_scrum_master,
-        is_product_owner: a.is_product_owner,
-        transversal_role: a.transversal_role || undefined,
-        specializations: a.specializations,
-        ip_week_deduction: a.ip_week_deduction || 0,
-        notes: a.notes || undefined
-      }));
+      const data: MemberPIAllocationCreate[] = editedAllocations.map(a => {
+        // Convert component hat names to IDs
+        const componentHatIds = a.component_hats?.map(name => {
+          const hat = componentHatOptions.find(h => h.name === name);
+          return hat?.id;
+        }).filter(id => id !== undefined) as string[] | undefined;
+        
+        return {
+          member_id: a.member_id,
+          pi_id: selectedPI,
+          train_allocation_percent: a.train_allocation_percent,
+          productivity_percent: a.productivity_percent,
+          is_scrum_master: a.is_scrum_master,
+          is_product_owner: a.is_product_owner,
+          transversal_role: a.transversal_role || undefined,
+          specializations: a.specializations,
+          ip_week_deduction: a.ip_week_deduction || 0,
+          component_hat_ids: componentHatIds,
+          notes: a.notes || undefined
+        };
+      });
 
       await bulkCreatePIAllocations(team.id, selectedPI, data);
       message.success(`Saved ${editedAllocations.length} allocation(s)`);
@@ -495,7 +504,7 @@ export const PIAllocationsPanel: React.FC<PIAllocationsPanelProps> = ({
             onChange={(value) => handleAllocationChange(record.member_id, 'component_hats', value)}
             placeholder="Select component hats"
             style={{ width: '100%', marginTop: 4 }}
-            options={componentHatOptions.map(h => ({ value: h, label: h }))}
+            options={componentHatOptions.map(h => ({ value: h.name, label: h.name }))}
           />
         </Col>
         <Col span={12}>

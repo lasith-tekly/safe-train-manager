@@ -912,6 +912,7 @@ export interface MemberPIAllocationCreate {
   transversal_role?: string;
   specializations?: string[];
   ip_week_deduction?: number;
+  component_hat_ids?: string[];
   notes?: string;
 }
 

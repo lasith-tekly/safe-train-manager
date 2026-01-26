@@ -728,6 +728,18 @@ class MemberPIAllocationService:
             )
             db.add(allocation)
         
+        # Handle component hats assignment
+        if data.component_hat_ids is not None:
+            # Clear existing component hats
+            member.component_hats.clear()
+            
+            # Add new component hats
+            if data.component_hat_ids:
+                component_hats = db.query(ComponentHat).filter(
+                    ComponentHat.id.in_(data.component_hat_ids)
+                ).all()
+                member.component_hats.extend(component_hats)
+        
         db.commit()
         db.refresh(allocation)
         

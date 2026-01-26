@@ -304,6 +304,7 @@ class MemberPIAllocationBase(BaseModel):
 class MemberPIAllocationCreate(MemberPIAllocationBase):
     member_id: str
     pi_id: str
+    component_hat_ids: Optional[List[str]] = Field(None, description="Component hat IDs to assign to member")
 
 
 class MemberPIAllocationUpdate(BaseModel):
