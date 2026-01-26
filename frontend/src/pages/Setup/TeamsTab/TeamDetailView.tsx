@@ -28,27 +28,34 @@ export const TeamDetailView: React.FC<TeamDetailViewProps> = ({
   const currentYear = new Date().getFullYear();
 
   useEffect(() => {
-    loadPIs();
-  }, []);
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        const response = await getPIs(currentYear);
+        setPIs(response.data);
+        // Auto-select first PI
+        if (response.data.length > 0 && team) {
+          const firstPIId = response.data[0].id;
+          setSelectedPIId(firstPIId);
+          // Load capacity detail immediately
+          const detail = await getTeamPICapacityDetail(team.id, firstPIId);
+          setCapacityDetail(detail);
+        }
+      } catch (error) {
+        console.error('Failed to load data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadData();
+  }, [team.id]);
 
   useEffect(() => {
-    if (selectedPIId && team) {
+    if (selectedPIId && team && pis.length > 0) {
       loadCapacityDetail();
     }
-  }, [selectedPIId, team]);
-
-  const loadPIs = async () => {
-    try {
-      const response = await getPIs(currentYear);
-      setPIs(response.data);
-      // Auto-select first PI
-      if (response.data.length > 0) {
-        setSelectedPIId(response.data[0].id);
-      }
-    } catch {
-      // PIs not available
-    }
-  };
+  }, [selectedPIId]);
 
   const loadCapacityDetail = async () => {
     if (!selectedPIId || !team) return;
