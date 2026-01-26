@@ -415,7 +415,7 @@ export const PIAllocationsPanel: React.FC<PIAllocationsPanelProps> = ({
 
   return (
     <Drawer
-      title={`PI Allocations - ${team?.name || ''}`}
+      title={<Title level={4} style={{ margin: 0 }}>{`PI Allocations - ${team?.name || ''}`}</Title>}
       placement="right"
       width="50%"
       onClose={onClose}
@@ -423,6 +423,11 @@ export const PIAllocationsPanel: React.FC<PIAllocationsPanelProps> = ({
       mask={true}
       maskClosable={true}
       styles={{ 
+        header: { 
+          backgroundColor: '#fafafa', 
+          borderBottom: '1px solid #d9d9d9',
+          padding: '16px 24px'
+        },
         body: { padding: '24px' }
       }}
     >
