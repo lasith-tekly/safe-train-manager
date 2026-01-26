@@ -926,6 +926,18 @@ export interface MemberPIAllocationUpdate {
   notes?: string;
 }
 
+export interface PIIterationSummary {
+  iteration_name: string;
+  working_days: number;
+}
+
+export interface MemberPIAllocationListResponse {
+  data: MemberPIAllocation[];
+  total: number;
+  site_holidays_count?: number;
+  iteration_working_days?: PIIterationSummary[];
+}
+
 // ============================================
 // Member Iteration Productivity Types
 // ============================================

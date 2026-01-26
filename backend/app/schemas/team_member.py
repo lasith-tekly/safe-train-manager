@@ -341,9 +341,16 @@ class MemberPIAllocationResponse(BaseModel):
         from_attributes = True
 
 
+class PIIterationSummary(BaseModel):
+    """Summary of iteration working days"""
+    iteration_name: str
+    working_days: int
+
 class MemberPIAllocationListResponse(BaseModel):
     data: List[MemberPIAllocationResponse]
     total: int
+    site_holidays_count: Optional[int] = None
+    iteration_working_days: Optional[List[PIIterationSummary]] = None
 
 
 class BulkPIAllocationCreate(BaseModel):

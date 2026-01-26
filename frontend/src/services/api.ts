@@ -78,6 +78,7 @@ import type {
   SiteHolidayUpdate,
   MemberPIAllocation,
   MemberPIAllocationCreate,
+  MemberPIAllocationListResponse,
   MemberIterationProductivity,
   MemberIterationProductivityCreate,
   TeamCapacitySummary,
@@ -824,8 +825,8 @@ export const deleteSiteHoliday = async (holidayId: string): Promise<void> => {
 };
 
 // Member PI Allocation API
-export const getTeamPIAllocations = async (teamId: string, piId: string): Promise<{ data: MemberPIAllocation[]; total: number }> => {
-  const response = await api.get<{ data: MemberPIAllocation[]; total: number }>(`/teams/${teamId}/pi/${piId}/allocations`);
+export const getTeamPIAllocations = async (teamId: string, piId: string): Promise<MemberPIAllocationListResponse> => {
+  const response = await api.get<MemberPIAllocationListResponse>(`/teams/${teamId}/pi/${piId}/allocations`);
   return response.data;
 };
 

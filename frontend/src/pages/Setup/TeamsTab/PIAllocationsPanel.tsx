@@ -62,6 +62,8 @@ export const PIAllocationsPanel: React.FC<PIAllocationsPanelProps> = ({
   const [iterProductivity, setIterProductivity] = useState<Record<string, Record<string, MemberIterationProductivity>>>({});
   // Iteration productivity edits: { memberId: { iterationId: percent } }
   const [productivityEdits, setProductivityEdits] = useState<Record<string, Record<string, number | null>>>({});
+  const [siteHolidaysCount, setSiteHolidaysCount] = useState<number>(0);
+  const [iterationWorkingDays, setIterationWorkingDays] = useState<Array<{iteration_name: string, working_days: number}>>([]);
 
   useEffect(() => {
     if (visible && team) {
@@ -93,6 +95,8 @@ export const PIAllocationsPanel: React.FC<PIAllocationsPanelProps> = ({
     try {
       const response = await getTeamPIAllocations(team.id, selectedPI);
       setAllocations(response.data.map(a => ({ ...a, isEdited: false })));
+      setSiteHolidaysCount(response.site_holidays_count || 0);
+      setIterationWorkingDays(response.iteration_working_days || []);
     } catch (error) {
       message.error('Failed to load allocations');
     } finally {
@@ -758,7 +762,7 @@ export const PIAllocationsPanel: React.FC<PIAllocationsPanelProps> = ({
 
       {/* Summary Stats */}
       <Row gutter={16} style={{ marginBottom: 16 }}>
-        <Col span={12}>
+        <Col span={6}>
           <Card size="small">
             <Statistic
               title="Members"
@@ -766,13 +770,33 @@ export const PIAllocationsPanel: React.FC<PIAllocationsPanelProps> = ({
             />
           </Card>
         </Col>
-        <Col span={12}>
+        <Col span={6}>
           <Card size="small">
             <Statistic
               title="Avg Productivity"
               value={avgProductivity}
               suffix="%"
             />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card size="small">
+            <Statistic
+              title="Site Holidays"
+              value={siteHolidaysCount}
+              suffix="days"
+            />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card size="small">
+            <Tooltip title={iterationWorkingDays.map(i => `${i.iteration_name}: ${i.working_days}d`).join(', ')}>
+              <Statistic
+                title="Working Days"
+                value={iterationWorkingDays.reduce((sum, i) => sum + i.working_days, 0)}
+                suffix="days"
+              />
+            </Tooltip>
           </Card>
         </Col>
       </Row>

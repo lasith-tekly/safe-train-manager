@@ -23,8 +23,61 @@ router = APIRouter(prefix="/api", tags=["pi-allocations"])
 @router.get("/teams/{team_id}/pi/{pi_id}/allocations", response_model=MemberPIAllocationListResponse)
 def get_team_pi_allocations(team_id: str, pi_id: str, db: Session = Depends(get_db)):
     """Get all member allocations for a team in a specific PI."""
+    from app.models.team import Team
+    from app.models.pi import PI, Iteration
+    from app.models.holiday import Holiday
+    from app.models.organization import Site
+    from app.schemas.team_member import PIIterationSummary
+    from datetime import timedelta
+    
     allocations = MemberPIAllocationService.get_by_team_pi(db, team_id, pi_id)
-    return MemberPIAllocationListResponse(data=allocations, total=len(allocations))
+    
+    # Get PI summary data
+    team = db.query(Team).filter(Team.id == team_id).first()
+    pi = db.query(PI).filter(PI.id == pi_id).first()
+    
+    site_holidays_count = 0
+    iteration_working_days = []
+    
+    if team and pi:
+        # Calculate iteration working days
+        iterations = db.query(Iteration).filter(Iteration.pi_id == pi_id).order_by(Iteration.start_date).all()
+        for iteration in iterations:
+            if iteration.start_date and iteration.end_date:
+                working_days = 0
+                current = iteration.start_date
+                while current <= iteration.end_date:
+                    if current.weekday() < 5:  # Mon-Fri
+                        working_days += 1
+                    current += timedelta(days=1)
+                iteration_working_days.append(PIIterationSummary(
+                    iteration_name=iteration.name,
+                    working_days=working_days
+                ))
+        
+        # Get site-level holidays count
+        if team.site_id:
+            site = db.query(Site).filter(Site.id == team.site_id).first()
+            holidays_query = db.query(Holiday).filter(
+                Holiday.date >= pi.start_date,
+                Holiday.date <= pi.end_date
+            )
+            
+            if site and site.country_id:
+                holidays = holidays_query.filter(
+                    (Holiday.country_id == site.country_id) | (Holiday.team_id == team.id)
+                ).all()
+            else:
+                holidays = holidays_query.filter(Holiday.team_id == team.id).all()
+            
+            site_holidays_count = len(holidays)
+    
+    return MemberPIAllocationListResponse(
+        data=allocations, 
+        total=len(allocations),
+        site_holidays_count=site_holidays_count,
+        iteration_working_days=iteration_working_days
+    )
 
 
 @router.get("/members/{member_id}/pi-allocations", response_model=MemberPIAllocationListResponse)
