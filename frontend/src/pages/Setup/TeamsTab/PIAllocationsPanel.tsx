@@ -417,7 +417,7 @@ export const PIAllocationsPanel: React.FC<PIAllocationsPanelProps> = ({
     <Drawer
       title={`PI Allocations - ${team?.name || ''}`}
       placement="right"
-      width="70%"
+      width="50%"
       onClose={onClose}
       open={visible}
       mask={true}
