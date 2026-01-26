@@ -239,22 +239,24 @@ export const TeamsTab: React.FC = () => {
           </div>
           
           {/* Capacity View Section - Using new TeamDetailView */}
-          <div className={styles.capacitySection}>
+          <div className={styles.capacitySection} style={{ minHeight: '500px' }}>
             {selectedTeamForView ? (
-              <TeamDetailView
-                team={selectedTeamForView}
-                onClose={() => setSelectedTeamForView(null)}
-                onManageMembers={() => {
-                  setSelectedTeamForManage(selectedTeamForView);
-                  setShowManagePanel(true);
-                }}
-                onPIAllocations={() => {
-                  setSelectedTeamForPIAllocations(selectedTeamForView);
-                  setShowPIAllocationsPanel(true);
-                }}
-              />
+              <div key={selectedTeamForView.id}>
+                <TeamDetailView
+                  team={selectedTeamForView}
+                  onClose={() => setSelectedTeamForView(null)}
+                  onManageMembers={() => {
+                    setSelectedTeamForManage(selectedTeamForView);
+                    setShowManagePanel(true);
+                  }}
+                  onPIAllocations={() => {
+                    setSelectedTeamForPIAllocations(selectedTeamForView);
+                    setShowPIAllocationsPanel(true);
+                  }}
+                />
+              </div>
             ) : (
-              <div style={{ padding: '48px', textAlign: 'center', color: '#8c8c8c' }}>
+              <div style={{ padding: '48px', textAlign: 'center', color: '#8c8c8c', minHeight: '500px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                 <UserOutlined style={{ fontSize: '48px', color: '#d9d9d9', marginBottom: '16px' }} />
                 <div style={{ fontSize: '16px', color: '#262626', marginBottom: '8px' }}>
                   Select a team to view details
