@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Tag, message, Input, Empty, Skeleton, Typography } from 'antd';
-import { SearchOutlined } from '@ant-design/icons';
+import { SearchOutlined, UserOutlined } from '@ant-design/icons';
 import { TeamFormPanel } from './TeamFormPanel';
 import { TeamMembersPanel } from './TeamMembersPanel';
 import { IterationCapacityView } from './IterationCapacityView';
@@ -239,8 +239,8 @@ export const TeamsTab: React.FC = () => {
           </div>
           
           {/* Capacity View Section - Using new TeamDetailView */}
-          {selectedTeamForView && (
-            <div className={styles.capacitySection}>
+          <div className={styles.capacitySection}>
+            {selectedTeamForView ? (
               <TeamDetailView
                 team={selectedTeamForView}
                 onClose={() => setSelectedTeamForView(null)}
@@ -253,8 +253,18 @@ export const TeamsTab: React.FC = () => {
                   setShowPIAllocationsPanel(true);
                 }}
               />
-            </div>
-          )}
+            ) : (
+              <div style={{ padding: '48px', textAlign: 'center', color: '#8c8c8c' }}>
+                <UserOutlined style={{ fontSize: '48px', color: '#d9d9d9', marginBottom: '16px' }} />
+                <div style={{ fontSize: '16px', color: '#262626', marginBottom: '8px' }}>
+                  Select a team to view details
+                </div>
+                <div style={{ fontSize: '14px' }}>
+                  Click on any team from the list to see capacity and member information
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
