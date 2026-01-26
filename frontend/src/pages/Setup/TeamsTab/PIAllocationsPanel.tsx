@@ -480,13 +480,19 @@ export const PIAllocationsPanel: React.FC<PIAllocationsPanelProps> = ({
             {/* Member List (Left Panel - 40%) */}
             <Col span={10}>
               <Card
-                title="Team Members"
+                title={`Team Members (${allocations.length})`}
                 size="small"
                 style={{ height: 'calc(100vh - 400px)', overflowY: 'auto' }}
               >
-                <List
-                  dataSource={allocations}
-                  renderItem={(allocation) => (
+                {allocations.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '40px 20px', color: '#999' }}>
+                    <UserOutlined style={{ fontSize: 48, marginBottom: 16 }} />
+                    <div>No team members found</div>
+                  </div>
+                ) : (
+                  <List
+                    dataSource={allocations}
+                    renderItem={(allocation) => (
                     <List.Item
                       key={allocation.member_id}
                       onClick={() => handleMemberSelect(allocation.member_id)}
@@ -521,7 +527,8 @@ export const PIAllocationsPanel: React.FC<PIAllocationsPanelProps> = ({
                       />
                     </List.Item>
                   )}
-                />
+                  />
+                )}
               </Card>
             </Col>
 
