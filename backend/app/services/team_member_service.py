@@ -551,12 +551,8 @@ class MemberPIAllocationService:
                 ).all()
                 iter_productivity_map = {r.iteration_id: r.productivity_percent for r in iter_productivity_records}
                 
-                # Base productivity (PI-level or individual or global)
-                base_productivity = (
-                    allocation.productivity_percent 
-                    if allocation.productivity_percent is not None 
-                    else (member.individual_productivity or global_settings.global_productivity_percentage)
-                )
+                # Base productivity (individual or global - productivity_percent is DEPRECATED)
+                base_productivity = member.individual_productivity or global_settings.global_productivity_percentage
                 
                 # Calculate weighted average productivity based on iteration working days
                 if iter_productivity_map and iterations:
