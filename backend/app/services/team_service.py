@@ -451,7 +451,8 @@ class TeamService:
             train_alloc_pct = pi_allocation.train_allocation_percent if pi_allocation else member.train_allocation_percent
             pi_level_productivity = (
                 (pi_allocation.productivity_percent / 100.0) if pi_allocation and pi_allocation.productivity_percent 
-                else (member.individual_productivity / 100.0 if member.individual_productivity else 1.0)
+                else (member.individual_productivity / 100.0 if member.individual_productivity 
+                      else global_settings.global_productivity_percentage / 100.0)
             )
             # Get IP week deduction for this member (new field)
             ip_week_deduction = pi_allocation.ip_week_deduction if pi_allocation and pi_allocation.ip_week_deduction else 0
