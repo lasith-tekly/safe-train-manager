@@ -717,7 +717,7 @@ export const PIAllocationsPanel: React.FC<PIAllocationsPanelProps> = ({
                                 max={20}
                                 step={0.5}
                                 size="small"
-                                value={getIterationValue('leaves', iter.id, (selectedMemberId && memberLeaves[selectedMemberId]?.[iter.id]?.leave_days) || 0)}
+                                value={getIterationValue('leaves', iter.id, (selectedAllocation && memberLeaves[selectedAllocation.member_id]?.[iter.id]?.leave_days) || 0)}
                                 onChange={(value) => updateIterationField('leaves', iter.id, value || 0)}
                                 style={{ width: 60 }}
                               />
@@ -733,7 +733,7 @@ export const PIAllocationsPanel: React.FC<PIAllocationsPanelProps> = ({
                                 max={20}
                                 step={0.5}
                                 size="small"
-                                value={getIterationValue('training', iter.id, (selectedMemberId && memberTraining[selectedMemberId]?.[iter.id]?.leave_days) || 0)}
+                                value={getIterationValue('training', iter.id, (selectedAllocation && memberTraining[selectedAllocation.member_id]?.[iter.id]?.leave_days) || 0)}
                                 onChange={(value) => updateIterationField('training', iter.id, value || 0)}
                                 style={{ width: 60 }}
                               />
@@ -749,7 +749,7 @@ export const PIAllocationsPanel: React.FC<PIAllocationsPanelProps> = ({
                                 max={20}
                                 step={0.5}
                                 size="small"
-                                value={getIterationValue('other', iter.id, (selectedMemberId && memberOther[selectedMemberId]?.[iter.id]?.leave_days) || 0)}
+                                value={getIterationValue('other', iter.id, (selectedAllocation && memberOther[selectedAllocation.member_id]?.[iter.id]?.leave_days) || 0)}
                                 onChange={(value) => updateIterationField('other', iter.id, value || 0)}
                                 style={{ width: 60 }}
                               />
