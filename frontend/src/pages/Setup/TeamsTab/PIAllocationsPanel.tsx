@@ -273,9 +273,13 @@ export const PIAllocationsPanel: React.FC<PIAllocationsPanelProps> = ({
     setSaving(true);
     try {
       // 1. Save PI-level allocation if changed
-      const piLevelChanged = changes.productivity_percent !== undefined ||
+      const piLevelChanged = 
+        changes.train_allocation_percent !== undefined ||
+        changes.productivity_percent !== undefined ||
+        changes.agile_role_allocation_percent !== undefined ||
         changes.is_scrum_master !== undefined ||
         changes.is_product_owner !== undefined ||
+        changes.is_other_role !== undefined ||
         changes.transversal_role !== undefined ||
         changes.specializations !== undefined ||
         changes.component_hats !== undefined ||
@@ -295,8 +299,10 @@ export const PIAllocationsPanel: React.FC<PIAllocationsPanelProps> = ({
             pi_id: selectedPI,
             train_allocation_percent: allocation.train_allocation_percent,
             productivity_percent: changes.productivity_percent !== undefined ? changes.productivity_percent : allocation.productivity_percent,
+            agile_role_allocation_percent: changes.agile_role_allocation_percent !== undefined ? changes.agile_role_allocation_percent : (allocation.agile_role_allocation_percent || 0),
             is_scrum_master: changes.is_scrum_master !== undefined ? changes.is_scrum_master : allocation.is_scrum_master,
             is_product_owner: changes.is_product_owner !== undefined ? changes.is_product_owner : allocation.is_product_owner,
+            is_other_role: changes.is_other_role !== undefined ? changes.is_other_role : (allocation.is_other_role || false),
             transversal_role: changes.transversal_role !== undefined ? (changes.transversal_role || undefined) : (allocation.transversal_role || undefined),
             specializations: changes.specializations !== undefined ? changes.specializations : allocation.specializations,
             ip_week_deduction: changes.ip_week_deduction !== undefined ? changes.ip_week_deduction : allocation.ip_week_deduction,
