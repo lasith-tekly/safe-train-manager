@@ -436,10 +436,10 @@ class TeamService:
         # Aggregates for IP iteration (raw or with productivity based on setting)
         ip_totals = {'developer': 0.0, 'ba': 0.0, 'qa': 0.0, 'total': 0.0}
         
-        # Train-level productivity override (1.0 = no override, use member-level productivity)
-        train_productivity = 1.0
+        # Global settings for IP week handling
         pi_planning_days = global_settings.pi_planning_days
         apply_productivity_to_ip = global_settings.apply_productivity_to_ip
+        base_productivity = global_settings.global_productivity_percentage / 100.0
         
         for member in members:
             # Get PI-specific allocation if exists
@@ -449,12 +449,12 @@ class TeamService:
             ).first()
             
             train_alloc_pct = pi_allocation.train_allocation_percent if pi_allocation else member.train_allocation_percent
-            pi_level_productivity = (
-                (pi_allocation.productivity_percent / 100.0) if pi_allocation and pi_allocation.productivity_percent 
-                else (member.individual_productivity / 100.0 if member.individual_productivity 
-                      else global_settings.global_productivity_percentage / 100.0)
-            )
-            # Get IP week deduction for this member (new field)
+            
+            # NEW: Get agile role allocation (percentage of time spent on SM/PO duties - DEDUCTED from capacity)
+            agile_role_pct = (pi_allocation.agile_role_allocation_percent / 100.0) if pi_allocation else 0.0
+            available_capacity_pct = 1.0 - agile_role_pct  # Remaining capacity after agile role deduction
+            
+            # Get IP week deduction for this member
             ip_week_deduction = pi_allocation.ip_week_deduction if pi_allocation and pi_allocation.ip_week_deduction else 0
             
             # Get iteration-level productivity overrides for this member
@@ -506,8 +506,8 @@ class TeamService:
                     # Check if this is IP iteration
                     is_ip_iter = iteration.is_ip_iteration
                     
-                    # Get iteration-specific productivity (falls back to PI-level)
-                    iter_productivity = iter_productivity_map.get(iteration.id, pi_level_productivity)
+                    # Get iteration-specific productivity (falls back to global)
+                    iter_productivity = iter_productivity_map.get(iteration.id, base_productivity)
                     
                     if is_ip_iter:
                         # Use ip_week_deduction if set, otherwise fall back to global pi_planning_days
@@ -515,14 +515,14 @@ class TeamService:
                         
                         if apply_productivity_to_ip:
                             # IP WITH productivity
-                            iter_member_days = net_days * train_productivity * (train_alloc_pct / 100.0) * iter_productivity
+                            iter_member_days = net_days * (train_alloc_pct / 100.0) * available_capacity_pct * iter_productivity
                             # Deduct IP planning/deduction days (with productivity)
-                            planning_deduction = effective_ip_deduction * train_productivity * (train_alloc_pct / 100.0) * iter_productivity
+                            planning_deduction = effective_ip_deduction * (train_alloc_pct / 100.0) * available_capacity_pct * iter_productivity
                         else:
-                            # IP WITHOUT productivity - raw days × train allocation only
-                            iter_member_days = net_days * (train_alloc_pct / 100.0)
+                            # IP WITHOUT productivity - raw days × train allocation × available capacity
+                            iter_member_days = net_days * (train_alloc_pct / 100.0) * available_capacity_pct
                             # Deduct raw IP planning/deduction days
-                            planning_deduction = effective_ip_deduction
+                            planning_deduction = effective_ip_deduction * available_capacity_pct
                         
                         # Apply the deduction (only once, not double)
                         iter_member_days = max(0, iter_member_days - planning_deduction)
@@ -531,7 +531,7 @@ class TeamService:
                         ip_totals['total'] += iter_member_days
                     else:
                         # Sprint iteration - always apply productivity (use iteration-specific if set)
-                        iter_member_days = net_days * train_productivity * (train_alloc_pct / 100.0) * iter_productivity
+                        iter_member_days = net_days * (train_alloc_pct / 100.0) * available_capacity_pct * iter_productivity
                         member_sprint_total += iter_member_days
                         sprint_totals[role_key] += iter_member_days
                         sprint_totals['total'] += iter_member_days

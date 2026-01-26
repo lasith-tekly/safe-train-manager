@@ -889,10 +889,12 @@ export interface MemberPIAllocation {
   pi_id: string;
   pi_name: string;
   train_allocation_percent: number;
-  productivity_percent: number | null;
+  productivity_percent: number | null;  // DEPRECATED: No longer used in calculations
+  agile_role_allocation_percent: number;  // NEW: Percentage of time on agile role duties (deducted from capacity)
   effective_productivity: number;
   is_scrum_master: boolean;
   is_product_owner: boolean;
+  is_other_role: boolean;  // NEW: Indicates work on other train
   transversal_role: string | null;
   specializations: string[];
   ip_week_deduction: number;
@@ -906,9 +908,11 @@ export interface MemberPIAllocationCreate {
   member_id: string;
   pi_id: string;
   train_allocation_percent: number;
-  productivity_percent?: number | null;
+  productivity_percent?: number | null;  // DEPRECATED
+  agile_role_allocation_percent?: number;  // NEW: Default 0
   is_scrum_master?: boolean;
   is_product_owner?: boolean;
+  is_other_role?: boolean;  // NEW
   transversal_role?: string;
   specializations?: string[];
   ip_week_deduction?: number;
@@ -918,9 +922,11 @@ export interface MemberPIAllocationCreate {
 
 export interface MemberPIAllocationUpdate {
   train_allocation_percent?: number;
-  productivity_percent?: number | null;
+  productivity_percent?: number | null;  // DEPRECATED
+  agile_role_allocation_percent?: number;  // NEW
   is_scrum_master?: boolean;
   is_product_owner?: boolean;
+  is_other_role?: boolean;  // NEW
   transversal_role?: string;
   specializations?: string[];
   ip_week_deduction?: number;

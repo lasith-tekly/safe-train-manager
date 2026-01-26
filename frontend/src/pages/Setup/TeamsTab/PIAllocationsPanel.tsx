@@ -36,9 +36,12 @@ interface PIAllocationsPanelProps {
 
 interface MemberChanges {
   // PI-level changes
-  productivity_percent?: number | null;
+  train_allocation_percent?: number;
+  productivity_percent?: number | null;  
+  agile_role_allocation_percent?: number;  
   is_scrum_master?: boolean;
   is_product_owner?: boolean;
+  is_other_role?: boolean;  
   transversal_role?: string | null;
   specializations?: string[];
   component_hats?: string[];
@@ -584,16 +587,21 @@ export const PIAllocationsPanel: React.FC<PIAllocationsPanelProps> = ({
                   <Title level={5}>PI-Level Settings</Title>
                   <Row gutter={16} style={{ marginBottom: 16 }}>
                     <Col span={12}>
-                      <Text strong>Productivity %</Text>
-                      <InputNumber
-                        min={0}
-                        max={100}
-                        value={getCurrentValue('productivity_percent', selectedAllocation.productivity_percent)}
-                        onChange={(value) => updateMemberChange('productivity_percent', value)}
-                        placeholder="Default"
-                        style={{ width: '100%', marginTop: 4 }}
-                        addonAfter="%"
-                      />
+                      <Text strong>Agile Role Allocation</Text>
+                      <Tooltip title="Percentage of time spent on agile role duties (SM/PO) - reduces train capacity. 0% = full capacity for train work">
+                        <InputNumber
+                          min={0}
+                          max={100}
+                          value={getCurrentValue('agile_role_allocation_percent', selectedAllocation.agile_role_allocation_percent || 0)}
+                          onChange={(value) => updateMemberChange('agile_role_allocation_percent', value)}
+                          placeholder="0"
+                          style={{ width: '100%', marginTop: 4 }}
+                          addonAfter="%"
+                        />
+                      </Tooltip>
+                      <Text type="secondary" style={{ fontSize: 12 }}>
+                        Deducted from train capacity
+                      </Text>
                     </Col>
                     <Col span={12}>
                       <Text strong>Team Roles</Text>
@@ -610,6 +618,13 @@ export const PIAllocationsPanel: React.FC<PIAllocationsPanelProps> = ({
                           onChange={(e) => updateMemberChange('is_product_owner', e.target.checked)}
                         >
                           Product Owner
+                        </Checkbox>
+                        <br />
+                        <Checkbox
+                          checked={getCurrentValue('is_other_role', selectedAllocation.is_other_role || false)}
+                          onChange={(e) => updateMemberChange('is_other_role', e.target.checked)}
+                        >
+                          Other
                         </Checkbox>
                       </div>
                     </Col>

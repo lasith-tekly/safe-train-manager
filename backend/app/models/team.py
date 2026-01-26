@@ -180,11 +180,16 @@ class MemberPIAllocation(Base):
     member_id = Column(String(36), ForeignKey("team_members.id", ondelete="CASCADE"), nullable=False, index=True)
     pi_id = Column(String(36), ForeignKey("pis.id", ondelete="CASCADE"), nullable=False, index=True)
     train_allocation_percent = Column(Integer, nullable=False, default=100)  # Commitment to this train for this PI
-    productivity_percent = Column(Integer, nullable=True)  # NULL = use member default or global
+    productivity_percent = Column(Integer, nullable=True)  # DEPRECATED: No longer used in calculations (kept for backward compatibility)
+    
+    # NEW: Agile Role Allocation - percentage of time spent on THIS train's agile work (0-100)
+    # Default 0 forces users to explicitly set allocation
+    agile_role_allocation_percent = Column(Integer, nullable=False, default=0)
     
     # PI-specific role flags
     is_scrum_master = Column(Boolean, nullable=False, default=False)
     is_product_owner = Column(Boolean, nullable=False, default=False)
+    is_other_role = Column(Boolean, nullable=False, default=False)  # NEW: Indicates work on other train
     transversal_role = Column(String(50), nullable=True)  # e.g., QA Manager, Dev Manager
     specializations = Column(Text, nullable=True)  # JSON array of specialization tags
     

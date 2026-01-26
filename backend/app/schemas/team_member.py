@@ -292,9 +292,11 @@ class SiteHolidayListResponse(BaseModel):
 
 class MemberPIAllocationBase(BaseModel):
     train_allocation_percent: int = Field(100, ge=0, le=100, description="Train allocation for this PI")
-    productivity_percent: Optional[int] = Field(None, ge=0, le=100, description="Productivity override for this PI")
+    productivity_percent: Optional[int] = Field(None, ge=0, le=100, description="DEPRECATED: No longer used in calculations")
+    agile_role_allocation_percent: int = Field(0, ge=0, le=100, description="Percentage of time on THIS train's agile work (0-100)")
     is_scrum_master: bool = Field(False, description="Whether member is SM for this PI")
     is_product_owner: bool = Field(False, description="Whether member is PO for this PI")
+    is_other_role: bool = Field(False, description="Whether member works on other train")
     transversal_role: Optional[str] = Field(None, max_length=50, description="Transversal role for this PI")
     specializations: Optional[List[str]] = Field(None, description="Specialization tags for this PI")
     ip_week_deduction: float = Field(0, ge=0, le=10, description="Additional IP week deduction days (e.g., for PO/SM)")
@@ -309,9 +311,11 @@ class MemberPIAllocationCreate(MemberPIAllocationBase):
 
 class MemberPIAllocationUpdate(BaseModel):
     train_allocation_percent: Optional[int] = Field(None, ge=0, le=100)
-    productivity_percent: Optional[int] = Field(None, ge=0, le=100)
+    productivity_percent: Optional[int] = Field(None, ge=0, le=100)  # DEPRECATED
+    agile_role_allocation_percent: Optional[int] = Field(None, ge=0, le=100)
     is_scrum_master: Optional[bool] = None
     is_product_owner: Optional[bool] = None
+    is_other_role: Optional[bool] = None
     transversal_role: Optional[str] = Field(None, max_length=50)
     specializations: Optional[List[str]] = None
     ip_week_deduction: Optional[float] = Field(None, ge=0, le=10)
@@ -326,10 +330,12 @@ class MemberPIAllocationResponse(BaseModel):
     pi_id: str
     pi_name: str  # Populated from relationship
     train_allocation_percent: int
-    productivity_percent: Optional[int] = None
-    effective_productivity: int  # Calculated: PI override or member default or global
+    productivity_percent: Optional[int] = None  # DEPRECATED: No longer used
+    agile_role_allocation_percent: int = 0
+    effective_productivity: int  # Calculated: Iteration override or global
     is_scrum_master: bool = False
     is_product_owner: bool = False
+    is_other_role: bool = False
     transversal_role: Optional[str] = None
     specializations: Optional[List[str]] = None
     ip_week_deduction: float = 0  # Additional IP week deduction days
