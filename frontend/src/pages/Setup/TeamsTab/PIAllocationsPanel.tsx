@@ -83,18 +83,36 @@ export const PIAllocationsPanel: React.FC<PIAllocationsPanelProps> = ({
 
   useEffect(() => {
     if (visible && team) {
+      setLoading(true);
       loadPIs();
+    } else {
+      // Reset state when drawer closes
+      setSelectedPI(null);
+      setAllocations([]);
+      setSelectedMemberId(null);
+      setMemberChanges({});
+      setHasUnsavedChanges(false);
     }
   }, [visible, team, year]);
 
   useEffect(() => {
-    if (selectedPI && team) {
-      loadAllocations();
-      loadComponentHats();
-      loadMemberLeaves();
-      loadIterationProductivity();
+    if (selectedPI && team && visible) {
+      const loadData = async () => {
+        setLoading(true);
+        try {
+          await Promise.all([
+            loadAllocations(),
+            loadComponentHats(),
+            loadMemberLeaves(),
+            loadIterationProductivity()
+          ]);
+        } finally {
+          setLoading(false);
+        }
+      };
+      loadData();
     }
-  }, [selectedPI, team]);
+  }, [selectedPI, team, visible]);
 
   const loadPIs = async () => {
     try {
