@@ -588,7 +588,7 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
                   </Col>
                 </Row>
               ))}
-              {quarterlyAllocations.length > 0 && (
+              {quarterlyAllocations && quarterlyAllocations.length > 0 && (
                 <div style={{ 
                   marginTop: 8, 
                   padding: '8px 12px', 
@@ -596,10 +596,10 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
                   border: '1px solid #91d5ff',
                   borderRadius: 4 
                 }}>
-                  <strong>Total Allocated: {quarterlyAllocations.reduce((sum, a) => sum + a.allocated_ed, 0).toFixed(2)} eD</strong>
+                  <strong>Total Allocated: {(quarterlyAllocations || []).reduce((sum, a) => sum + (a?.allocated_ed || 0), 0).toFixed(2)} eD</strong>
                   {netSizing > 0 && (
                     <span style={{ marginLeft: 8, color: '#666' }}>
-                      (Net Sizing: {netSizing.toFixed(2)} eD)
+                      (Net Sizing: {Number(netSizing || 0).toFixed(2)} eD)
                     </span>
                   )}
                 </div>
