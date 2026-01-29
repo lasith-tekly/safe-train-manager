@@ -402,4 +402,5 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
   );
 };
 
+export { FeatureFormModal };
 export default FeatureFormModal;
