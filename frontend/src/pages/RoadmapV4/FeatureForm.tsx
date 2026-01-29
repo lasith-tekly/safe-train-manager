@@ -33,6 +33,7 @@ interface BudgetProduct {
     id: string;
     code: string;
     name: string;
+    is_transversal: boolean;
     categories: Array<{
       id: string;
       name: string;
@@ -190,7 +191,11 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
   };
 
   const getTotalPercentage = () => {
-    return budgetAllocations.reduce((sum, alloc) => sum + (alloc.allocation_percentage || 0), 0);
+    if (!budgetAllocations || budgetAllocations.length === 0) return 0;
+    return budgetAllocations.reduce((sum, alloc) => {
+      if (!alloc) return sum;
+      return sum + (alloc.allocation_percentage || 0);
+    }, 0);
   };
 
   const validateBudgetAllocations = (): boolean => {
@@ -237,7 +242,19 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
 
   const getBudgetLinesByProduct = (productId: string) => {
     const budgetProduct = budgetProducts.find(bp => bp.product.id === productId);
-    return budgetProduct?.budget_lines || [];
+    const productBudgetLines = budgetProduct?.budget_lines || [];
+    
+    // Also include transversal budget lines from all products
+    const transversalBudgetLines: any[] = [];
+    budgetProducts.forEach(bp => {
+      bp.budget_lines.forEach(bl => {
+        if (bl.is_transversal && !productBudgetLines.find(pbl => pbl.id === bl.id)) {
+          transversalBudgetLines.push(bl);
+        }
+      });
+    });
+    
+    return [...productBudgetLines, ...transversalBudgetLines];
   };
 
   const getCategoriesByBudgetLine = (budgetLineId: string) => {
@@ -263,10 +280,13 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
 
       const requestData: CreateFeatureRequest | UpdateFeatureRequest = {
         product_id: values.product_id,
-        budget_allocations: budgetAllocations.map(alloc => ({
-          budget_line_id: alloc.budget_line_id,
-          allocation_percentage: alloc.allocation_percentage
-        })),
+        budget_allocations: budgetAllocations
+          .filter(alloc => alloc && alloc.budget_line_id) // Filter out invalid allocations
+          .map(alloc => ({
+            budget_line_id: alloc.budget_line_id,
+            category_id: alloc.category_id,
+            allocation_percentage: alloc.allocation_percentage
+          })),
         name: values.name,
         customer: values.customer,
         priority: values.priority || 0,
