@@ -199,7 +199,7 @@ const ProductsOverviewPage: React.FC = () => {
                     <Col span={12}>
                       <Statistic
                         title="Total eD"
-                        value={product.total_gross_ed.toFixed(0)}
+                        value={Number(product.total_gross_ed || 0).toFixed(0)}
                         suffix="eD"
                         valueStyle={{ fontSize: 16 }}
                       />
@@ -207,7 +207,7 @@ const ProductsOverviewPage: React.FC = () => {
                     <Col span={12}>
                       <Statistic
                         title="Total Cost"
-                        value={product.total_cost_keur.toFixed(0)}
+                        value={Number(product.total_cost_keur || 0).toFixed(0)}
                         suffix="k€"
                         valueStyle={{ fontSize: 16 }}
                       />
