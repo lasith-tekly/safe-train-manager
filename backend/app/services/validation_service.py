@@ -237,16 +237,25 @@ class ValidationService:
         quarter: int
     ) -> Dict:
         """Validate team capacity for a specific quarter"""
-        # Get team capacity
+        # Get team capacity - TeamCapacity has q1_capacity, q2_capacity, etc.
         team_capacity = self.db.query(TeamCapacity).filter(
             and_(
                 TeamCapacity.team_id == team_id,
-                TeamCapacity.year == year,
-                TeamCapacity.quarter == quarter
+                TeamCapacity.year == year
             )
         ).first()
         
-        capacity_ed = float(team_capacity.total_capacity_ed) if team_capacity else 0
+        # Get capacity for specific quarter
+        capacity_ed = 0
+        if team_capacity:
+            if quarter == 1:
+                capacity_ed = float(team_capacity.q1_capacity or 0)
+            elif quarter == 2:
+                capacity_ed = float(team_capacity.q2_capacity or 0)
+            elif quarter == 3:
+                capacity_ed = float(team_capacity.q3_capacity or 0)
+            elif quarter == 4:
+                capacity_ed = float(team_capacity.q4_capacity or 0)
         
         # Sum JIRA allocations for this team/quarter
         jira_allocations = self.db.query(JiraQuarterlyAllocation).join(
