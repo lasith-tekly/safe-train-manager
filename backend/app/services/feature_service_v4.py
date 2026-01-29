@@ -13,6 +13,7 @@ from app.models.roadmap_v4 import (
     RoadmapFeature, FeatureTeam, FeatureQuarterlyAllocation,
     JiraRecord, JiraQuarterlyAllocation
 )
+from app.models.feature_budget_allocation import FeatureBudgetLineAllocation
 from app.models.team import Team
 from app.schemas.roadmap_v4 import (
     CreateFeatureRequest, UpdateFeatureRequest,
@@ -31,7 +32,7 @@ class FeatureServiceV4:
         self.validation_service = ValidationServiceV4(db)
     
     def create_feature(self, request: CreateFeatureRequest, created_by: Optional[str] = None) -> RoadmapFeature:
-        """Create a new feature with calculations"""
+        """Create a new feature with calculations and budget allocations"""
         # Calculate net sizing and cost
         sizing = self.calc_service.calculate_sizing(request.gross_sizing_ed)
         
@@ -39,8 +40,6 @@ class FeatureServiceV4:
         feature = RoadmapFeature(
             id=str(uuid.uuid4()),
             product_id=request.product_id,
-            budget_line_id=request.budget_line_id,
-            category_id=request.category_id,
             name=request.name,
             customer=request.customer,
             priority=request.priority,
@@ -53,6 +52,18 @@ class FeatureServiceV4:
         
         self.db.add(feature)
         self.db.flush()
+        
+        # Create budget line allocations
+        for alloc_input in request.budget_allocations:
+            allocated_effort = float(request.gross_sizing_ed) * (float(alloc_input.allocation_percentage) / 100)
+            allocation = FeatureBudgetLineAllocation(
+                id=str(uuid.uuid4()),
+                feature_id=feature.id,
+                budget_line_id=alloc_input.budget_line_id,
+                allocation_percentage=float(alloc_input.allocation_percentage),
+                allocated_effort_days=allocated_effort
+            )
+            self.db.add(allocation)
         
         # Add team assignments
         if request.team_ids:
@@ -91,6 +102,28 @@ class FeatureServiceV4:
             feature.gross_sizing_ed = float(sizing['gross_sizing_ed'])
             feature.net_sizing_ed = float(sizing['net_sizing_ed'])
             feature.total_cost_keur = float(sizing['total_cost_keur'])
+            
+            # Recalculate budget allocations if gross sizing changed
+            for allocation in feature.budget_allocations:
+                allocation.allocated_effort_days = feature.gross_sizing_ed * (float(allocation.allocation_percentage) / 100)
+        
+        # Update budget allocations
+        if request.budget_allocations is not None:
+            # Remove existing allocations
+            self.db.query(FeatureBudgetLineAllocation).filter(
+                FeatureBudgetLineAllocation.feature_id == feature_id
+            ).delete()
+            # Add new allocations
+            for alloc_input in request.budget_allocations:
+                allocated_effort = feature.gross_sizing_ed * (float(alloc_input.allocation_percentage) / 100)
+                allocation = FeatureBudgetLineAllocation(
+                    id=str(uuid.uuid4()),
+                    feature_id=feature_id,
+                    budget_line_id=alloc_input.budget_line_id,
+                    allocation_percentage=float(alloc_input.allocation_percentage),
+                    allocated_effort_days=allocated_effort
+                )
+                self.db.add(allocation)
         
         # Update team assignments
         if request.team_ids is not None:
@@ -118,9 +151,8 @@ class FeatureServiceV4:
         query = self.db.query(RoadmapFeature).options(
             joinedload(RoadmapFeature.teams),
             joinedload(RoadmapFeature.quarterly_allocations),
-            joinedload(RoadmapFeature.product),
-            joinedload(RoadmapFeature.budget_line),
-            joinedload(RoadmapFeature.category)
+            joinedload(RoadmapFeature.budget_allocations),
+            joinedload(RoadmapFeature.product)
         )
         
         if include_jira:
@@ -143,14 +175,18 @@ class FeatureServiceV4:
         """List features with filters and pagination"""
         query = self.db.query(RoadmapFeature).options(
             joinedload(RoadmapFeature.teams),
-            joinedload(RoadmapFeature.quarterly_allocations)
+            joinedload(RoadmapFeature.quarterly_allocations),
+            joinedload(RoadmapFeature.budget_allocations)
         )
         
         # Apply filters
         if product_id:
             query = query.filter(RoadmapFeature.product_id == product_id)
         if budget_line_id:
-            query = query.filter(RoadmapFeature.budget_line_id == budget_line_id)
+            # Filter by budget line allocation
+            query = query.join(FeatureBudgetLineAllocation).filter(
+                FeatureBudgetLineAllocation.budget_line_id == budget_line_id
+            ).distinct()
         if status:
             query = query.filter(RoadmapFeature.status == status)
         if year:

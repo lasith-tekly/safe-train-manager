@@ -129,6 +129,21 @@ const RoadmapV4Page: React.FC = () => {
       width: 150
     },
     {
+      title: 'Budget Allocation',
+      dataIndex: 'budget_allocations',
+      key: 'budget_allocations',
+      width: 250,
+      render: (allocations: any[]) => (
+        <Space size={[0, 4]} wrap>
+          {allocations && allocations.map((alloc, index) => (
+            <Tag key={index} color="blue">
+              {alloc.allocation_percentage.toFixed(0)}%
+            </Tag>
+          ))}
+        </Space>
+      )
+    },
+    {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',

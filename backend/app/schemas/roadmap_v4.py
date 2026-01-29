@@ -4,7 +4,7 @@ Roadmap V4 Schemas - Effort-Centric Design
 Pydantic schemas for request/response validation
 """
 from typing import Optional, List, Literal
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, validator, field_validator
 from decimal import Decimal
 from datetime import datetime
 
@@ -12,6 +12,20 @@ from datetime import datetime
 # ============================================
 # Request Schemas
 # ============================================
+
+class BudgetLineAllocationInput(BaseModel):
+    """Budget line allocation input with percentage"""
+    budget_line_id: str
+    allocation_percentage: Decimal = Field(..., gt=0, le=100, description="Percentage allocated to this budget line")
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "budget_line_id": "uuid",
+                "allocation_percentage": 50.00
+            }
+        }
+
 
 class QuarterlyAllocationInput(BaseModel):
     """Quarterly allocation input (Net eD)"""
@@ -30,10 +44,9 @@ class QuarterlyAllocationInput(BaseModel):
 
 
 class CreateFeatureRequest(BaseModel):
-    """Create feature request"""
+    """Create feature request with multiple budget line allocations"""
     product_id: str
-    budget_line_id: str
-    category_id: Optional[str] = None
+    budget_allocations: List[BudgetLineAllocationInput] = Field(..., min_length=1, description="Budget line allocations with percentages")
     name: str = Field(..., max_length=500)
     customer: Optional[str] = Field(None, max_length=255)
     priority: int = Field(default=0)
@@ -42,8 +55,26 @@ class CreateFeatureRequest(BaseModel):
     team_ids: List[str] = Field(default_factory=list, description="Team IDs to assign")
     quarterly_allocations: List[QuarterlyAllocationInput] = Field(default_factory=list)
 
+    @validator('budget_allocations')
+    def validate_budget_allocations(cls, v):
+        """Validate budget allocations sum to 100% and no duplicates"""
+        if not v:
+            raise ValueError("At least one budget line allocation is required")
+        
+        # Check for duplicate budget lines
+        budget_line_ids = [alloc.budget_line_id for alloc in v]
+        if len(budget_line_ids) != len(set(budget_line_ids)):
+            raise ValueError("Duplicate budget lines are not allowed")
+        
+        # Check total percentage equals 100
+        total = sum(alloc.allocation_percentage for alloc in v)
+        if abs(total - 100) > 0.01:  # Allow small floating point differences
+            raise ValueError(f"Budget allocations must sum to 100%, got {total}%")
+        
+        return v
+
     @validator('quarterly_allocations')
-    def validate_allocations(cls, v):
+    def validate_quarterly_allocations(cls, v):
         """Validate no duplicate year/quarter combinations"""
         if v:
             seen = set()
@@ -58,7 +89,10 @@ class CreateFeatureRequest(BaseModel):
         json_schema_extra = {
             "example": {
                 "product_id": "uuid",
-                "budget_line_id": "uuid",
+                "budget_allocations": [
+                    {"budget_line_id": "uuid-1", "allocation_percentage": 50.00},
+                    {"budget_line_id": "uuid-2", "allocation_percentage": 50.00}
+                ],
                 "name": "Disruption Management",
                 "customer": "AVINOR",
                 "priority": 1,
@@ -80,15 +114,36 @@ class UpdateFeatureRequest(BaseModel):
     gross_sizing_ed: Optional[Decimal] = Field(None, gt=0)
     remarks: Optional[str] = None
     status: Optional[Literal["planned", "in_progress", "completed", "cancelled"]] = None
+    budget_allocations: Optional[List[BudgetLineAllocationInput]] = None
     team_ids: Optional[List[str]] = None
     quarterly_allocations: Optional[List[QuarterlyAllocationInput]] = None
+
+    @validator('budget_allocations')
+    def validate_budget_allocations(cls, v):
+        """Validate budget allocations sum to 100% and no duplicates"""
+        if v:
+            # Check for duplicate budget lines
+            budget_line_ids = [alloc.budget_line_id for alloc in v]
+            if len(budget_line_ids) != len(set(budget_line_ids)):
+                raise ValueError("Duplicate budget lines are not allowed")
+            
+            # Check total percentage equals 100
+            total = sum(alloc.allocation_percentage for alloc in v)
+            if abs(total - 100) > 0.01:
+                raise ValueError(f"Budget allocations must sum to 100%, got {total}%")
+        
+        return v
 
     class Config:
         json_schema_extra = {
             "example": {
                 "name": "Disruption Management - Updated",
                 "priority": 2,
-                "status": "in_progress"
+                "status": "in_progress",
+                "budget_allocations": [
+                    {"budget_line_id": "uuid-1", "allocation_percentage": 60.00},
+                    {"budget_line_id": "uuid-2", "allocation_percentage": 40.00}
+                ]
             }
         }
 
@@ -168,6 +223,19 @@ class QuarterlyAllocationResponse(BaseModel):
         from_attributes = True
 
 
+class BudgetLineAllocationResponse(BaseModel):
+    """Budget line allocation response"""
+    id: str
+    budget_line_id: str
+    allocation_percentage: Decimal
+    allocated_effort_days: Optional[Decimal]
+    created_at: datetime
+    updated_at: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+
 class TeamSummary(BaseModel):
     """Team summary for feature"""
     id: str
@@ -199,11 +267,10 @@ class JiraRecordResponse(BaseModel):
 
 
 class FeatureResponse(BaseModel):
-    """Feature response"""
+    """Feature response with multiple budget line allocations"""
     id: str
     product_id: str
-    budget_line_id: str
-    category_id: Optional[str]
+    budget_allocations: List[BudgetLineAllocationResponse]
     name: str
     customer: Optional[str]
     priority: int

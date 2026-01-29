@@ -33,6 +33,21 @@ export interface QuarterlyAllocationInput {
   allocated_ed: number;
 }
 
+// Budget Line Allocation
+export interface BudgetLineAllocation {
+  id: string;
+  budget_line_id: string;
+  allocation_percentage: number;
+  allocated_effort_days?: number;
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface BudgetLineAllocationInput {
+  budget_line_id: string;
+  allocation_percentage: number;
+}
+
 // JIRA Record
 export interface JiraRecord {
   id: string;
@@ -55,8 +70,7 @@ export interface JiraRecord {
 export interface RoadmapFeature {
   id: string;
   product_id: string;
-  budget_line_id: string;
-  category_id?: string;
+  budget_allocations: BudgetLineAllocation[];
   name: string;
   customer?: string;
   priority: number;
@@ -76,8 +90,7 @@ export interface RoadmapFeature {
 // Create/Update Requests
 export interface CreateFeatureRequest {
   product_id: string;
-  budget_line_id: string;
-  category_id?: string;
+  budget_allocations: BudgetLineAllocationInput[];
   name: string;
   customer?: string;
   priority?: number;
@@ -94,6 +107,7 @@ export interface UpdateFeatureRequest {
   gross_sizing_ed?: number;
   remarks?: string;
   status?: 'planned' | 'in_progress' | 'completed' | 'cancelled';
+  budget_allocations?: BudgetLineAllocationInput[];
   team_ids?: string[];
   quarterly_allocations?: QuarterlyAllocationInput[];
 }
