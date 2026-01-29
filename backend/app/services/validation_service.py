@@ -163,16 +163,23 @@ class ValidationService:
         results = []
         
         # Product level validation
-        product_budget = self.db.query(ProductBudget).filter(
+        # Note: ProductBudget is linked to year through budget_version -> fiscal_year
+        from app.models.budget_new import BudgetVersion, FiscalYear
+        
+        product_budget = self.db.query(ProductBudget).join(
+            BudgetVersion, ProductBudget.budget_version_id == BudgetVersion.id
+        ).join(
+            FiscalYear, BudgetVersion.fiscal_year_id == FiscalYear.id
+        ).filter(
             and_(
                 ProductBudget.product_id == product_id,
-                ProductBudget.fiscal_year == year
+                FiscalYear.year == year
             )
         ).first()
         
         if product_budget:
             planned_cost = self._calculate_planned_cost_for_product(product_id, year)
-            allocated = float(product_budget.total_budget_keur)
+            allocated = float(product_budget.allocated_amount)
             
             from app.models.product import Product
             product = self.db.query(Product).filter(Product.id == product_id).first()
