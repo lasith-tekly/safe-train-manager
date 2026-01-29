@@ -9,7 +9,7 @@ import { PlusOutlined, SearchOutlined, DeleteOutlined, EditOutlined } from '@ant
 import axios from 'axios';
 import { listFeatures, deleteFeature } from '../../services/featureApi';
 import { RoadmapFeature, FeatureFilters } from '../../types/roadmap_v4';
-import FeatureFormModal from './FeatureForm';
+import FeatureFormModal from './CreateFeatureModal';
 import './styles.css';
 
 const { Option } = Select;
