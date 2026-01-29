@@ -1,10 +1,5 @@
-/**
- * Feature Form Modal - Create/Edit Features
- * 
- * Modal for creating and editing roadmap features with quarterly allocations
- */
 import React, { useState, useEffect } from 'react';
-import { Modal, Form, Input, InputNumber, Select, Button, Space, Tabs, message, Row, Col, Tag } from 'antd';
+import { Modal, Form, Input, InputNumber, Select, Button, Tabs, message, Row, Col, Tag } from 'antd';
 import axios from 'axios';
 import { createFeature, updateFeature, calculateSizing } from '../../services/featureApi';
 import { RoadmapFeature, CreateFeatureRequest, UpdateFeatureRequest, QuarterlyAllocationInput } from '../../types/roadmap_v4';
@@ -24,19 +19,16 @@ interface FeatureFormModalProps {
 const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, onClose }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [grossSizing, setGrossSizing] = useState<number>(0);
   const [netSizing, setNetSizing] = useState<number>(0);
   const [totalCost, setTotalCost] = useState<number>(0);
   const [quarterlyAllocations, setQuarterlyAllocations] = useState<Record<string, Record<number, number>>>({});
   
-  // Dynamic data
   const [products, setProducts] = useState<any[]>([]);
   const [teams, setTeams] = useState<any[]>([]);
   const [budgetLines, setBudgetLines] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [selectedBudgetLine, setSelectedBudgetLine] = useState<string | null>(null);
 
-  // Load dynamic data when modal opens
   useEffect(() => {
     if (visible) {
       loadProducts();
@@ -45,7 +37,6 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
     }
   }, [visible]);
 
-  // Load categories when budget line changes
   useEffect(() => {
     if (selectedBudgetLine) {
       loadCategories(selectedBudgetLine);
@@ -91,7 +82,6 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
 
   useEffect(() => {
     if (visible && feature) {
-      // Populate form with existing feature data
       form.setFieldsValue({
         product_id: feature.product_id,
         budget_line_id: feature.budget_line_id,
@@ -105,11 +95,9 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
         team_ids: feature.teams.map((t: any) => t.id)
       });
       
-      setGrossSizing(feature.gross_sizing_ed);
       setNetSizing(feature.net_sizing_ed);
       setTotalCost(feature.total_cost_keur);
       
-      // Convert quarterly allocations to form structure
       const allocations: Record<string, Record<number, number>> = {};
       feature.quarterly_allocations.forEach((alloc: any) => {
         const yearKey = alloc.year.toString();
@@ -120,9 +108,7 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
       });
       setQuarterlyAllocations(allocations);
     } else if (visible) {
-      // Reset form for new feature
       form.resetFields();
-      setGrossSizing(0);
       setNetSizing(0);
       setTotalCost(0);
       setQuarterlyAllocations({});
@@ -131,7 +117,6 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
 
   const handleGrossSizingChange = async (value: number | null) => {
     if (value && value > 0) {
-      setGrossSizing(value);
       try {
         const result = await calculateSizing({ gross_sizing_ed: value });
         setNetSizing(result.net_sizing_ed);
@@ -140,7 +125,6 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
         console.error('Calculation error:', error);
       }
     } else {
-      setGrossSizing(0);
       setNetSizing(0);
       setTotalCost(0);
     }
@@ -169,7 +153,6 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
       const values = await form.validateFields();
       setLoading(true);
 
-      // Convert quarterly allocations to array format
       const allocations: QuarterlyAllocationInput[] = [];
       Object.entries(quarterlyAllocations).forEach(([year, quarters]: [string, any]) => {
         Object.entries(quarters).forEach(([quarter, allocated_ed]: [string, any]) => {
@@ -182,7 +165,6 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
       });
 
       if (feature) {
-        // Update existing feature
         const updateData: UpdateFeatureRequest = {
           name: values.name,
           customer: values.customer,
@@ -196,7 +178,6 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
         await updateFeature(feature.id, updateData);
         message.success('Feature updated successfully');
       } else {
-        // Create new feature
         const createData: CreateFeatureRequest = {
           product_id: values.product_id,
           budget_line_id: values.budget_line_id,
