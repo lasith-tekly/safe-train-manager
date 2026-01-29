@@ -263,7 +263,7 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
 
       // Filter and validate budget allocations
       const validBudgetAllocations = budgetAllocations
-        .filter(alloc => alloc && alloc.budget_line_id)
+        .filter(alloc => alloc && alloc.budget_line_id && alloc.budget_line_id.trim() !== '')
         .map(alloc => ({
           budget_line_id: alloc.budget_line_id,
           category_id: alloc.category_id || undefined,
@@ -271,9 +271,18 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
         }));
 
       if (validBudgetAllocations.length === 0) {
-        message.error('Please add at least one budget line allocation');
+        message.error('Please select at least one budget line');
         setLoading(false);
         return;
+      }
+
+      // Validate each budget allocation has a valid percentage
+      for (const alloc of validBudgetAllocations) {
+        if (!alloc.allocation_percentage || alloc.allocation_percentage <= 0) {
+          message.error('All budget allocations must have a percentage greater than 0');
+          setLoading(false);
+          return;
+        }
       }
 
       // Filter quarterly allocations (remove zero values)
