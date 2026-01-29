@@ -464,13 +464,23 @@ class TeamService:
             ).all()
             iter_productivity_map = {r.iteration_id: r.productivity_percent / 100.0 for r in iter_productivity_records}
             
-            # Get member leaves per iteration
+            # Get member leaves per iteration with deduplication
             member_leaves_by_iter = {}
             iteration_leaves = db.query(MemberLeave).filter(
                 MemberLeave.member_id == member.id,
                 MemberLeave.iteration_id.in_([it.id for it in iterations])
             ).all()
+            
+            # Deduplicate leave records by iteration_id and leave_days
+            # This prevents duplicate entries from inflating leave totals
+            seen_leaves = {}
             for leave in iteration_leaves:
+                key = (leave.iteration_id, leave.leave_days, leave.leave_type)
+                if key not in seen_leaves:
+                    seen_leaves[key] = leave
+            
+            # Sum deduplicated leave days per iteration
+            for leave in seen_leaves.values():
                 if leave.iteration_id not in member_leaves_by_iter:
                     member_leaves_by_iter[leave.iteration_id] = 0
                 member_leaves_by_iter[leave.iteration_id] += leave.leave_days or 0
@@ -500,8 +510,12 @@ class TeamService:
                     iter_leave_days = member_leaves_by_iter.get(iteration.id, 0)
                     member_total_leave += iter_leave_days
                     
-                    # Net working days after leave
-                    net_days = max(0, iter_working_days - iter_leave_days)
+                    # CORRECTED FORMULA (2026-01-27):
+                    # Step 1: Apply train allocation FIRST
+                    allocated_days = iter_working_days * (train_alloc_pct / 100.0)
+                    # Step 2: Deduct leave AFTER train allocation
+                    # (Leave is taken from member's allocated time to this train)
+                    net_days = max(0, allocated_days - iter_leave_days)
                     
                     # Check if this is IP iteration
                     is_ip_iter = iteration.is_ip_iteration
@@ -515,12 +529,12 @@ class TeamService:
                         
                         if apply_productivity_to_ip:
                             # IP WITH productivity
-                            iter_member_days = net_days * (train_alloc_pct / 100.0) * available_capacity_pct * iter_productivity
+                            iter_member_days = net_days * available_capacity_pct * iter_productivity
                             # Deduct IP planning/deduction days (with productivity)
-                            planning_deduction = effective_ip_deduction * (train_alloc_pct / 100.0) * available_capacity_pct * iter_productivity
+                            planning_deduction = effective_ip_deduction * available_capacity_pct * iter_productivity
                         else:
-                            # IP WITHOUT productivity - raw days × train allocation × available capacity
-                            iter_member_days = net_days * (train_alloc_pct / 100.0) * available_capacity_pct
+                            # IP WITHOUT productivity - net days × available capacity
+                            iter_member_days = net_days * available_capacity_pct
                             # Deduct raw IP planning/deduction days
                             planning_deduction = effective_ip_deduction * available_capacity_pct
                         
@@ -530,8 +544,8 @@ class TeamService:
                         ip_totals[role_key] += iter_member_days
                         ip_totals['total'] += iter_member_days
                     else:
-                        # Sprint iteration - always apply productivity (use iteration-specific if set)
-                        iter_member_days = net_days * (train_alloc_pct / 100.0) * available_capacity_pct * iter_productivity
+                        # Sprint iteration - Step 3: Apply available capacity × productivity
+                        iter_member_days = net_days * available_capacity_pct * iter_productivity
                         member_sprint_total += iter_member_days
                         sprint_totals[role_key] += iter_member_days
                         sprint_totals['total'] += iter_member_days

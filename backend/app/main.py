@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.routes.products import router as products_router
-from app.routes.budgets import router as budgets_router
+# from app.routes.budgets import router as budgets_router  # Old budget routes - commented out
 from app.routes.teams import router as teams_router
 from app.routes.features import router as features_router
 from app.routes.jira import router as jira_router
@@ -19,10 +19,14 @@ from app.routes.component_hats import router as component_hats_router
 from app.routes.member_leave import router as member_leave_router
 from app.routes.site_holidays import router as site_holidays_router
 from app.routes.pi_allocations import router as pi_allocations_router
+from app.routers.budget_config import router as budget_config_router
+from app.routers.budget_dashboard import router as budget_dashboard_router
+# from app.routes.roadmaps import router as roadmaps_router  # Old V1 routes - commented out for V2
+from app.routes.roadmaps_v2 import router as roadmaps_v2_router
 from app.database import engine, Base
 
-# Create tables
-Base.metadata.create_all(bind=engine)
+# Create tables - DISABLED: Using SQL migrations instead
+# Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Amadeus Elevate API",
@@ -48,7 +52,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(products_router)
-app.include_router(budgets_router)
+# app.include_router(budgets_router)  # Old budget router - commented out
 app.include_router(teams_router)
 app.include_router(team_members_router)
 app.include_router(features_router)
@@ -65,6 +69,10 @@ app.include_router(component_hats_router)
 app.include_router(member_leave_router)
 app.include_router(site_holidays_router)
 app.include_router(pi_allocations_router)
+app.include_router(budget_config_router)
+app.include_router(budget_dashboard_router)
+# app.include_router(roadmaps_router)  # Old V1 routes - commented out for V2
+app.include_router(roadmaps_v2_router)
 
 
 @app.get("/health", tags=["health"])

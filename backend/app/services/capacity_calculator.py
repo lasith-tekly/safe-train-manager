@@ -42,7 +42,13 @@ class CapacityCalculator:
             holidays = 0
             leaves = 0
         
-        available_days = max(0, working_days - holidays - leaves)
+        # CORRECTED FORMULA (2026-01-27):
+        # Step 1: Apply train allocation FIRST
+        allocated_days = (working_days - holidays) * (member.allocation_percentage / 100)
+        
+        # Step 2: Deduct leave AFTER train allocation
+        # (Leave is taken from member's allocated time to this train)
+        available_days = max(0, allocated_days - leaves)
         
         # Determine productivity percentage (individual override or global)
         productivity = (
@@ -51,12 +57,8 @@ class CapacityCalculator:
             else global_productivity
         )
         
-        # Calculate effective capacity
-        effective_days = (
-            available_days 
-            * (member.allocation_percentage / 100) 
-            * (productivity / 100)
-        )
+        # Step 3: Apply productivity
+        effective_days = available_days * (productivity / 100)
         
         return {
             'member_id': member.id,

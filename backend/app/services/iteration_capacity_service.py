@@ -177,17 +177,24 @@ class IterationCapacityService:
                 leave_days += days
 
             # Calculate member capacity
-            # Formula: Available Days × (Train Productivity / 100) × (Train Allocation / 100) × (Individual Productivity / 100)
-            available_days = base_working_days - leave_days
-            train_productivity = global_settings.global_productivity_percentage / 100  # Train-level from Settings
+            # CORRECTED FORMULA (2026-01-27):
+            # Step 1: Apply train allocation FIRST
             train_allocation = member.train_allocation_percent / 100  # Member's allocation to this train
+            allocated_days = base_working_days * train_allocation
+            
+            # Step 2: Deduct leave AFTER train allocation
+            # (Leave is taken from member's allocated time to this train)
+            available_days = max(0, allocated_days - leave_days)
+            
+            # Step 3: Apply productivity
+            train_productivity = global_settings.global_productivity_percentage / 100  # Train-level from Settings
             individual_productivity = (
                 member.individual_productivity / 100
                 if member.individual_productivity is not None 
                 else 1.0  # Default 100% if not set
             )
 
-            member_capacity = available_days * train_productivity * train_allocation * individual_productivity
+            member_capacity = available_days * train_productivity * individual_productivity
             total_capacity += member_capacity
 
         return round(total_capacity, 2)

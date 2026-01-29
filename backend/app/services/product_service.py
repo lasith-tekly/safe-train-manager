@@ -55,7 +55,7 @@ class ProductService:
     @staticmethod
     def get_by_id(db: Session, product_id: UUID) -> Optional[Product]:
         """Get product by ID."""
-        return db.query(Product).filter(Product.id == product_id).first()
+        return db.query(Product).filter(Product.id == str(product_id)).first()
 
     @staticmethod
     def get_by_name(db: Session, name: str) -> Optional[Product]:
@@ -88,7 +88,7 @@ class ProductService:
     @staticmethod
     def update(db: Session, product_id: UUID, data: ProductUpdate) -> Product:
         """Update an existing product."""
-        product = db.query(Product).filter(Product.id == product_id).first()
+        product = db.query(Product).filter(Product.id == str(product_id)).first()
 
         update_data = data.model_dump(exclude_unset=True)
         for field, value in update_data.items():
@@ -109,7 +109,7 @@ class ProductService:
     @staticmethod
     def delete(db: Session, product_id: UUID) -> None:
         """Delete a product."""
-        product = db.query(Product).filter(Product.id == product_id).first()
+        product = db.query(Product).filter(Product.id == str(product_id)).first()
         db.delete(product)
         db.commit()
 
@@ -123,9 +123,36 @@ class ProductService:
 
     @staticmethod
     def can_delete(db: Session, product_id: UUID) -> Tuple[bool, str]:
-        """Check if product can be deleted."""
-        # TODO: Implement when BudgetVersion and Feature models exist
-        # Check for any associated budgets or features
+        """
+        Check if product can be deleted.
+        
+        Products cannot be deleted if they have:
+        - Active roadmaps
+        - Budget allocations
+        
+        Instead, use archive/inactive status.
+        """
+        from app.models.roadmap import Roadmap
+        from app.models.budget_new import ProductBudget
+        
+        product_id_str = str(product_id)
+        
+        # Check for roadmaps
+        roadmap_count = db.query(Roadmap).filter(
+            Roadmap.product_id == product_id_str
+        ).count()
+        
+        if roadmap_count > 0:
+            return False, f"Product has {roadmap_count} roadmap(s). Archive the product instead of deleting it."
+        
+        # Check for budget allocations
+        budget_count = db.query(ProductBudget).filter(
+            ProductBudget.product_id == product_id_str
+        ).count()
+        
+        if budget_count > 0:
+            return False, f"Product has budget allocation(s). Archive the product instead of deleting it."
+        
         return True, ""
 
     @staticmethod

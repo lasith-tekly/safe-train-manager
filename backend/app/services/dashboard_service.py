@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func
 
 from app.models.product import Product, ProductStatus
-from app.models.budget import BudgetVersion, BudgetLine, BudgetStatus
+# from app.models.budget import BudgetVersion, BudgetLine, BudgetStatus  # Old budget models - commented out
 from app.models.team import Team, TeamCapacity, TeamStatus, TeamMember, MemberRole, MemberPIAllocation
 from app.models.global_settings import GlobalSettings
 from app.models.holiday import MemberLeave
