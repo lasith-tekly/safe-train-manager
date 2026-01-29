@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Form, Input, InputNumber, Select, Button, message, Row, Col, Space, Card, Tabs } from 'antd';
+import { Modal, Form, Input, InputNumber, Select, Button, message, Row, Col, Space, Card } from 'antd';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { createFeature, updateFeature } from '../../services/featureApi';
@@ -351,9 +351,8 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
         <small>Team assignment and JIRA records will be managed separately in Execution Planning.</small>
       </div>
 
-      <Tabs defaultActiveKey="1">
-        <Tabs.TabPane tab="Feature Details" key="1">
-          <Form form={form} layout="vertical">
+      <div style={{ maxHeight: '70vh', overflowY: 'auto', paddingRight: 8 }}>
+        <Form form={form} layout="vertical">
             <Row gutter={16}>
               <Col span={12}>
                 <Form.Item
@@ -536,17 +535,14 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
             <Form.Item name="remarks" label="Remarks">
               <TextArea rows={3} placeholder="Enter remarks" />
             </Form.Item>
-          </Form>
-        </Tabs.TabPane>
 
-        <Tabs.TabPane tab="Quarterly Planning" key="2">
-          <QuarterlyPlanningGrid
-            value={quarterlyAllocations}
-            onChange={setQuarterlyAllocations}
-            netSizing={netSizing}
-          />
-        </Tabs.TabPane>
-      </Tabs>
+            <QuarterlyPlanningGrid
+              value={quarterlyAllocations}
+              onChange={setQuarterlyAllocations}
+              netSizing={netSizing}
+            />
+          </Form>
+        </div>
     </Modal>
   );
 };
