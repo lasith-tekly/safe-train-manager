@@ -45,7 +45,9 @@ const ProductRoadmapPage: React.FC = () => {
   const loadProduct = async () => {
     try {
       const response = await axios.get(`${API_BASE_URL}/products/${productId}`);
-      setProduct(response.data);
+      // Handle both response.data and response.data.data formats
+      const productData = response.data.data || response.data;
+      setProduct(productData);
     } catch (error) {
       console.error('Failed to load product:', error);
       message.error('Failed to load product details');
