@@ -30,12 +30,13 @@ class Product(Base):
     created_by = Column(String(36), nullable=True)
 
     # Relationships
-    budget_versions = relationship(
-        "BudgetVersion",
-        back_populates="product",
-        cascade="all, delete-orphan"
-    )
+    # budget_versions = relationship(  # Old budget relationship - commented out
+    #     "BudgetVersion",
+    #     back_populates="product",
+    #     cascade="all, delete-orphan"
+    # )
     # features = relationship("Feature", back_populates="product")
+    roadmaps = relationship("Roadmap", back_populates="product", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Product {self.short_code}: {self.name}>"

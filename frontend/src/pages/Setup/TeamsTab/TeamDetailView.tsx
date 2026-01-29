@@ -82,6 +82,27 @@ export const TeamDetailView: React.FC<TeamDetailViewProps> = ({
     }
   };
 
+  // Get productive capacity summary
+  // Backend already applies productivity factor, so we use values directly
+  const getProductiveCapacitySummary = () => {
+    if (!capacityDetail) return null;
+    
+    return {
+      total: capacityDetail.summary.total_effort_days,
+      dev: capacityDetail.summary.total_dev_days,
+      pd: capacityDetail.summary.total_pd_days,
+      qa: capacityDetail.summary.total_qa_days,
+      ip: capacityDetail.summary.ip_capacity,
+      ipDev: capacityDetail.summary.ip_dev_days,
+      ipPd: capacityDetail.summary.ip_pd_days,
+      ipQa: capacityDetail.summary.ip_qa_days,
+      pi: capacityDetail.summary.pi_capacity,
+      piDev: capacityDetail.summary.pi_dev_days,
+      piPd: capacityDetail.summary.pi_pd_days,
+      piQa: capacityDetail.summary.pi_qa_days,
+    };
+  };
+
   const iterationColumns = [
     {
       title: 'Iteration',
@@ -257,66 +278,77 @@ export const TeamDetailView: React.FC<TeamDetailViewProps> = ({
           {/* Team Total Capacity */}
           <div className={styles.section}>
             <h4 className={styles.sectionTitle}>
-              Team Total Capacity (including IP Week)
+              Team Productive Capacity (including IP Week)
+              <Tooltip title="Productive capacity applies 80% productivity factor and deducts PI planning overhead. This matches the Train Capacity Dashboard calculation.">
+                <span style={{ fontWeight: 400, fontSize: 12, color: '#1890ff', marginLeft: 8, cursor: 'help' }}>ℹ️</span>
+              </Tooltip>
               <span style={{ fontWeight: 400, fontSize: 12, color: '#8c8c8c', marginLeft: 12 }}>
-                {capacityDetail.summary.pi_planning_days * capacityDetail.summary.total_members} eD allocated to PI Planning ({capacityDetail.summary.pi_planning_days}d × {capacityDetail.summary.total_members} members)
+                80% productivity applied · {capacityDetail.summary.pi_planning_days * capacityDetail.summary.total_members} eD PI Planning deducted
               </span>
             </h4>
             <Row gutter={12}>
               <Col span={6}>
-                <Card size="small" className={`${styles.statCard} ${styles.statCardBlue}`}>
-                  <div className={styles.statValue}>{capacityDetail.summary.total_effort_days.toFixed(1)}</div>
-                  <div className={styles.statLabel}>Total</div>
-                </Card>
+                <Tooltip title={`Total Productive Capacity: ${getProductiveCapacitySummary()?.total.toFixed(1)} eD (80% productivity applied, ${capacityDetail.summary.pi_planning_days} eD PI Planning deducted)`}>
+                  <Card size="small" className={`${styles.statCard} ${styles.statCardBlue}`}>
+                    <div className={styles.statValue}>{getProductiveCapacitySummary()?.total.toFixed(1)}</div>
+                    <div className={styles.statLabel}>Total</div>
+                  </Card>
+                </Tooltip>
               </Col>
               <Col span={6}>
-                <Card size="small" className={styles.statCard}>
-                  <div className={styles.statValue} style={{ color: '#13c2c2' }}>{capacityDetail.summary.total_dev_days.toFixed(1)}</div>
-                  <div className={styles.statLabel}>Dev</div>
-                </Card>
+                <Tooltip title={`Dev Productive Capacity: ${getProductiveCapacitySummary()?.dev.toFixed(1)} eD`}>
+                  <Card size="small" className={styles.statCard}>
+                    <div className={styles.statValue} style={{ color: '#13c2c2' }}>{getProductiveCapacitySummary()?.dev.toFixed(1)}</div>
+                    <div className={styles.statLabel}>Dev</div>
+                  </Card>
+                </Tooltip>
               </Col>
               <Col span={6}>
-                <Card size="small" className={styles.statCard}>
-                  <div className={styles.statValue} style={{ color: '#fa8c16' }}>{capacityDetail.summary.total_pd_days.toFixed(1)}</div>
-                  <div className={styles.statLabel}>PD</div>
-                </Card>
+                <Tooltip title={`PD Productive Capacity: ${getProductiveCapacitySummary()?.pd.toFixed(1)} eD`}>
+                  <Card size="small" className={styles.statCard}>
+                    <div className={styles.statValue} style={{ color: '#fa8c16' }}>{getProductiveCapacitySummary()?.pd.toFixed(1)}</div>
+                    <div className={styles.statLabel}>PD</div>
+                  </Card>
+                </Tooltip>
               </Col>
               <Col span={6}>
-                <Card size="small" className={styles.statCard}>
-                  <div className={styles.statValue} style={{ color: '#722ed1' }}>{capacityDetail.summary.total_qa_days.toFixed(1)}</div>
-                  <div className={styles.statLabel}>QA</div>
-                </Card>
+                <Tooltip title={`QA Productive Capacity: ${getProductiveCapacitySummary()?.qa.toFixed(1)} eD`}>
+                  <Card size="small" className={styles.statCard}>
+                    <div className={styles.statValue} style={{ color: '#722ed1' }}>{getProductiveCapacitySummary()?.qa.toFixed(1)}</div>
+                    <div className={styles.statLabel}>QA</div>
+                  </Card>
+                </Tooltip>
               </Col>
             </Row>
           </div>
 
           {/* IP Week Capacity */}
           <div className={styles.section}>
-            <h4 className={styles.sectionTitle}>IP Week Capacity</h4>
+            <h4 className={styles.sectionTitle}>IP Week Productive Capacity</h4>
             <Row gutter={12}>
               <Col span={6}>
-                <Tooltip title={`${capacityDetail.summary.ip_capacity.toFixed(1)} - ${capacityDetail.summary.pi_planning_days * capacityDetail.summary.total_members}d PI planning`}>
+                <Tooltip title={`IP Week Available: ${getProductiveCapacitySummary()?.ip.toFixed(1)} eD (after productivity and PI Planning deduction)`}>
                   <Card size="small" className={`${styles.statCard} ${styles.statCardPurple}`}>
-                    <div className={styles.statValue}>{capacityDetail.summary.ip_available.toFixed(1)}</div>
+                    <div className={styles.statValue}>{getProductiveCapacitySummary()?.ip.toFixed(1)}</div>
                     <div className={styles.statLabel}>IP Available</div>
                   </Card>
                 </Tooltip>
               </Col>
               <Col span={6}>
                 <Card size="small" className={styles.statCard}>
-                  <div className={styles.statValue} style={{ color: '#13c2c2' }}>{capacityDetail.summary.ip_dev_days.toFixed(1)}</div>
+                  <div className={styles.statValue} style={{ color: '#13c2c2' }}>{getProductiveCapacitySummary()?.ipDev.toFixed(1)}</div>
                   <div className={styles.statLabel}>Dev</div>
                 </Card>
               </Col>
               <Col span={6}>
                 <Card size="small" className={styles.statCard}>
-                  <div className={styles.statValue} style={{ color: '#fa8c16' }}>{capacityDetail.summary.ip_pd_days.toFixed(1)}</div>
+                  <div className={styles.statValue} style={{ color: '#fa8c16' }}>{getProductiveCapacitySummary()?.ipPd.toFixed(1)}</div>
                   <div className={styles.statLabel}>PD</div>
                 </Card>
               </Col>
               <Col span={6}>
                 <Card size="small" className={styles.statCard}>
-                  <div className={styles.statValue} style={{ color: '#722ed1' }}>{capacityDetail.summary.ip_qa_days.toFixed(1)}</div>
+                  <div className={styles.statValue} style={{ color: '#722ed1' }}>{getProductiveCapacitySummary()?.ipQa.toFixed(1)}</div>
                   <div className={styles.statLabel}>QA</div>
                 </Card>
               </Col>
@@ -325,29 +357,29 @@ export const TeamDetailView: React.FC<TeamDetailViewProps> = ({
 
           {/* PI Capacity (Iterations only) */}
           <div className={styles.section}>
-            <h4 className={styles.sectionTitle}>PI Capacity (Iterations only - for Allocation)</h4>
+            <h4 className={styles.sectionTitle}>PI Productive Capacity (Iterations only - for Allocation)</h4>
             <Row gutter={12}>
               <Col span={6}>
                 <Card size="small" className={`${styles.statCard} ${styles.statCardGreen}`}>
-                  <div className={styles.statValue}>{capacityDetail.summary.pi_capacity.toFixed(1)}</div>
+                  <div className={styles.statValue}>{getProductiveCapacitySummary()?.pi.toFixed(1)}</div>
                   <div className={styles.statLabel}>PI Total</div>
                 </Card>
               </Col>
               <Col span={6}>
                 <Card size="small" className={styles.statCard}>
-                  <div className={styles.statValue} style={{ color: '#13c2c2' }}>{capacityDetail.summary.pi_dev_days.toFixed(1)}</div>
+                  <div className={styles.statValue} style={{ color: '#13c2c2' }}>{getProductiveCapacitySummary()?.piDev.toFixed(1)}</div>
                   <div className={styles.statLabel}>Dev</div>
                 </Card>
               </Col>
               <Col span={6}>
                 <Card size="small" className={styles.statCard}>
-                  <div className={styles.statValue} style={{ color: '#fa8c16' }}>{capacityDetail.summary.pi_pd_days.toFixed(1)}</div>
+                  <div className={styles.statValue} style={{ color: '#fa8c16' }}>{getProductiveCapacitySummary()?.piPd.toFixed(1)}</div>
                   <div className={styles.statLabel}>PD</div>
                 </Card>
               </Col>
               <Col span={6}>
                 <Card size="small" className={styles.statCard}>
-                  <div className={styles.statValue} style={{ color: '#722ed1' }}>{capacityDetail.summary.pi_qa_days.toFixed(1)}</div>
+                  <div className={styles.statValue} style={{ color: '#722ed1' }}>{getProductiveCapacitySummary()?.piQa.toFixed(1)}</div>
                   <div className={styles.statLabel}>QA</div>
                 </Card>
               </Col>

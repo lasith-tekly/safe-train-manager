@@ -1,5 +1,5 @@
 from app.routes.products import router as products_router
-from app.routes.budgets import router as budgets_router
+# from app.routes.budgets import router as budgets_router  # Old budget routes - commented out
 from app.routes.teams import router as teams_router
 from app.routes.features import router as features_router
 from app.routes.jira import router as jira_router
@@ -9,7 +9,7 @@ from app.routes.team_members import router as team_members_router
 
 __all__ = [
     "products_router", 
-    "budgets_router", 
+    # "budgets_router",  # Old budget router - commented out 
     "teams_router", 
     "features_router", 
     "jira_router", 

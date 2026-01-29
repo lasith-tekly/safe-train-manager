@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Select, Skeleton, Empty, Table, Statistic, Tag, message } from 'antd';
+import { Card, Row, Col, Select, Skeleton, Empty, Table, Statistic, Tag, message, Alert } from 'antd';
 import { TeamOutlined, UserOutlined, FieldTimeOutlined, PercentageOutlined } from '@ant-design/icons';
 import { getTrainDashboardOverview, getPIs } from '../../../services/api';
 import type { TrainDashboardOverview, TeamCapacityRow, PI, IterationCapacityValue } from '../../../types';
@@ -150,6 +150,15 @@ export const TrainCapacityDashboard: React.FC = () => {
         <Empty description="No data available for selected PI" />
       ) : (
         <>
+          {/* Explanatory Alert */}
+          <Alert
+            message="PI-Level Capacity Planning"
+            description="This dashboard shows iteration-by-iteration capacity for the selected PI. Capacity is calculated dynamically from team members, applying productivity factors, holidays, leave, and PI planning overhead. This provides detailed capacity for sprint planning."
+            type="info"
+            showIcon
+            style={{ marginBottom: 16 }}
+          />
+
           {/* Summary Cards */}
           <Row gutter={[16, 16]} className={styles.summaryRow}>
             <Col xs={12} sm={6}>

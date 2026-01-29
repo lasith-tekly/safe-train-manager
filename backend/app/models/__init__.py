@@ -1,5 +1,10 @@
 from app.models.product import Product, ProductStatus
-from app.models.budget import BudgetVersion, BudgetLine, BudgetStatus
+# from app.models.budget import BudgetVersion, BudgetLine, BudgetStatus  # Old budget models - commented out
+from app.models.budget_new import (
+    FiscalYear, BudgetVersion, ProductBudget, 
+    BudgetLine, BudgetLineProduct, BudgetCategory, 
+    BudgetAuditLog, AllocationType, EntityType, AuditAction
+)
 from app.models.team import (
     Team, TeamCapacity, TeamStatus, TeamMember, MemberQuarterlyAvailability, 
     MemberRole, team_products, ComponentHat, team_member_component_hats, SiteHoliday,
@@ -13,13 +18,22 @@ from app.models.capacity import TeamIterationCapacity
 from app.models.member_iteration_productivity import MemberIterationProductivity
 from app.models.organization import Country, Site
 from app.models.capacity_allocation import CapacityAllocationCategory
+from app.models.roadmap import Roadmap, RoadmapFeature, FeatureYearAllocation
 
 __all__ = [
     "Product",
     "ProductStatus",
+    # "BudgetStatus",  # Old budget model
+    "FiscalYear",
     "BudgetVersion",
+    "ProductBudget",
     "BudgetLine",
-    "BudgetStatus",
+    "BudgetLineProduct",
+    "BudgetCategory",
+    "BudgetAuditLog",
+    "AllocationType",
+    "EntityType",
+    "AuditAction",
     "Team",
     "TeamCapacity",
     "TeamStatus",
@@ -46,4 +60,7 @@ __all__ = [
     "CapacityAllocationCategory",
     "MemberPIAllocation",
     "MemberIterationProductivity",
+    "Roadmap",
+    "RoadmapFeature",
+    "FeatureYearAllocation",
 ]

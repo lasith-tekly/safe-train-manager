@@ -11,6 +11,7 @@ import {
   Statistic,
   Row,
   Col,
+  Alert,
 } from 'antd';
 import { TeamOutlined, UserOutlined, FieldTimeOutlined, PercentageOutlined } from '@ant-design/icons';
 import type { Team, QuarterCapacity } from '../../../types';
@@ -162,19 +163,24 @@ export const TeamCapacityDashboardPage: React.FC = () => {
   }
 
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <div>
-          <Title level={2} style={{ margin: 0 }}>Team Capacity Dashboard</Title>
-          <Text type="secondary">Quarterly capacity overview for all teams</Text>
-        </div>
+    <div style={{ padding: '24px' }}>
+      <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Title level={2}>Team Capacity Dashboard</Title>
         <Select
           value={selectedYear}
           onChange={setSelectedYear}
-          options={yearOptions}
           style={{ width: 120 }}
+          options={yearOptions}
         />
       </div>
+
+      <Alert
+        message="Annual Capacity Overview"
+        description="This dashboard shows quarterly capacity aggregated by year. Use this for high-level capacity planning and year-over-year comparison. For detailed PI and iteration-level planning, use the Train Capacity Dashboard."
+        type="info"
+        showIcon
+        style={{ marginBottom: 16 }}
+      />
 
       {/* Summary Cards */}
       <Row gutter={16} style={{ marginBottom: 24 }}>
