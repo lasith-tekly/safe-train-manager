@@ -242,23 +242,62 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
       setLoading(true);
       const values = form.getFieldsValue();
 
+      // Validate required fields
+      if (!values.product_id) {
+        message.error('Please select a product');
+        setLoading(false);
+        return;
+      }
+
+      if (!values.name) {
+        message.error('Please enter feature name');
+        setLoading(false);
+        return;
+      }
+
+      if (!values.gross_sizing_ed || values.gross_sizing_ed <= 0) {
+        message.error('Please enter gross sizing (must be greater than 0)');
+        setLoading(false);
+        return;
+      }
+
+      // Filter and validate budget allocations
+      const validBudgetAllocations = budgetAllocations
+        .filter(alloc => alloc && alloc.budget_line_id)
+        .map(alloc => ({
+          budget_line_id: alloc.budget_line_id,
+          category_id: alloc.category_id || undefined,
+          allocation_percentage: Number(alloc.allocation_percentage)
+        }));
+
+      if (validBudgetAllocations.length === 0) {
+        message.error('Please add at least one budget line allocation');
+        setLoading(false);
+        return;
+      }
+
+      // Filter quarterly allocations (remove zero values)
+      const validQuarterlyAllocations = quarterlyAllocations
+        .filter(alloc => alloc.allocated_ed > 0)
+        .map(alloc => ({
+          year: Number(alloc.year),
+          quarter: Number(alloc.quarter),
+          allocated_ed: Number(alloc.allocated_ed)
+        }));
+
       const requestData: CreateFeatureRequest | UpdateFeatureRequest = {
         product_id: values.product_id,
-        budget_allocations: budgetAllocations
-          .filter(alloc => alloc && alloc.budget_line_id)
-          .map(alloc => ({
-            budget_line_id: alloc.budget_line_id,
-            category_id: alloc.category_id,
-            allocation_percentage: alloc.allocation_percentage
-          })),
+        budget_allocations: validBudgetAllocations,
         name: values.name,
-        customer: values.customer,
-        priority: values.priority || 0,
-        gross_sizing_ed: values.gross_sizing_ed,
-        remarks: values.remarks,
-        status: values.status,
-        quarterly_allocations: quarterlyAllocations.length > 0 ? quarterlyAllocations : undefined
+        customer: values.customer || undefined,
+        priority: Number(values.priority) || 0,
+        gross_sizing_ed: Number(values.gross_sizing_ed),
+        remarks: values.remarks || undefined,
+        status: values.status || 'planned',
+        quarterly_allocations: validQuarterlyAllocations
       };
+
+      console.log('Submitting feature data:', requestData);
 
       if (feature) {
         await updateFeature(feature.id, requestData as UpdateFeatureRequest);
@@ -271,10 +310,21 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
       onClose(true);
     } catch (error: any) {
       console.error('Failed to save feature:', error);
+      
+      // Better error message handling
       if (error.response?.data?.detail) {
-        message.error(`Failed to save feature: ${error.response.data.detail}`);
+        const detail = error.response.data.detail;
+        if (Array.isArray(detail)) {
+          // Pydantic validation errors
+          const errors = detail.map((err: any) => `${err.loc.join('.')}: ${err.msg}`).join(', ');
+          message.error(`Validation error: ${errors}`);
+        } else {
+          message.error(`Failed to save feature: ${detail}`);
+        }
+      } else if (error.message) {
+        message.error(`Failed to save feature: ${error.message}`);
       } else {
-        message.error('Failed to save feature');
+        message.error('Failed to save feature. Please check all required fields.');
       }
     } finally {
       setLoading(false);
