@@ -35,7 +35,10 @@ const ProductsOverviewPage: React.FC = () => {
     try {
       // Get all products
       const productsResponse = await axios.get(`${API_BASE_URL}/products`);
-      const allProducts = productsResponse.data;
+      // Handle both {data: [...]} and [...] response formats
+      const allProducts = Array.isArray(productsResponse.data) 
+        ? productsResponse.data 
+        : (productsResponse.data.data || []);
 
       // Get features for each product
       const summaries: ProductSummary[] = [];
