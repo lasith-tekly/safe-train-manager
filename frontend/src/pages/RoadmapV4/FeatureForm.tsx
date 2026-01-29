@@ -3,7 +3,7 @@ import { Modal, Form, Input, InputNumber, Select, Button, message, Row, Col, Spa
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { createFeature, updateFeature } from '../../services/featureApi';
-import { RoadmapFeature, CreateFeatureRequest, UpdateFeatureRequest, BudgetLineAllocationInput, QuarterlyAllocationInput } from '../../types/roadmap_v4';
+import { RoadmapFeature, CreateFeatureRequest, UpdateFeatureRequest, QuarterlyAllocationInput } from '../../types/roadmap_v4';
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -49,28 +49,23 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
   const [totalCost, setTotalCost] = useState<number>(0);
   
   const [products, setProducts] = useState<any[]>([]);
-  const [teams, setTeams] = useState<any[]>([]);
   const [budgetProducts, setBudgetProducts] = useState<BudgetProduct[]>([]);
   
-  // Budget allocations state
   const [budgetAllocations, setBudgetAllocations] = useState<BudgetAllocation[]>([
     { budget_line_id: '', allocation_percentage: 100 }
   ]);
 
-  // Quarterly allocations state
   const [quarterlyAllocations, setQuarterlyAllocations] = useState<QuarterlyAllocationInput[]>([]);
 
   useEffect(() => {
     if (visible) {
       loadProducts();
-      loadTeams();
       loadBudgetProducts();
     }
   }, [visible]);
 
   useEffect(() => {
     if (visible && feature) {
-      // Populate form with existing feature data
       form.setFieldsValue({
         product_id: feature.product_id,
         name: feature.name,
@@ -78,18 +73,17 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
         priority: feature.priority,
         gross_sizing_ed: feature.gross_sizing_ed,
         remarks: feature.remarks,
-        team_ids: feature.teams.map(t => t.id),
+        status: feature.status,
       });
       
-      // Set budget allocations from feature
       if (feature.budget_allocations && feature.budget_allocations.length > 0) {
         setBudgetAllocations(feature.budget_allocations.map(alloc => ({
           budget_line_id: alloc.budget_line_id,
+          category_id: alloc.category_id,
           allocation_percentage: alloc.allocation_percentage
         })));
       }
 
-      // Set quarterly allocations
       if (feature.quarterly_allocations && feature.quarterly_allocations.length > 0) {
         setQuarterlyAllocations(feature.quarterly_allocations.map(alloc => ({
           year: alloc.year,
@@ -101,7 +95,6 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
       setNetSizing(feature.net_sizing_ed);
       setTotalCost(feature.total_cost_keur);
     } else if (visible) {
-      // Reset for new feature
       form.resetFields();
       setBudgetAllocations([{ budget_line_id: '', allocation_percentage: 100 }]);
       setQuarterlyAllocations([]);
@@ -116,15 +109,6 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
       setProducts(response.data.data || response.data || []);
     } catch (error) {
       console.error('Failed to load products:', error);
-    }
-  };
-
-  const loadTeams = async () => {
-    try {
-      const response = await axios.get(`${API_BASE_URL}/teams`);
-      setTeams(response.data.data || response.data || []);
-    } catch (error) {
-      console.error('Failed to load teams:', error);
     }
   };
 
@@ -153,7 +137,6 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
   const handleGrossSizingChange = async (value: number | null) => {
     if (value && value > 0) {
       try {
-        // Calculate using train config settings
         const response = await axios.post(`${API_BASE_URL}/features/calculate`, {
           gross_sizing_ed: value
         });
@@ -163,9 +146,8 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
         setTotalCost(costVal);
       } catch (error) {
         console.error('Failed to calculate sizing:', error);
-        // Fallback calculation if API fails
-        const netVal = Number(value) / 1.3; // Default structural cost ratio
-        const costVal = (Number(value) / 220) * 78; // Default calculation
+        const netVal = Number(value) / 1.3;
+        const costVal = (Number(value) / 220) * 78;
         setNetSizing(netVal);
         setTotalCost(costVal);
       }
@@ -181,8 +163,7 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
 
   const removeBudgetAllocation = (index: number) => {
     if (budgetAllocations.length > 1) {
-      const newAllocations = budgetAllocations.filter((_, i) => i !== index);
-      setBudgetAllocations(newAllocations);
+      setBudgetAllocations(budgetAllocations.filter((_, i) => i !== index));
     }
   };
 
@@ -201,7 +182,6 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
   };
 
   const validateBudgetAllocations = (): boolean => {
-    // Check all budget lines are selected
     for (const alloc of budgetAllocations) {
       if (!alloc.budget_line_id) {
         message.error('Please select a budget line for all allocations');
@@ -209,14 +189,12 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
       }
     }
 
-    // Check for duplicates
     const budgetLineIds = budgetAllocations.map(a => a.budget_line_id);
     if (new Set(budgetLineIds).size !== budgetLineIds.length) {
       message.error('Duplicate budget lines are not allowed');
       return false;
     }
 
-    // Check total percentage
     const total = getTotalPercentage();
     if (Math.abs(total - 100) > 0.01) {
       message.error(`Budget allocations must sum to 100%, currently ${total.toFixed(2)}%`);
@@ -232,8 +210,7 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
   };
 
   const removeQuarterlyAllocation = (index: number) => {
-    const newAllocations = quarterlyAllocations.filter((_, i) => i !== index);
-    setQuarterlyAllocations(newAllocations);
+    setQuarterlyAllocations(quarterlyAllocations.filter((_, i) => i !== index));
   };
 
   const updateQuarterlyAllocation = (index: number, field: keyof QuarterlyAllocationInput, value: any) => {
@@ -246,7 +223,6 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
     const budgetProduct = budgetProducts.find(bp => bp.product.id === productId);
     const productBudgetLines = budgetProduct?.budget_lines || [];
     
-    // Also include transversal budget lines from all products
     const transversalBudgetLines: any[] = [];
     budgetProducts.forEach(bp => {
       bp.budget_lines.forEach(bl => {
@@ -283,7 +259,7 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
       const requestData: CreateFeatureRequest | UpdateFeatureRequest = {
         product_id: values.product_id,
         budget_allocations: budgetAllocations
-          .filter(alloc => alloc && alloc.budget_line_id) // Filter out invalid allocations
+          .filter(alloc => alloc && alloc.budget_line_id)
           .map(alloc => ({
             budget_line_id: alloc.budget_line_id,
             category_id: alloc.category_id,
@@ -294,7 +270,7 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
         priority: values.priority || 0,
         gross_sizing_ed: values.gross_sizing_ed,
         remarks: values.remarks,
-        team_ids: values.team_ids || [],
+        status: values.status,
         quarterly_allocations: quarterlyAllocations.length > 0 ? quarterlyAllocations : undefined
       };
 
@@ -321,12 +297,11 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
 
   const totalPercentage = getTotalPercentage();
   const isValidPercentage = Math.abs(totalPercentage - 100) < 0.01;
-
   const selectedProductId = Form.useWatch('product_id', form);
 
   return (
     <Modal
-      title={feature ? 'Edit Feature' : 'Add Feature'}
+      title={feature ? 'Edit Feature (Strategic Planning)' : 'Add Feature (Strategic Planning)'}
       open={visible}
       onCancel={() => onClose(false)}
       onOk={handleSubmit}
@@ -334,8 +309,14 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
       width={900}
       okText={feature ? 'Update' : 'Create'}
     >
+      <div style={{ marginBottom: 16, padding: '12px', background: '#e6f7ff', border: '1px solid #91d5ff', borderRadius: 4 }}>
+        <strong>Strategic Planning:</strong> Define WHAT to build, HOW MUCH it costs, and WHEN (quarterly planning).
+        <br />
+        <small>Team assignment and JIRA records will be managed separately in Execution Planning.</small>
+      </div>
+
       <Tabs defaultActiveKey="1">
-        <Tabs.TabPane tab="Basic Info" key="1">
+        <Tabs.TabPane tab="Feature Details" key="1">
           <Form form={form} layout="vertical">
             <Row gutter={16}>
               <Col span={12}>
@@ -353,9 +334,19 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
                   </Select>
                 </Form.Item>
               </Col>
-              <Col span={12}>
+              <Col span={6}>
                 <Form.Item name="priority" label="Priority">
                   <InputNumber min={0} style={{ width: '100%' }} placeholder="0" />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item name="status" label="Status">
+                  <Select placeholder="Select status">
+                    <Option value="planned">Planned</Option>
+                    <Option value="in_progress">In Progress</Option>
+                    <Option value="completed">Completed</Option>
+                    <Option value="cancelled">Cancelled</Option>
+                  </Select>
                 </Form.Item>
               </Col>
             </Row>
@@ -372,9 +363,8 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
               <Input placeholder="Enter customer name" />
             </Form.Item>
 
-            {/* Budget Allocations Section */}
             <Card 
-              title="Budget Allocation (by Product → Budget Line → Category)" 
+              title="Budget Allocation (Product → Budget Line → Category)" 
               size="small" 
               style={{ marginBottom: 16 }}
               extra={
@@ -507,16 +497,6 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
               </Col>
             </Row>
 
-            <Form.Item name="team_ids" label="Teams">
-              <Select mode="multiple" placeholder="Select teams" showSearch optionFilterProp="children">
-                {teams.map(team => (
-                  <Option key={team.id} value={team.id}>
-                    {team.name}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
-
             <Form.Item name="remarks" label="Remarks">
               <TextArea rows={3} placeholder="Enter remarks" />
             </Form.Item>
@@ -525,7 +505,7 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
 
         <Tabs.TabPane tab="Quarterly Planning" key="2">
           <Card 
-            title="Quarterly Effort Allocation (Net eD)" 
+            title="Quarterly Effort Allocation (Net eD) - Across Multiple Years" 
             size="small"
             extra={
               <Button 
@@ -541,7 +521,7 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
             <Space direction="vertical" style={{ width: '100%' }}>
               {quarterlyAllocations.length === 0 && (
                 <div style={{ padding: '16px', textAlign: 'center', color: '#999' }}>
-                  No quarterly allocations yet. Click "Add Quarter" to start planning.
+                  No quarterly allocations yet. Click "Add Quarter" to plan effort across quarters and years.
                 </div>
               )}
               {quarterlyAllocations.map((allocation, index) => (
