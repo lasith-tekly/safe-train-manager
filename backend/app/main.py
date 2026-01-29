@@ -23,6 +23,7 @@ from app.routers.budget_config import router as budget_config_router
 from app.routers.budget_dashboard import router as budget_dashboard_router
 # Old roadmap routes removed - replaced with V4
 from app.routes.features_v4 import router as features_v4_router
+from app.routes.jira_v4 import router as jira_v4_router
 from app.database import engine, Base
 
 # Create tables - DISABLED: Using SQL migrations instead
@@ -75,6 +76,7 @@ app.include_router(budget_config_router)
 app.include_router(budget_dashboard_router)
 # Old roadmap routes removed - replaced with V4
 app.include_router(features_v4_router)
+app.include_router(jira_v4_router)
 
 
 @app.get("/health", tags=["health"])
