@@ -63,10 +63,26 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
 
   const loadBudgetLines = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/budget-config/budget-lines`);
-      setBudgetLines(response.data.data || response.data || []);
+      // Budget lines are nested under products - fetch all products and extract budget lines
+      const response = await axios.get(`${API_BASE_URL}/budget/products`);
+      const products = response.data.data || response.data || [];
+      
+      // Fetch detailed data for each product to get budget lines
+      const allBudgetLines: any[] = [];
+      for (const product of products) {
+        try {
+          const detailResponse = await axios.get(`${API_BASE_URL}/budget/products/${product.id}`);
+          const budgetLines = detailResponse.data.budget_lines || [];
+          allBudgetLines.push(...budgetLines);
+        } catch (err) {
+          console.error(`Failed to load budget lines for product ${product.id}:`, err);
+        }
+      }
+      
+      setBudgetLines(allBudgetLines);
     } catch (error) {
       console.error('Failed to load budget lines:', error);
+      setBudgetLines([]);
     }
   };
 
