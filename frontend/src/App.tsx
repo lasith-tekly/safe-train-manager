@@ -11,7 +11,7 @@ import { FeaturesPage } from './pages/Features';
 import { PICalendarPage } from './pages/PICalendar';
 import { TeamsPage } from './pages/Teams';
 import { SettingsPage } from './pages/Settings';
-import RoadmapPage from './pages/Roadmap';
+import RoadmapV4Page from './pages/RoadmapV4';
 
 // Import Amadeus theme
 import './styles/amadeus-theme.css';
@@ -40,7 +40,7 @@ const App: React.FC = () => {
           <Route path="/teams" element={<TeamsPage />} />
           
           {/* Roadmap Planning */}
-          <Route path="/roadmap/*" element={<RoadmapPage />} />
+          <Route path="/roadmap/*" element={<RoadmapV4Page />} />
           
           {/* Reports - placeholder */}
           <Route path="/reports" element={<DashboardPage />} />
