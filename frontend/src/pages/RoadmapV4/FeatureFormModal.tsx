@@ -5,12 +5,15 @@
  */
 import React, { useState, useEffect } from 'react';
 import { Modal, Form, Input, InputNumber, Select, Button, Space, Tabs, message, Row, Col, Tag } from 'antd';
+import axios from 'axios';
 import { createFeature, updateFeature, calculateSizing } from '../../services/featureApi';
 import { RoadmapFeature, CreateFeatureRequest, UpdateFeatureRequest, QuarterlyAllocationInput } from '../../types/roadmap_v4';
 
 const { Option } = Select;
 const { TextArea } = Input;
 const { TabPane } = Tabs;
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
 
 interface FeatureFormModalProps {
   visible: boolean;
@@ -25,6 +28,66 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
   const [netSizing, setNetSizing] = useState<number>(0);
   const [totalCost, setTotalCost] = useState<number>(0);
   const [quarterlyAllocations, setQuarterlyAllocations] = useState<Record<string, Record<number, number>>>({});
+  
+  // Dynamic data
+  const [products, setProducts] = useState<any[]>([]);
+  const [teams, setTeams] = useState<any[]>([]);
+  const [budgetLines, setBudgetLines] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [selectedBudgetLine, setSelectedBudgetLine] = useState<string | null>(null);
+
+  // Load dynamic data when modal opens
+  useEffect(() => {
+    if (visible) {
+      loadProducts();
+      loadTeams();
+      loadBudgetLines();
+    }
+  }, [visible]);
+
+  // Load categories when budget line changes
+  useEffect(() => {
+    if (selectedBudgetLine) {
+      loadCategories(selectedBudgetLine);
+    }
+  }, [selectedBudgetLine]);
+
+  const loadProducts = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/products`);
+      setProducts(response.data);
+    } catch (error) {
+      console.error('Failed to load products:', error);
+    }
+  };
+
+  const loadTeams = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/teams`);
+      setTeams(response.data);
+    } catch (error) {
+      console.error('Failed to load teams:', error);
+    }
+  };
+
+  const loadBudgetLines = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/budget-config/budget-lines`);
+      setBudgetLines(response.data);
+    } catch (error) {
+      console.error('Failed to load budget lines:', error);
+    }
+  };
+
+  const loadCategories = async (budgetLineId: string) => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/budget-config/budget-lines/${budgetLineId}/categories`);
+      setCategories(response.data);
+    } catch (error) {
+      console.error('Failed to load categories:', error);
+      setCategories([]);
+    }
+  };
 
   useEffect(() => {
     if (visible && feature) {
@@ -215,8 +278,12 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
               label="Product"
               rules={[{ required: true, message: 'Please select a product' }]}
             >
-              <Select placeholder="Select product">
-                {/* Products will be loaded dynamically */}
+              <Select placeholder="Select product" showSearch optionFilterProp="children">
+                {products.map(product => (
+                  <Option key={product.id} value={product.id}>
+                    {product.short_code} - {product.name}
+                  </Option>
+                ))}
               </Select>
             </Form.Item>
           </Col>
@@ -226,8 +293,17 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
               label="Budget Line"
               rules={[{ required: true, message: 'Please select a budget line' }]}
             >
-              <Select placeholder="Select budget line">
-                {/* Budget lines will be loaded dynamically */}
+              <Select 
+                placeholder="Select budget line" 
+                showSearch 
+                optionFilterProp="children"
+                onChange={(value) => setSelectedBudgetLine(value)}
+              >
+                {budgetLines.map(line => (
+                  <Option key={line.id} value={line.id}>
+                    {line.name}
+                  </Option>
+                ))}
               </Select>
             </Form.Item>
           </Col>
@@ -236,8 +312,12 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
         <Row gutter={16}>
           <Col span={12}>
             <Form.Item name="category_id" label="Category (Optional)">
-              <Select placeholder="Select category" allowClear>
-                {/* Categories will be loaded dynamically */}
+              <Select placeholder="Select category" allowClear showSearch optionFilterProp="children">
+                {categories.map(category => (
+                  <Option key={category.id} value={category.id}>
+                    {category.name}
+                  </Option>
+                ))}
               </Select>
             </Form.Item>
           </Col>
@@ -309,8 +389,12 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
         </div>
 
         <Form.Item name="team_ids" label="Teams (High-level assignment)">
-          <Select mode="multiple" placeholder="Select teams">
-            {/* Teams will be loaded dynamically */}
+          <Select mode="multiple" placeholder="Select teams" showSearch optionFilterProp="children">
+            {teams.map(team => (
+              <Option key={team.id} value={team.id}>
+                {team.name}
+              </Option>
+            ))}
           </Select>
         </Form.Item>
 

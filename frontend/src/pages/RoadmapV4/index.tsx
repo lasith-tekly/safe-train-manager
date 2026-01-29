@@ -4,14 +4,17 @@
  * Effort-centric roadmap planning with quarterly allocations
  */
 import React, { useState, useEffect } from 'react';
-import { Button, Table, Space, Select, Input, Tag, message, Spin, Card } from 'antd';
-import { PlusOutlined, SearchOutlined } from '@ant-design/icons';
-import { listFeatures } from '../../services/featureApi';
+import { Button, Table, Space, Select, Input, Tag, message, Card, Modal } from 'antd';
+import { PlusOutlined, SearchOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import axios from 'axios';
+import { listFeatures, deleteFeature } from '../../services/featureApi';
 import { RoadmapFeature, FeatureFilters } from '../../types/roadmap_v4';
 import FeatureFormModal from './FeatureFormModal';
 import './styles.css';
 
 const { Option } = Select;
+const { confirm } = Modal;
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
 
 const RoadmapV4Page: React.FC = () => {
   const [features, setFeatures] = useState<RoadmapFeature[]>([]);
@@ -23,10 +26,21 @@ const RoadmapV4Page: React.FC = () => {
   });
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingFeature, setEditingFeature] = useState<RoadmapFeature | null>(null);
+  const [products, setProducts] = useState<any[]>([]);
 
   useEffect(() => {
     loadFeatures();
+    loadProducts();
   }, [filters]);
+
+  const loadProducts = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/products`);
+      setProducts(response.data);
+    } catch (error) {
+      console.error('Failed to load products:', error);
+    }
+  };
 
   const loadFeatures = async () => {
     setLoading(true);
@@ -58,6 +72,25 @@ const RoadmapV4Page: React.FC = () => {
     if (refresh) {
       loadFeatures();
     }
+  };
+
+  const handleDeleteFeature = (feature: RoadmapFeature) => {
+    confirm({
+      title: 'Delete Feature',
+      content: `Are you sure you want to delete "${feature.name}"? This action cannot be undone.`,
+      okText: 'Delete',
+      okType: 'danger',
+      cancelText: 'Cancel',
+      onOk: async () => {
+        try {
+          await deleteFeature(feature.id);
+          message.success('Feature deleted successfully');
+          loadFeatures();
+        } catch (error: any) {
+          message.error(error.response?.data?.detail || 'Failed to delete feature');
+        }
+      }
+    });
   };
 
   const getStatusColor = (status: string) => {
@@ -144,10 +177,21 @@ const RoadmapV4Page: React.FC = () => {
       fixed: 'right' as const,
       render: (_: any, record: RoadmapFeature) => (
         <Space>
-          <Button type="link" size="small" onClick={() => handleEditFeature(record)}>
+          <Button 
+            type="link" 
+            size="small" 
+            icon={<EditOutlined />}
+            onClick={() => handleEditFeature(record)}
+          >
             Edit
           </Button>
-          <Button type="link" size="small" danger>
+          <Button 
+            type="link" 
+            size="small" 
+            danger
+            icon={<DeleteOutlined />}
+            onClick={() => handleDeleteFeature(record)}
+          >
             Delete
           </Button>
         </Space>
@@ -171,9 +215,15 @@ const RoadmapV4Page: React.FC = () => {
                 placeholder="Product"
                 style={{ width: 200 }}
                 allowClear
+                showSearch
+                optionFilterProp="children"
                 onChange={(value) => setFilters({ ...filters, product_id: value, page: 1 })}
               >
-                {/* Products will be loaded dynamically */}
+                {products.map(product => (
+                  <Option key={product.id} value={product.id}>
+                    {product.short_code} - {product.name}
+                  </Option>
+                ))}
               </Select>
               <Select
                 placeholder="Status"
