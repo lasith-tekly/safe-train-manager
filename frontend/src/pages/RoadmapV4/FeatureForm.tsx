@@ -157,15 +157,17 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
         const response = await axios.post(`${API_BASE_URL}/features/calculate`, {
           gross_sizing_ed: value
         });
-        setNetSizing(response.data.net_sizing_ed || 0);
-        setTotalCost(response.data.total_cost_keur || 0);
+        const netVal = Number(response.data.net_sizing_ed) || 0;
+        const costVal = Number(response.data.total_cost_keur) || 0;
+        setNetSizing(netVal);
+        setTotalCost(costVal);
       } catch (error) {
         console.error('Failed to calculate sizing:', error);
         // Fallback calculation if API fails
-        const netSizing = value / 1.3; // Default structural cost ratio
-        const totalCost = (value / 220) * 78; // Default calculation
-        setNetSizing(netSizing);
-        setTotalCost(totalCost);
+        const netVal = Number(value) / 1.3; // Default structural cost ratio
+        const costVal = (Number(value) / 220) * 78; // Default calculation
+        setNetSizing(netVal);
+        setTotalCost(costVal);
       }
     } else {
       setNetSizing(0);
@@ -495,12 +497,12 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
               </Col>
               <Col span={8}>
                 <Form.Item label="Net Sizing (eD)">
-                  <Input value={netSizing.toFixed(2)} disabled />
+                  <Input value={Number(netSizing || 0).toFixed(2)} disabled />
                 </Form.Item>
               </Col>
               <Col span={8}>
                 <Form.Item label="Total Cost (k€)">
-                  <Input value={totalCost.toFixed(2)} disabled />
+                  <Input value={Number(totalCost || 0).toFixed(2)} disabled />
                 </Form.Item>
               </Col>
             </Row>
