@@ -145,61 +145,89 @@ const ProductRoadmapPage: React.FC = () => {
     }
   };
 
+  // Helper to get quarterly allocation for a specific quarter
+  const getQuarterlyAllocation = (record: RoadmapFeature, quarter: number): number => {
+    const currentYear = new Date().getFullYear();
+    const allocation = record.quarterly_allocations?.find(
+      a => a.year === currentYear && a.quarter === quarter
+    );
+    return allocation?.allocated_ed || 0;
+  };
+
   const columns = [
     {
       title: 'Name',
       dataIndex: 'name',
       key: 'name',
-      width: 250,
+      width: 200,
       ellipsis: true,
     },
     {
       title: 'Customer',
       dataIndex: 'customer',
       key: 'customer',
-      width: 150,
+      width: 120,
       ellipsis: true,
-    },
-    {
-      title: 'Budget Lines',
-      key: 'budget_allocations',
-      width: 200,
-      render: (_: any, record: RoadmapFeature) => (
-        <Space size={[0, 4]} wrap>
-          {record.budget_allocations?.map((alloc, index) => (
-            <Tag key={index} color="blue">
-              {alloc.allocation_percentage}%
-            </Tag>
-          ))}
-        </Space>
-      ),
-    },
-    {
-      title: 'Gross eD',
-      dataIndex: 'gross_sizing_ed',
-      key: 'gross_sizing_ed',
-      width: 100,
-      render: (value: number) => value?.toFixed(1) || '0.0',
     },
     {
       title: 'Net eD',
       dataIndex: 'net_sizing_ed',
       key: 'net_sizing_ed',
-      width: 100,
+      width: 80,
       render: (value: number) => value?.toFixed(1) || '0.0',
+    },
+    {
+      title: 'Q1',
+      key: 'q1',
+      width: 70,
+      align: 'center' as const,
+      render: (_: any, record: RoadmapFeature) => {
+        const value = getQuarterlyAllocation(record, 1);
+        return value > 0 ? <Tag color="blue">{value}</Tag> : '-';
+      },
+    },
+    {
+      title: 'Q2',
+      key: 'q2',
+      width: 70,
+      align: 'center' as const,
+      render: (_: any, record: RoadmapFeature) => {
+        const value = getQuarterlyAllocation(record, 2);
+        return value > 0 ? <Tag color="green">{value}</Tag> : '-';
+      },
+    },
+    {
+      title: 'Q3',
+      key: 'q3',
+      width: 70,
+      align: 'center' as const,
+      render: (_: any, record: RoadmapFeature) => {
+        const value = getQuarterlyAllocation(record, 3);
+        return value > 0 ? <Tag color="orange">{value}</Tag> : '-';
+      },
+    },
+    {
+      title: 'Q4',
+      key: 'q4',
+      width: 70,
+      align: 'center' as const,
+      render: (_: any, record: RoadmapFeature) => {
+        const value = getQuarterlyAllocation(record, 4);
+        return value > 0 ? <Tag color="purple">{value}</Tag> : '-';
+      },
     },
     {
       title: 'Cost (k€)',
       dataIndex: 'total_cost_keur',
       key: 'total_cost_keur',
-      width: 100,
+      width: 90,
       render: (value: number) => value?.toFixed(2) || '0.00',
     },
     {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
-      width: 120,
+      width: 100,
       render: (status: string) => (
         <Tag color={getStatusColor(status)}>
           {status?.toUpperCase() || 'PLANNED'}
