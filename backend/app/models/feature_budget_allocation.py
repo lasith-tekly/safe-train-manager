@@ -25,6 +25,7 @@ class FeatureBudgetLineAllocation(Base):
     # Foreign Keys
     feature_id = Column(String(36), ForeignKey("roadmap_features.id", ondelete="CASCADE"), nullable=False)
     budget_line_id = Column(String(36), ForeignKey("budget_lines.id", ondelete="RESTRICT"), nullable=False)
+    category_id = Column(String(36), ForeignKey("budget_categories.id", ondelete="SET NULL"), nullable=True)
     
     # Allocation details
     allocation_percentage = Column(Numeric(5, 2), nullable=False)  # e.g., 50.00 for 50%

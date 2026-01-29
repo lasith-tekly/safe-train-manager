@@ -60,6 +60,7 @@ class FeatureServiceV4:
                 id=str(uuid.uuid4()),
                 feature_id=feature.id,
                 budget_line_id=alloc_input.budget_line_id,
+                category_id=alloc_input.category_id,
                 allocation_percentage=float(alloc_input.allocation_percentage),
                 allocated_effort_days=allocated_effort
             )
@@ -120,6 +121,7 @@ class FeatureServiceV4:
                     id=str(uuid.uuid4()),
                     feature_id=feature_id,
                     budget_line_id=alloc_input.budget_line_id,
+                    category_id=alloc_input.category_id,
                     allocation_percentage=float(alloc_input.allocation_percentage),
                     allocated_effort_days=allocated_effort
                 )

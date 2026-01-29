@@ -16,12 +16,14 @@ from datetime import datetime
 class BudgetLineAllocationInput(BaseModel):
     """Budget line allocation input with percentage"""
     budget_line_id: str
+    category_id: Optional[str] = None
     allocation_percentage: Decimal = Field(..., gt=0, le=100, description="Percentage allocated to this budget line")
     
     class Config:
         json_schema_extra = {
             "example": {
                 "budget_line_id": "uuid",
+                "category_id": "uuid",
                 "allocation_percentage": 50.00
             }
         }
@@ -227,6 +229,7 @@ class BudgetLineAllocationResponse(BaseModel):
     """Budget line allocation response"""
     id: str
     budget_line_id: str
+    category_id: Optional[str]
     allocation_percentage: Decimal
     allocated_effort_days: Optional[Decimal]
     created_at: datetime

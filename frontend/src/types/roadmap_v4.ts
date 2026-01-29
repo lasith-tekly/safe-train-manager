@@ -37,6 +37,7 @@ export interface QuarterlyAllocationInput {
 export interface BudgetLineAllocation {
   id: string;
   budget_line_id: string;
+  category_id?: string;
   allocation_percentage: number;
   allocated_effort_days?: number;
   created_at: string;
@@ -45,6 +46,7 @@ export interface BudgetLineAllocation {
 
 export interface BudgetLineAllocationInput {
   budget_line_id: string;
+  category_id?: string;
   allocation_percentage: number;
 }
 
