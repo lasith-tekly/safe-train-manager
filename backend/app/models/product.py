@@ -36,7 +36,8 @@ class Product(Base):
     #     cascade="all, delete-orphan"
     # )
     # features = relationship("Feature", back_populates="product")
-    roadmaps = relationship("Roadmap", back_populates="product", cascade="all, delete-orphan")
+    # roadmaps = relationship("Roadmap", back_populates="product", cascade="all, delete-orphan")  # Old - removed for V4
+    # V4 roadmap_features relationship is defined in roadmap_v4.py model
 
     def __repr__(self):
         return f"<Product {self.short_code}: {self.name}>"
