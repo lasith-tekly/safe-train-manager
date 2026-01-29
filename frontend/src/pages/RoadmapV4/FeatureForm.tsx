@@ -4,6 +4,7 @@ import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { createFeature, updateFeature } from '../../services/featureApi';
 import { RoadmapFeature, CreateFeatureRequest, UpdateFeatureRequest, QuarterlyAllocationInput } from '../../types/roadmap_v4';
+import QuarterlyPlanningGrid from './QuarterlyPlanningGrid';
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -202,21 +203,6 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
     }
 
     return true;
-  };
-
-  const addQuarterlyAllocation = () => {
-    const currentYear = new Date().getFullYear();
-    setQuarterlyAllocations([...quarterlyAllocations, { year: currentYear, quarter: 1, allocated_ed: 0 }]);
-  };
-
-  const removeQuarterlyAllocation = (index: number) => {
-    setQuarterlyAllocations(quarterlyAllocations.filter((_, i) => i !== index));
-  };
-
-  const updateQuarterlyAllocation = (index: number, field: keyof QuarterlyAllocationInput, value: any) => {
-    const newAllocations = [...quarterlyAllocations];
-    newAllocations[index][field] = value;
-    setQuarterlyAllocations(newAllocations);
   };
 
   const getBudgetLinesByProduct = (productId: string) => {
@@ -504,88 +490,11 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
         </Tabs.TabPane>
 
         <Tabs.TabPane tab="Quarterly Planning" key="2">
-          <Card 
-            title="Quarterly Effort Allocation (Net eD) - Across Multiple Years" 
-            size="small"
-            extra={
-              <Button 
-                type="link" 
-                icon={<PlusOutlined />} 
-                onClick={addQuarterlyAllocation}
-                size="small"
-              >
-                Add Quarter
-              </Button>
-            }
-          >
-            <Space direction="vertical" style={{ width: '100%' }}>
-              {quarterlyAllocations.length === 0 && (
-                <div style={{ padding: '16px', textAlign: 'center', color: '#999' }}>
-                  No quarterly allocations yet. Click "Add Quarter" to plan effort across quarters and years.
-                </div>
-              )}
-              {quarterlyAllocations.map((allocation, index) => (
-                <Row key={index} gutter={8} align="middle">
-                  <Col span={8}>
-                    <InputNumber
-                      min={2020}
-                      max={2050}
-                      value={allocation.year}
-                      onChange={(value) => updateQuarterlyAllocation(index, 'year', value || new Date().getFullYear())}
-                      style={{ width: '100%' }}
-                      placeholder="Year"
-                    />
-                  </Col>
-                  <Col span={8}>
-                    <Select
-                      value={allocation.quarter}
-                      onChange={(value) => updateQuarterlyAllocation(index, 'quarter', value)}
-                      style={{ width: '100%' }}
-                    >
-                      <Option value={1}>Q1</Option>
-                      <Option value={2}>Q2</Option>
-                      <Option value={3}>Q3</Option>
-                      <Option value={4}>Q4</Option>
-                    </Select>
-                  </Col>
-                  <Col span={6}>
-                    <InputNumber
-                      min={0}
-                      value={allocation.allocated_ed}
-                      onChange={(value) => updateQuarterlyAllocation(index, 'allocated_ed', value || 0)}
-                      style={{ width: '100%' }}
-                      placeholder="Net eD"
-                      addonAfter="eD"
-                    />
-                  </Col>
-                  <Col span={2}>
-                    <Button
-                      type="text"
-                      danger
-                      icon={<DeleteOutlined />}
-                      onClick={() => removeQuarterlyAllocation(index)}
-                    />
-                  </Col>
-                </Row>
-              ))}
-              {quarterlyAllocations && quarterlyAllocations.length > 0 && (
-                <div style={{ 
-                  marginTop: 8, 
-                  padding: '8px 12px', 
-                  background: '#e6f7ff',
-                  border: '1px solid #91d5ff',
-                  borderRadius: 4 
-                }}>
-                  <strong>Total Allocated: {(quarterlyAllocations || []).reduce((sum, a) => sum + (a?.allocated_ed || 0), 0).toFixed(2)} eD</strong>
-                  {netSizing > 0 && (
-                    <span style={{ marginLeft: 8, color: '#666' }}>
-                      (Net Sizing: {Number(netSizing || 0).toFixed(2)} eD)
-                    </span>
-                  )}
-                </div>
-              )}
-            </Space>
-          </Card>
+          <QuarterlyPlanningGrid
+            value={quarterlyAllocations}
+            onChange={setQuarterlyAllocations}
+            netSizing={netSizing}
+          />
         </Tabs.TabPane>
       </Tabs>
     </Modal>
