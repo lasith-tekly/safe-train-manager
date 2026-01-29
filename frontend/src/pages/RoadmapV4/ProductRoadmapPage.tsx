@@ -74,8 +74,11 @@ const ProductRoadmapPage: React.FC = () => {
       const currentYear = new Date().getFullYear();
       const validationData = await getValidationSummary(productId, currentYear);
       setValidation(validationData);
-    } catch (error) {
-      console.error('Failed to load validation:', error);
+    } catch (error: any) {
+      // Silently handle validation errors (expected when no data exists)
+      if (error.response?.status !== 404) {
+        console.warn('Validation error:', error.message);
+      }
     } finally {
       setValidationLoading(false);
     }

@@ -81,8 +81,11 @@ const ProductsOverviewPage: React.FC = () => {
             } else if (features.length > 0) {
               validationStatus = 'healthy';
             }
-          } catch (error) {
-            console.log('Validation not available for product:', product.id);
+          } catch (error: any) {
+            // Silently handle validation errors (expected when no data exists)
+            if (error.response?.status !== 404) {
+              console.warn('Validation error for product:', product.id, error.message);
+            }
           }
 
           summaries.push({
