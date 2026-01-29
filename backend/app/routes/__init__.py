@@ -1,7 +1,8 @@
 from app.routes.products import router as products_router
 # from app.routes.budgets import router as budgets_router  # Old budget routes - commented out
 from app.routes.teams import router as teams_router
-from app.routes.features import router as features_router
+# from app.routes.features import router as features_router  # Old - removed for V4
+from app.routes.features_v4 import router as features_v4_router
 from app.routes.jira import router as jira_router
 from app.routes.dashboard import router as dashboard_router
 from app.routes.global_settings import router as global_settings_router
@@ -11,7 +12,7 @@ __all__ = [
     "products_router", 
     # "budgets_router",  # Old budget router - commented out 
     "teams_router", 
-    "features_router", 
+    "features_v4_router", 
     "jira_router", 
     "dashboard_router",
     "global_settings_router",

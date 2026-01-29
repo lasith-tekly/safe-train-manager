@@ -8,39 +8,115 @@ This guide explains how to use the AI agent team to build the SAFe Train Manager
 ## 🎯 AGENT TEAM STRUCTURE
 
 ```
-┌─────────────────────────────────────────────────┐
-│          PRODUCT MANAGER (PM Agent)             │
-│  Requirements • User Stories • Business Rules   │
-└─────────────────────────────────────────────────┘
-                        ↓
-        ┌───────────────┴───────────────┐
-        ↓                               ↓
-┌──────────────────┐          ┌──────────────────┐
-│  UI/UX DESIGNER  │          │  BACKEND ARCH    │
-│  Design • UX     │          │  API • Schema    │
-└──────────────────┘          └──────────────────┘
-        ↓                               ↓
-┌──────────────────┐          ┌──────────────────┐
-│ FRONTEND ARCH    │          │  DATABASE ARCH   │
-│ Structure • Plan │          │  Models • Migrations
-└──────────────────┘          └──────────────────┘
-        ↓                               ↓
-┌──────────────────┐          ┌──────────────────┐
-│ FRONTEND DEV     │  ←──→    │  BACKEND DEV     │
-│ Components • UI  │          │  APIs • Logic    │
-└──────────────────┘          └──────────────────┘
-        ↓                               ↓
-        └───────────────┬───────────────┘
-                        ↓
-┌─────────────────────────────────────────────────┐
-│           QA ENGINEER (QA Agent)                │
-│         Testing • Validation                    │
-└─────────────────────────────────────────────────┘
-                        ↓
-┌─────────────────────────────────────────────────┐
-│         DEVOPS ENGINEER (DevOps Agent)          │
-│    Deployment • Configuration • CI/CD           │
-└─────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│        TECH LEAD / SOLUTION ARCHITECT (Orchestrator)        │
+│     Complex Features • Coordination • Full-Stack Planning   │
+└─────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────┐
+│              PRODUCT MANAGER (PM Agent)                     │
+│      Requirements • User Stories • Business Rules           │
+└─────────────────────────────────────────────────────────────┘
+                              ↓
+          ┌───────────────────┴───────────────────┐
+          ↓                                       ↓
+┌──────────────────────┐              ┌──────────────────────┐
+│    UI/UX DESIGNER    │              │    BACKEND ARCH      │
+│    Design • UX       │              │    API • Schema      │
+└──────────────────────┘              └──────────────────────┘
+          ↓                                       ↓
+┌──────────────────────┐              ┌──────────────────────┐
+│   FRONTEND ARCH      │              │   DATABASE ARCH      │
+│   Structure • Plan   │              │   Models • Migrations│
+└──────────────────────┘              └──────────────────────┘
+          ↓                                       ↓
+┌──────────────────────┐              ┌──────────────────────┐
+│   FRONTEND DEV       │    ←──→      │   BACKEND DEV        │
+│   Components • UI    │              │   APIs • Logic       │
+└──────────────────────┘              └──────────────────────┘
+          ↓                                       ↓
+          └───────────────────┬───────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────┐
+│                 QA ENGINEER (QA Agent)                      │
+│               Testing • Validation                          │
+└─────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────┐
+│              DEVOPS ENGINEER (DevOps Agent)                 │
+│          Deployment • Configuration • CI/CD                 │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🎯 WHEN TO USE TECH LEAD
+
+The Tech Lead is your **orchestrator** for complex features. Use it when a feature spans multiple modules or requires tight coordination.
+
+### ✅ USE @Tech-Lead FOR:
+
+| Scenario | Example |
+|----------|---------|
+| **Multi-module features** | Roadmap Planning (touches Budget, Capacity, Features) |
+| **Complex data relationships** | Features → JIRA Records → Teams → Capacity |
+| **Cross-cutting concerns** | Validation across multiple entities |
+| **Full-stack coordination** | When FE and BE must be tightly aligned |
+| **New major modules** | Adding a completely new section to the app |
+| **Architectural decisions** | Choosing between approaches |
+
+### ❌ DON'T USE @Tech-Lead FOR:
+
+| Scenario | Use Instead |
+|----------|-------------|
+| Simple bug fix | @Frontend-Developer or @Backend-Developer |
+| UI tweak | @UI-Designer |
+| Single CRUD feature | Standard agent sequence (PM → Dev) |
+| Quick question | Relevant specialist agent |
+
+### 📋 TECH LEAD WORKFLOW
+
+```
+1. You provide FULL CONTEXT to @Tech-Lead
+   (Business requirements, calculations, validations, edge cases)
+                    ↓
+2. Tech Lead analyzes and creates ORCHESTRATION PLAN
+   (Data model, APIs, UI, agent task breakdown)
+                    ↓
+3. Tech Lead outputs TASKS FOR EACH AGENT
+   (Detailed, sequenced, with dependencies)
+                    ↓
+4. You execute tasks with individual agents
+   (@Database-Architect → @Backend-Developer → @Frontend-Developer...)
+```
+
+### 💡 TECH LEAD PROMPT TEMPLATE
+
+```
+@Tech-Lead:
+
+## Feature Request
+[What you want to build]
+
+## Business Context
+[Why it's needed, who uses it]
+
+## Detailed Requirements
+[Full explanation with examples]
+
+## Calculations & Formulas
+[Any business logic]
+
+## Validations Required
+[All validation rules]
+
+## Integration Points
+[What existing modules it connects to]
+
+## Edge Cases
+[Known special scenarios]
+
+Please create a comprehensive orchestration plan with tasks for each agent.
 ```
 
 ---
@@ -52,6 +128,9 @@ This guide explains how to use the AI agent team to build the SAFe Train Manager
 In Windsurf chat, prefix your prompt with the agent role:
 
 ```
+@Tech-Lead: Orchestrate the Roadmap Planning module implementation.
+Here's the full context: [detailed requirements]
+
 @Product-Manager: Write a user story for the budget allocation feature
 
 @UI-Designer: Design the Products tab layout following our design system
@@ -79,6 +158,7 @@ Create a `.windsurf/context` folder and reference agent files:
 I need to implement the Products tab.
 
 Context:
+- Tech Lead: See agents/tech-lead.md for orchestration
 - Product Manager: See agents/product-manager.md for requirements
 - UI Designer: See agents/ui-designer.md for design specs
 - Frontend Developer: Follow agents/frontend-developer.md patterns
@@ -91,23 +171,104 @@ Now implement the ProductsTab component.
 For complex features, consult agents in sequence:
 
 ```
-Step 1: @Product-Manager
+Step 1: @Tech-Lead
+Orchestrate the "Add Feature from JIRA" workflow - full requirements provided
+
+Step 2: @Product-Manager
 Write detailed requirements for the "Add Feature from JIRA" workflow
 
-Step 2: @UI-Designer
+Step 3: @UI-Designer
 Design the 4-step wizard based on PM requirements
 
-Step 3: @Frontend-Architect
+Step 4: @Frontend-Architect
 Plan the component structure for this wizard
 
-Step 4: @Frontend-Developer
+Step 5: @Frontend-Developer
 Implement the JiraConnectStep component
 
-Step 5: @Backend-Developer
+Step 6: @Backend-Developer
 Create the /api/jira/fetch endpoint
 
-Step 6: @QA
+Step 7: @QA
 Write integration tests for the JIRA workflow
+```
+
+---
+
+## 🎨 AGENT COLLABORATION PATTERNS
+
+### Pattern 0: Complex Feature (Tech Lead Orchestration)
+
+```
+Tech Lead receives full requirements
+        ↓
+Tech Lead creates orchestration plan
+        ↓
+PM validates/refines requirements
+        ↓
+DB Arch → Backend Arch → Backend Dev
+        ↓
+Designer → Frontend Arch → Frontend Dev
+        ↓
+QA tests end-to-end
+        ↓
+DevOps deploys
+```
+
+**Use when:** Feature spans multiple modules or has complex business logic
+
+---
+
+### Pattern 1: Feature Development
+
+```
+PM → Designer → Frontend Arch → Frontend Dev
+           ↓
+     Backend Arch → DB Arch → Backend Dev
+           ↓
+          QA → DevOps
+```
+
+---
+
+### Pattern 2: Bug Fix
+
+```
+QA identifies bug
+   ↓
+PM validates requirements
+   ↓
+Frontend Dev OR Backend Dev fixes
+   ↓
+QA validates fix
+```
+
+---
+
+### Pattern 3: Refactoring
+
+```
+Frontend/Backend Architect plans refactor
+   ↓
+Relevant Developer implements
+   ↓
+QA regression tests
+```
+
+---
+
+### Pattern 4: New Integration
+
+```
+PM defines integration requirements
+   ↓
+Backend Architect designs integration
+   ↓
+Backend Developer implements
+   ↓
+Frontend Developer integrates UI
+   ↓
+QA tests end-to-end
 ```
 
 ---
@@ -333,78 +494,52 @@ Provide deployment checklist.
 
 ---
 
-## 🎨 AGENT COLLABORATION PATTERNS
+## 📚 QUICK REFERENCE
 
-### Pattern 1: Feature Development
+### Agent Consultation Matrix
 
-```
-PM → Designer → Frontend Arch → Frontend Dev
-           ↓
-     Backend Arch → DB Arch → Backend Dev
-           ↓
-          QA → DevOps
-```
+| Task | Primary Agent | Supporting Agents |
+|------|--------------|-------------------|
+| **Complex multi-module feature** | **Tech Lead** | All |
+| Define feature | PM | Tech Lead (for complex) |
+| Design UI | Designer | PM |
+| Plan frontend | Frontend Arch | Designer, PM |
+| Build components | Frontend Dev | Frontend Arch, Designer |
+| Design API | Backend Arch | PM, DB Arch |
+| Design schema | DB Arch | Backend Arch, PM |
+| Build API | Backend Dev | Backend Arch, DB Arch |
+| Write tests | QA | All |
+| Deploy | DevOps | Backend Dev, Frontend Dev |
 
-### Pattern 2: Bug Fix
-
-```
-QA identifies bug
-   ↓
-PM validates requirements
-   ↓
-Frontend Dev OR Backend Dev fixes
-   ↓
-QA validates fix
-```
-
-### Pattern 3: Refactoring
+### Common Prompt Patterns
 
 ```
-Frontend/Backend Architect plans refactor
-   ↓
-Relevant Developer implements
-   ↓
-QA regression tests
+// Orchestration (Complex Features)
+@Tech-Lead: Orchestrate [complex feature] with full context: [details]
+
+// Requirements
+@Product-Manager: Define requirements for [feature]
+
+// Design
+@UI-Designer: Design [screen/component] following [design system]
+
+// Architecture
+@Frontend-Architect: Plan structure for [module]
+@Backend-Architect: Design API for [feature]
+
+// Implementation
+@Frontend-Developer: Implement [component]
+@Backend-Developer: Create endpoint [path]
+
+// Database
+@Database-Architect: Design schema for [entity]
+
+// Quality
+@QA: Test [feature/component]
+
+// Operations
+@DevOps: Configure [environment/deployment]
 ```
-
-### Pattern 4: New Integration
-
-```
-PM defines integration requirements
-   ↓
-Backend Architect designs integration
-   ↓
-Backend Developer implements
-   ↓
-Frontend Developer integrates UI
-   ↓
-QA tests end-to-end
-```
-
----
-
-## 💡 BEST PRACTICES
-
-### 1. Always Start with PM
-Define requirements before any implementation
-
-### 2. Follow the Chain
-Don't skip architecture phases
-
-### 3. Reference Previous Agents
-Each agent builds on previous work
-
-### 4. Be Specific
-Provide context from previous agent outputs
-
-### 5. Validate Often
-Use QA agent throughout development
-
-### 6. Document Decisions
-Agents should explain their choices
-
-### 7. Iterate
-Circle back to previous agents if needed
 
 ---
 
@@ -413,13 +548,19 @@ Circle back to previous agents if needed
 ### Building "Budget Version Management"
 
 ```
-You: @Product-Manager
-Write requirements for budget version management.
+You: @Tech-Lead
+Orchestrate the budget version management feature.
 Users need to:
 - Create multiple budget versions per year
 - Track which version is active
 - Compare versions
 - Copy old versions as starting point
+
+Tech Lead: [Provides orchestration plan with tasks for each agent]
+
+You: @Product-Manager
+Write requirements for budget version management based on Tech Lead plan.
+[Paste Tech Lead context]
 
 PM Agent: [Provides detailed requirements]
 
@@ -471,54 +612,38 @@ QA: [Provides test suite]
 
 ---
 
-## 📚 QUICK REFERENCE
+## 💡 BEST PRACTICES
 
-### Agent Consultation Matrix
+### 1. Use Tech Lead for Complex Features
+Start with orchestration for multi-module features
 
-| Task | Primary Agent | Supporting Agents |
-|------|--------------|-------------------|
-| Define feature | PM | - |
-| Design UI | Designer | PM |
-| Plan frontend | Frontend Arch | Designer, PM |
-| Build components | Frontend Dev | Frontend Arch, Designer |
-| Design API | Backend Arch | PM, DB Arch |
-| Design schema | DB Arch | Backend Arch, PM |
-| Build API | Backend Dev | Backend Arch, DB Arch |
-| Write tests | QA | All |
-| Deploy | DevOps | Backend Dev, Frontend Dev |
+### 2. Always Start with PM for Simple Features
+Define requirements before any implementation
 
-### Common Prompt Patterns
+### 3. Follow the Chain
+Don't skip architecture phases
 
-```
-// Requirements
-@Product-Manager: Define requirements for [feature]
+### 4. Reference Previous Agents
+Each agent builds on previous work
 
-// Design
-@UI-Designer: Design [screen/component] following [design system]
+### 5. Be Specific
+Provide context from previous agent outputs
 
-// Architecture
-@Frontend-Architect: Plan structure for [module]
-@Backend-Architect: Design API for [feature]
+### 6. Validate Often
+Use QA agent throughout development
 
-// Implementation
-@Frontend-Developer: Implement [component]
-@Backend-Developer: Create endpoint [path]
+### 7. Document Decisions
+Agents should explain their choices
 
-// Database
-@Database-Architect: Design schema for [entity]
-
-// Quality
-@QA: Test [feature/component]
-
-// Operations
-@DevOps: Configure [environment/deployment]
-```
+### 8. Iterate
+Circle back to previous agents if needed
 
 ---
 
 ## 🎯 SUCCESS METRICS
 
 You're using agents effectively when:
+- ✅ Tech Lead provides clear task breakdown for complex features
 - ✅ Each agent provides detailed, role-appropriate responses
 - ✅ Later agents reference earlier agents' work
 - ✅ Implementation matches design and requirements
@@ -537,19 +662,23 @@ You're using agents effectively when:
 **Solution:** Explicitly reference earlier agent output
 
 ### Not Sure Which Agent to Ask
-**Solution:** Start with PM agent to clarify requirements
+**Solution:** For complex features, start with @Tech-Lead. For simple features, start with @Product-Manager
 
 ### Need Multiple Agents
 **Solution:** Use sequential prompts, one agent at a time
+
+### Feature is Too Complex
+**Solution:** Ask @Tech-Lead to break it down into smaller deliverables
 
 ---
 
 ## 📝 SUMMARY
 
-1. **Define clear agent roles** ✓
-2. **Follow the workflow** (PM → Design → Arch → Dev → QA → DevOps)
-3. **Provide context** from previous agents
-4. **Be specific** in your prompts
-5. **Iterate** as needed
+1. **Use @Tech-Lead** for complex multi-module features
+2. **Define clear agent roles** ✓
+3. **Follow the workflow** (Tech Lead → PM → Design → Arch → Dev → QA → DevOps)
+4. **Provide context** from previous agents
+5. **Be specific** in your prompts
+6. **Iterate** as needed
 
 With this agent system, you're building like a professional team! 🚀

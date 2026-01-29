@@ -18,7 +18,8 @@ from app.models.capacity import TeamIterationCapacity
 from app.models.member_iteration_productivity import MemberIterationProductivity
 from app.models.organization import Country, Site
 from app.models.capacity_allocation import CapacityAllocationCategory
-from app.models.roadmap import Roadmap, RoadmapFeature, FeatureYearAllocation
+# Old roadmap models removed - replaced with V4
+from app.models.roadmap_v4 import RoadmapFeature, FeatureTeam, FeatureQuarterlyAllocation, JiraRecord, JiraQuarterlyAllocation
 
 __all__ = [
     "Product",
@@ -60,7 +61,10 @@ __all__ = [
     "CapacityAllocationCategory",
     "MemberPIAllocation",
     "MemberIterationProductivity",
-    "Roadmap",
+    # V4 Roadmap Models
     "RoadmapFeature",
-    "FeatureYearAllocation",
+    "FeatureTeam",
+    "FeatureQuarterlyAllocation",
+    "JiraRecord",
+    "JiraQuarterlyAllocation",
 ]

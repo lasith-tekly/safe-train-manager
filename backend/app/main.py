@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.routes.products import router as products_router
 # from app.routes.budgets import router as budgets_router  # Old budget routes - commented out
 from app.routes.teams import router as teams_router
-from app.routes.features import router as features_router
+# from app.routes.features import router as features_router  # Old - removed for V4
 from app.routes.jira import router as jira_router
 from app.routes.dashboard import router as dashboard_router
 from app.routes.global_settings import router as global_settings_router
@@ -21,8 +21,8 @@ from app.routes.site_holidays import router as site_holidays_router
 from app.routes.pi_allocations import router as pi_allocations_router
 from app.routers.budget_config import router as budget_config_router
 from app.routers.budget_dashboard import router as budget_dashboard_router
-# from app.routes.roadmaps import router as roadmaps_router  # Old V1 routes - commented out for V2
-from app.routes.roadmaps_v2 import router as roadmaps_v2_router
+# Old roadmap routes removed - replaced with V4
+from app.routes.features_v4 import router as features_v4_router
 from app.database import engine, Base
 
 # Create tables - DISABLED: Using SQL migrations instead
@@ -55,7 +55,7 @@ app.include_router(products_router)
 # app.include_router(budgets_router)  # Old budget router - commented out
 app.include_router(teams_router)
 app.include_router(team_members_router)
-app.include_router(features_router)
+# app.include_router(features_router)  # Old - removed for V4
 app.include_router(jira_router)
 app.include_router(dashboard_router)
 app.include_router(global_settings_router)
@@ -71,8 +71,8 @@ app.include_router(site_holidays_router)
 app.include_router(pi_allocations_router)
 app.include_router(budget_config_router)
 app.include_router(budget_dashboard_router)
-# app.include_router(roadmaps_router)  # Old V1 routes - commented out for V2
-app.include_router(roadmaps_v2_router)
+# Old roadmap routes removed - replaced with V4
+app.include_router(features_v4_router)
 
 
 @app.get("/health", tags=["health"])
