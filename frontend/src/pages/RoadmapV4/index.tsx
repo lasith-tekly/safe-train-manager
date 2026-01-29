@@ -48,9 +48,11 @@ const RoadmapV4Page: React.FC = () => {
       const response = await listFeatures(filters);
       setFeatures(response.data);
       setTotal(response.total);
-    } catch (error) {
-      message.error('Failed to load features');
-      console.error(error);
+    } catch (error: any) {
+      console.error('Failed to load features:', error);
+      if (error.response?.status !== 404) {
+        message.error('Failed to load features. Please check your connection.');
+      }
     } finally {
       setLoading(false);
     }
@@ -266,7 +268,7 @@ const RoadmapV4Page: React.FC = () => {
             showTotal: (total) => `Total ${total} features`,
             onChange: (page, pageSize) => setFilters({ ...filters, page, page_size: pageSize })
           }}
-          scroll={{ x: 1500 }}
+          scroll={{ x: 'max-content' }}
         />
       </Card>
 
