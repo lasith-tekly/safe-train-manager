@@ -19,7 +19,7 @@ class PIAllocationInput(BaseModel):
     budget_keur: Decimal = Field(..., ge=0, description="Budget in KEUR")
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "quarter": 1,
                 "budget_keur": 20.0
@@ -59,7 +59,7 @@ class YearAllocationInput(BaseModel):
         return v
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "year": 2026,
                 "budget_keur": 100.0,
@@ -80,7 +80,7 @@ class RoadmapCreate(BaseModel):
     description: Optional[str] = Field(None, description="Optional description")
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "product_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
                 "name": "BRS Roadmap",
@@ -95,7 +95,7 @@ class RoadmapUpdate(BaseModel):
     description: Optional[str] = None
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "name": "BRS Roadmap - Updated",
                 "description": "Updated description"
@@ -130,7 +130,7 @@ class RoadmapFeatureCreate(BaseModel):
         return v
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "budget_line_id": "budget-line-uuid",
                 "budget_category_id": "budget-cat-uuid",
@@ -170,7 +170,7 @@ class RoadmapFeatureUpdate(BaseModel):
         return v
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "name": "Feature A - Updated",
                 "year_allocations": [
@@ -187,7 +187,7 @@ class BudgetCalculationRequest(BaseModel):
     year: int = Field(..., ge=2020, le=2050, description="Year for conversion factors")
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "effort_days": 50.0,
                 "year": 2026
@@ -201,7 +201,7 @@ class EffortDaysCalculationRequest(BaseModel):
     year: int = Field(..., ge=2020, le=2050, description="Year for conversion factors")
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "budget_keur": 50.0,
                 "year": 2026
@@ -222,7 +222,7 @@ class PIAllocationResponse(BaseModel):
     updated_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class YearAllocationResponse(BaseModel):
@@ -234,7 +234,7 @@ class YearAllocationResponse(BaseModel):
     pi_allocations: List[PIAllocationResponse] = []
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class BudgetAlertResponse(BaseModel):
@@ -250,7 +250,7 @@ class BudgetAlertResponse(BaseModel):
     utilization_percent: Optional[Decimal]
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "year": 2026,
                 "budget_line_name": "Product Evolution",
@@ -285,7 +285,7 @@ class RoadmapFeatureResponse(BaseModel):
     updated_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class BudgetCategorySummary(BaseModel):
@@ -343,7 +343,7 @@ class RoadmapResponse(BaseModel):
     budget_summary: Dict[int, YearBudgetSummary]  # Key: year
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class RoadmapListItem(BaseModel):
@@ -361,7 +361,7 @@ class RoadmapListItem(BaseModel):
     updated_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class RoadmapListResponse(BaseModel):

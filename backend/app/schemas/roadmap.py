@@ -22,7 +22,7 @@ class RoadmapCreate(BaseModel):
     description: Optional[str] = Field(None, description="Optional description")
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "product_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
                 "fiscal_year_id": "fy-2026-uuid",
@@ -39,7 +39,7 @@ class RoadmapUpdate(BaseModel):
     description: Optional[str] = None
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "name": "BRS 2026 Roadmap - Updated",
                 "description": "Updated description"
@@ -52,7 +52,7 @@ class RoadmapStatusUpdate(BaseModel):
     status: Literal["draft", "active", "archived"]
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "status": "active"
             }
@@ -85,7 +85,7 @@ class RoadmapFeatureCreate(BaseModel):
         return v
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "budget_line_id": "budget-line-uuid",
                 "budget_category_id": "budget-cat-uuid",
@@ -111,7 +111,7 @@ class RoadmapFeatureUpdate(BaseModel):
     q4_effort_days: Optional[Decimal] = Field(None, ge=0)
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "name": "Feature A - Updated",
                 "q1_effort_days": 60.0,
@@ -125,7 +125,7 @@ class FeatureStatusUpdate(BaseModel):
     status: Literal["planned", "in_progress", "completed", "cancelled"]
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "status": "in_progress"
             }
@@ -137,7 +137,7 @@ class FeatureReorderRequest(BaseModel):
     feature_ids: List[UUID4] = Field(..., description="Ordered list of feature IDs")
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "feature_ids": [
                     "feat-uuid-1",
@@ -154,7 +154,7 @@ class BudgetCalculationRequest(BaseModel):
     fiscal_year_id: UUID4
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "effort_days": 50.0,
                 "fiscal_year_id": "fy-2026-uuid"
@@ -168,7 +168,7 @@ class EffortDaysCalculationRequest(BaseModel):
     fiscal_year_id: UUID4
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "budget_keur": 50.0,
                 "fiscal_year_id": "fy-2026-uuid"
@@ -186,7 +186,7 @@ class QuarterlyAllocation(BaseModel):
     budget_keur: Decimal
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class RoadmapFeatureResponse(BaseModel):
@@ -216,7 +216,7 @@ class RoadmapFeatureResponse(BaseModel):
     updated_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class BudgetCategorySummary(BaseModel):
@@ -282,7 +282,7 @@ class RoadmapResponse(BaseModel):
     features: List[RoadmapFeatureResponse]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class RoadmapListItem(BaseModel):
@@ -306,7 +306,7 @@ class RoadmapListItem(BaseModel):
     updated_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class RoadmapListResponse(BaseModel):
