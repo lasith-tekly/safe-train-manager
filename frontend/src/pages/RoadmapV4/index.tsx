@@ -17,6 +17,7 @@ const { confirm } = Modal;
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
 
 const RoadmapV4Page: React.FC = () => {
+  console.log('RoadmapV4Page rendering...');
   const [features, setFeatures] = useState<RoadmapFeature[]>([]);
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
@@ -36,7 +37,8 @@ const RoadmapV4Page: React.FC = () => {
   const loadProducts = async () => {
     try {
       const response = await axios.get(`${API_BASE_URL}/products`);
-      setProducts(response.data);
+      // API returns {data: [...], total: N} - extract the data array
+      setProducts(response.data.data || response.data || []);
     } catch (error) {
       console.error('Failed to load products:', error);
     }

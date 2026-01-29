@@ -46,7 +46,7 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
   const loadProducts = async () => {
     try {
       const response = await axios.get(`${API_BASE_URL}/products`);
-      setProducts(response.data);
+      setProducts(response.data.data || response.data || []);
     } catch (error) {
       console.error('Failed to load products:', error);
     }
@@ -55,7 +55,7 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
   const loadTeams = async () => {
     try {
       const response = await axios.get(`${API_BASE_URL}/teams`);
-      setTeams(response.data);
+      setTeams(response.data.data || response.data || []);
     } catch (error) {
       console.error('Failed to load teams:', error);
     }
@@ -64,7 +64,7 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
   const loadBudgetLines = async () => {
     try {
       const response = await axios.get(`${API_BASE_URL}/budget-config/budget-lines`);
-      setBudgetLines(response.data);
+      setBudgetLines(response.data.data || response.data || []);
     } catch (error) {
       console.error('Failed to load budget lines:', error);
     }
@@ -73,7 +73,7 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
   const loadCategories = async (budgetLineId: string) => {
     try {
       const response = await axios.get(`${API_BASE_URL}/budget-config/budget-lines/${budgetLineId}/categories`);
-      setCategories(response.data);
+      setCategories(response.data.data || response.data || []);
     } catch (error) {
       console.error('Failed to load categories:', error);
       setCategories([]);
