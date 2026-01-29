@@ -5,10 +5,14 @@ Models for the new roadmap planning system focused on effort days (eD)
 rather than budget allocations.
 """
 from sqlalchemy import Column, String, Integer, Float, Text, DateTime, Boolean, ForeignKey, CheckConstraint, UniqueConstraint
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Mapped
 from sqlalchemy.sql import func
 from app.database import Base
 import uuid
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from app.models.feature_budget_allocation import FeatureBudgetLineAllocation
 
 
 class RoadmapFeature(Base):
@@ -16,6 +20,7 @@ class RoadmapFeature(Base):
     Roadmap Feature - Effort-centric feature planning
     
     Key Concept: Features are sized in Gross eD, system calculates Net eD and Cost
+    Now supports multiple budget line allocations with percentage splits
     """
     __tablename__ = "roadmap_features"
     
@@ -23,8 +28,7 @@ class RoadmapFeature(Base):
     
     # Relationships to existing tables
     product_id = Column(String(36), ForeignKey("products.id"), nullable=False)
-    budget_line_id = Column(String(36), ForeignKey("budget_lines.id"), nullable=False)
-    category_id = Column(String(36), ForeignKey("budget_categories.id"), nullable=True)
+    # budget_line_id and category_id removed - now using budget_allocations relationship
     
     # Feature details
     name = Column(String(500), nullable=False)
@@ -45,11 +49,14 @@ class RoadmapFeature(Base):
     
     # Relationships
     product = relationship("Product", backref="roadmap_features")
-    budget_line = relationship("BudgetLine", backref="roadmap_features")
-    category = relationship("BudgetCategory", backref="roadmap_features")
     teams = relationship("Team", secondary="feature_teams", backref="assigned_features")
     quarterly_allocations = relationship("FeatureQuarterlyAllocation", back_populates="feature", cascade="all, delete-orphan")
     jira_records = relationship("JiraRecord", back_populates="feature", cascade="all, delete-orphan")
+    budget_allocations: Mapped[list["FeatureBudgetLineAllocation"]] = relationship(
+        "FeatureBudgetLineAllocation", 
+        back_populates="feature", 
+        cascade="all, delete-orphan"
+    )
 
 
 class FeatureTeam(Base):

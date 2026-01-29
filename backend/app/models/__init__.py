@@ -20,6 +20,7 @@ from app.models.organization import Country, Site
 from app.models.capacity_allocation import CapacityAllocationCategory
 # Old roadmap models removed - replaced with V4
 from app.models.roadmap_v4 import RoadmapFeature, FeatureTeam, FeatureQuarterlyAllocation, JiraRecord, JiraQuarterlyAllocation
+from app.models.feature_budget_allocation import FeatureBudgetLineAllocation
 
 __all__ = [
     "Product",
@@ -65,6 +66,7 @@ __all__ = [
     "RoadmapFeature",
     "FeatureTeam",
     "FeatureQuarterlyAllocation",
+    "FeatureBudgetLineAllocation",
     "JiraRecord",
     "JiraQuarterlyAllocation",
 ]
