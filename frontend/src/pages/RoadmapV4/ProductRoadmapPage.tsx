@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Table, Space, Select, Input, Tag, message, Card, Modal, Typography } from 'antd';
-import { PlusOutlined, SearchOutlined, DeleteOutlined, EditOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { PlusOutlined, SearchOutlined, DeleteOutlined, EditOutlined, ArrowLeftOutlined, RocketOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { listFeatures, deleteFeature } from '../../services/featureApi';
 import { RoadmapFeature, FeatureFilters } from '../../types/roadmap_v4';
 import FeatureFormModal from './CreateFeatureModal';
 import ValidationPanel from './ValidationPanel';
+import ExecutionPlanningModal from './ExecutionPlanningModal';
 import { getValidationSummary } from '../../services/validationApi';
 
 const { Option } = Select;
@@ -30,6 +31,8 @@ const ProductRoadmapPage: React.FC = () => {
   const [product, setProduct] = useState<any>(null);
   const [validation, setValidation] = useState<any>(null);
   const [validationLoading, setValidationLoading] = useState(false);
+  const [executionPlanningVisible, setExecutionPlanningVisible] = useState(false);
+  const [executionPlanningFeature, setExecutionPlanningFeature] = useState<RoadmapFeature | null>(null);
 
   useEffect(() => {
     if (productId) {
@@ -117,6 +120,18 @@ const ProductRoadmapPage: React.FC = () => {
     });
   };
 
+  const handlePlanExecution = (feature: RoadmapFeature) => {
+    setExecutionPlanningFeature(feature);
+    setExecutionPlanningVisible(true);
+  };
+
+  const handleExecutionPlanningClose = () => {
+    setExecutionPlanningVisible(false);
+    setExecutionPlanningFeature(null);
+    loadFeatures();
+    loadValidation();
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'planned': return 'blue';
@@ -191,10 +206,18 @@ const ProductRoadmapPage: React.FC = () => {
     {
       title: 'Actions',
       key: 'actions',
-      width: 120,
+      width: 180,
       fixed: 'right' as const,
       render: (_: any, record: RoadmapFeature) => (
         <Space>
+          <Button
+            type="link"
+            icon={<RocketOutlined />}
+            onClick={() => handlePlanExecution(record)}
+            size="small"
+          >
+            Execute
+          </Button>
           <Button
             type="text"
             icon={<EditOutlined />}
@@ -295,6 +318,12 @@ const ProductRoadmapPage: React.FC = () => {
         visible={isModalVisible}
         feature={editingFeature}
         onClose={handleModalClose}
+      />
+
+      <ExecutionPlanningModal
+        visible={executionPlanningVisible}
+        feature={executionPlanningFeature}
+        onClose={handleExecutionPlanningClose}
       />
     </div>
   );
