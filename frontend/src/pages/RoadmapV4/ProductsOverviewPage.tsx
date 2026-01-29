@@ -49,7 +49,7 @@ const ProductsOverviewPage: React.FC = () => {
             params: { product_id: product.id }
           });
           
-          const features = featuresResponse.data.data || [];
+          const features = featuresResponse.data.data || featuresResponse.data || [];
           
           const totalGrossEd = features.reduce((sum: number, f: any) => sum + (f.gross_sizing_ed || 0), 0);
           const totalNetEd = features.reduce((sum: number, f: any) => sum + (f.net_sizing_ed || 0), 0);
@@ -100,8 +100,11 @@ const ProductsOverviewPage: React.FC = () => {
             validation_status: validationStatus,
             warning_count: warningCount
           });
-        } catch (error) {
-          console.error(`Failed to load features for product ${product.id}:`, error);
+        } catch (error: any) {
+          // Silently handle 404 errors (product has no features yet)
+          if (error.response?.status !== 404) {
+            console.warn(`Failed to load features for product ${product.id}:`, error.message);
+          }
         }
       }
 
