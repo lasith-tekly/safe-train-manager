@@ -13,6 +13,7 @@ import {
 import { WorkingDaysPage } from './WorkingDaysPage';
 import { ComponentsPage } from './ComponentsPage';
 import { BudgetManagementPage } from './BudgetManagementPage';
+import { BudgetConfigurationPage } from './BudgetConfiguration';
 import { TrainConfigurationPage } from './TrainConfigurationPage';
 import { TrainTeamsPage } from './TrainTeamsPage';
 import { SiteLocationsPage } from './SiteLocationsPage';
@@ -31,6 +32,13 @@ const SettingsOverview: React.FC = () => {
       icon: <ScheduleOutlined style={{ fontSize: 32 }} />,
       path: '/settings/working-days',
       color: '#1890ff'
+    },
+    {
+      title: 'Budget Configuration',
+      description: 'Manage fiscal years, budget versions, and allocations',
+      icon: <DollarOutlined style={{ fontSize: 32 }} />,
+      path: '/settings/budget-configuration',
+      color: '#faad14'
     },
     {
       title: 'Train Configuration',
@@ -110,6 +118,8 @@ export const SettingsPage: React.FC = () => {
       return <ComponentsPage />;
     case '/settings/budgets':
       return <BudgetManagementPage />;
+    case '/settings/budget-configuration':
+      return <BudgetConfigurationPage />;
     case '/settings/train-config':
       return <TrainConfigurationPage />;
     case '/settings/train-teams':

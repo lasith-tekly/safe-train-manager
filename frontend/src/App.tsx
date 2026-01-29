@@ -5,11 +5,13 @@ import { DashboardPage } from './pages/Dashboard';
 import CapacityView from './pages/Dashboard/CapacityView';
 import { TrainCapacityDashboard } from './pages/Dashboard/TrainCapacity';
 import { TeamCapacityDashboardPage } from './pages/Dashboard/TeamCapacity';
+import { BudgetDashboard } from './pages/Dashboard/BudgetDashboard';
 import { ProductsPage } from './pages/Products';
 import { FeaturesPage } from './pages/Features';
 import { PICalendarPage } from './pages/PICalendar';
 import { TeamsPage } from './pages/Teams';
 import { SettingsPage } from './pages/Settings';
+import RoadmapPage from './pages/Roadmap';
 
 // Import Amadeus theme
 import './styles/amadeus-theme.css';
@@ -24,6 +26,7 @@ const App: React.FC = () => {
           <Route path="/capacity" element={<CapacityView />} />
           <Route path="/train-capacity" element={<TrainCapacityDashboard />} />
           <Route path="/team-capacity" element={<TeamCapacityDashboardPage />} />
+          <Route path="/budget-dashboard" element={<BudgetDashboard />} />
           
           {/* Products Section */}
           <Route path="/products" element={<Navigate to="/products/list" replace />} />
@@ -36,6 +39,9 @@ const App: React.FC = () => {
           {/* Teams Section */}
           <Route path="/teams" element={<TeamsPage />} />
           
+          {/* Roadmap Planning */}
+          <Route path="/roadmap/*" element={<RoadmapPage />} />
+          
           {/* Reports - placeholder */}
           <Route path="/reports" element={<DashboardPage />} />
           
@@ -45,6 +51,7 @@ const App: React.FC = () => {
           <Route path="/settings/capacity" element={<SettingsPage />} />
           <Route path="/settings/components" element={<SettingsPage />} />
           <Route path="/settings/budgets" element={<SettingsPage />} />
+          <Route path="/settings/budget-configuration" element={<SettingsPage />} />
           <Route path="/settings/train-config" element={<SettingsPage />} />
           <Route path="/settings/train-teams" element={<SettingsPage />} />
           <Route path="/settings/sites" element={<Navigate to="/settings/sites/locations" replace />} />

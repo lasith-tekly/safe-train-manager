@@ -6,7 +6,7 @@ import {
   DashboardOutlined,
   AppstoreOutlined,
   CalendarOutlined,
-  BarChartOutlined,
+  // BarChartOutlined,  // Unused - Reports menu item hidden
   SettingOutlined,
   TeamOutlined,
   GlobalOutlined,
@@ -20,6 +20,7 @@ import {
   LogoutOutlined,
   ProductOutlined,
   FundOutlined,
+  ProjectOutlined,
 } from '@ant-design/icons';
 import styles from './SideNavLayout.module.css';
 
@@ -48,19 +49,22 @@ function getItem(
 
 const menuItems: MenuItem[] = [
   getItem('Dashboard', '/dashboard', <DashboardOutlined />, [
-    getItem('Overview', '/'),
+    // getItem('Overview', '/'),  // Hidden - not yet implemented
     getItem('Train Capacity', '/train-capacity', <FundOutlined />),
     getItem('Team Capacity', '/team-capacity', <TeamOutlined />),
+    getItem('Budget Dashboard', '/budget-dashboard', <DollarOutlined />),
   ]),
   getItem('Products', '/products', <ProductOutlined />, [
     getItem('Product List', '/products/list'),
     getItem('Features', '/products/features', <AppstoreOutlined />),
+    getItem('Roadmap Planning', '/roadmap', <ProjectOutlined />),
   ]),
   getItem('PI Calendar', '/pi-calendar', <CalendarOutlined />),
   getItem('Teams', '/teams', <TeamOutlined />),
-  getItem('Reports', '/reports', <BarChartOutlined />),
+  // getItem('Reports', '/reports', <BarChartOutlined />),  // Hidden - not yet implemented
   getItem('Settings', '/settings', <SettingOutlined />, [
     getItem('Working Days', '/settings/working-days', <ScheduleOutlined />),
+    getItem('Budget Configuration', '/settings/budget-configuration', <DollarOutlined />),
     getItem('Train Configuration', '/settings/train-config', <DollarOutlined />),
     getItem('Components', '/settings/components', <BuildOutlined />),
     getItem('Train Teams', '/settings/train-teams', <TeamOutlined />),
@@ -106,6 +110,7 @@ export const SideNavLayout: React.FC<SideNavLayoutProps> = ({ children }) => {
     if (path === '/capacity') return ['/capacity'];
     if (path === '/train-capacity') return ['/train-capacity'];
     if (path === '/team-capacity') return ['/team-capacity'];
+    if (path === '/budget-dashboard') return ['/budget-dashboard'];
     
     // Other exact matches
     if (path === '/reports') return ['/reports'];
@@ -123,6 +128,7 @@ export const SideNavLayout: React.FC<SideNavLayoutProps> = ({ children }) => {
     // Settings section
     if (path === '/settings') return ['/settings'];
     if (path === '/settings/working-days') return ['/settings/working-days'];
+    if (path === '/settings/budget-configuration') return ['/settings/budget-configuration'];
     if (path === '/settings/components') return ['/settings/components'];
     if (path === '/settings/budgets') return ['/settings/budgets'];
     if (path === '/settings/train-config') return ['/settings/train-config'];
