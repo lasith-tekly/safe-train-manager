@@ -223,6 +223,9 @@ class QuarterlyAllocationResponse(BaseModel):
 
     class Config:
         from_attributes = True
+        json_encoders = {
+            Decimal: float  # Serialize Decimal as float instead of string
+        }
 
 
 class BudgetLineAllocationResponse(BaseModel):
@@ -237,6 +240,9 @@ class BudgetLineAllocationResponse(BaseModel):
 
     class Config:
         from_attributes = True
+        json_encoders = {
+            Decimal: float  # Serialize Decimal as float instead of string
+        }
 
 
 class TeamSummary(BaseModel):
@@ -291,6 +297,9 @@ class FeatureResponse(BaseModel):
 
     class Config:
         from_attributes = True
+        json_encoders = {
+            Decimal: float  # Serialize Decimal as float instead of string
+        }
 
 
 class FeatureListResponse(BaseModel):
@@ -308,6 +317,9 @@ class CalculateSizingResponse(BaseModel):
     total_cost_keur: Decimal
 
     class Config:
+        json_encoders = {
+            Decimal: float  # Serialize Decimal as float instead of string
+        }
         json_schema_extra = {
             "example": {
                 "gross_sizing_ed": 280.0,
@@ -331,6 +343,11 @@ class BudgetValidationResult(BaseModel):
     status: Literal["over_planned", "approaching", "under_planned", "healthy", "no_budget"]
     message: str
 
+    class Config:
+        json_encoders = {
+            Decimal: float  # Serialize Decimal as float instead of string
+        }
+
 
 class CapacityValidationResult(BaseModel):
     """Capacity validation result for a team/quarter"""
@@ -345,6 +362,11 @@ class CapacityValidationResult(BaseModel):
     status: Literal["over_allocated", "high_utilization", "healthy", "no_capacity"]
     message: str
 
+    class Config:
+        json_encoders = {
+            Decimal: float  # Serialize Decimal as float instead of string
+        }
+
 
 class FeatureConsistencyResult(BaseModel):
     """Feature consistency validation"""
@@ -355,6 +377,11 @@ class FeatureConsistencyResult(BaseModel):
     jira_allocated_ed: Decimal
     status: Literal["exceeded", "ok"]
     message: Optional[str]
+
+    class Config:
+        json_encoders = {
+            Decimal: float  # Serialize Decimal as float instead of string
+        }
 
 
 class ValidationSummaryResponse(BaseModel):
