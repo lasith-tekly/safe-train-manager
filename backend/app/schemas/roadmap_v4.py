@@ -273,6 +273,9 @@ class JiraRecordResponse(BaseModel):
 
     class Config:
         from_attributes = True
+        json_encoders = {
+            Decimal: float  # Serialize Decimal as float instead of string
+        }
 
 
 class FeatureResponse(BaseModel):
