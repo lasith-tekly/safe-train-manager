@@ -153,7 +153,7 @@ class FeatureServiceV4:
         query = self.db.query(RoadmapFeature).options(
             joinedload(RoadmapFeature.teams),
             joinedload(RoadmapFeature.quarterly_allocations),
-            joinedload(RoadmapFeature.budget_allocations),
+            joinedload(RoadmapFeature.budget_allocations).joinedload(FeatureBudgetLineAllocation.budget_line),
             joinedload(RoadmapFeature.product)
         )
         
@@ -178,7 +178,7 @@ class FeatureServiceV4:
         query = self.db.query(RoadmapFeature).options(
             joinedload(RoadmapFeature.teams),
             joinedload(RoadmapFeature.quarterly_allocations),
-            joinedload(RoadmapFeature.budget_allocations)
+            joinedload(RoadmapFeature.budget_allocations).joinedload(FeatureBudgetLineAllocation.budget_line)
         )
         
         # Apply filters

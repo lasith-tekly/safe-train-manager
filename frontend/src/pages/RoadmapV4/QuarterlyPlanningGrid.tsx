@@ -153,23 +153,27 @@ const QuarterlyPlanningGrid: React.FC<QuarterlyPlanningGridProps> = ({ value = [
           <Card key={year} size="small" style={{ background: '#fafafa' }}>
             <Row gutter={[8, 8]} align="middle">
               <Col span={4}>
-                <Space>
-                  <InputNumber
-                    value={year}
-                    min={2020}
-                    max={2050}
-                    onChange={(value) => value && changeYear(year, value)}
-                    style={{ width: 90 }}
-                  />
-                  {years.length > 1 && (
-                    <Button
-                      type="text"
-                      danger
-                      icon={<DeleteOutlined />}
-                      onClick={() => removeYear(year)}
+                <Space direction="vertical" size={0} style={{ width: '100%' }}>
+                  <Text type="secondary" style={{ fontSize: 12, visibility: 'hidden' }}>Year</Text>
+                  <Space size={4}>
+                    <InputNumber
+                      value={year}
+                      min={2020}
+                      max={2050}
+                      onChange={(value) => value && changeYear(year, value)}
+                      style={{ width: 80 }}
                       size="small"
                     />
-                  )}
+                    {years.length > 1 && (
+                      <Button
+                        type="text"
+                        danger
+                        icon={<DeleteOutlined />}
+                        onClick={() => removeYear(year)}
+                        size="small"
+                      />
+                    )}
+                  </Space>
                 </Space>
               </Col>
               

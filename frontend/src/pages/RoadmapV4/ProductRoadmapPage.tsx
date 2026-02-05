@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button, Table, Space, Select, Input, Tag, message, Card, Modal, Typography } from 'antd';
-import { PlusOutlined, SearchOutlined, DeleteOutlined, EditOutlined, ArrowLeftOutlined, RocketOutlined } from '@ant-design/icons';
+import { Button, Table, Space, Select, Input, Tag, message, Card, Modal, Typography, Tooltip } from 'antd';
+import { PlusOutlined, SearchOutlined, DeleteOutlined, EditOutlined, ArrowLeftOutlined, RocketOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { listFeatures, deleteFeature } from '../../services/featureApi';
 import { RoadmapFeature, FeatureFilters } from '../../types/roadmap_v4';
 import FeatureFormModal from './CreateFeatureModal';
 import ValidationPanel from './ValidationPanel';
 import ExecutionPlanningModal from './ExecutionPlanningModal';
+import { FeatureDetailPanel } from './FeatureDetailPanel';
 import { getValidationSummary } from '../../services/validationApi';
 
 const { Option } = Select;
@@ -33,6 +34,12 @@ const ProductRoadmapPage: React.FC = () => {
   const [validationLoading, setValidationLoading] = useState(false);
   const [executionPlanningVisible, setExecutionPlanningVisible] = useState(false);
   const [executionPlanningFeature, setExecutionPlanningFeature] = useState<RoadmapFeature | null>(null);
+  const currentYear = new Date().getFullYear();
+  const [selectedYear, setSelectedYear] = useState<number>(currentYear);
+  const [selectedFeature, setSelectedFeature] = useState<RoadmapFeature | null>(null);
+  const [isPanelOpen, setIsPanelOpen] = useState(false);
+  const [budgetLinesMap, setBudgetLinesMap] = useState<Record<string, string>>({});
+  const [selectedBudgetLine, setSelectedBudgetLine] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (productId) {
@@ -40,7 +47,12 @@ const ProductRoadmapPage: React.FC = () => {
       loadFeatures();
       loadValidation();
     }
-  }, [productId, filters]);
+  }, [productId]);
+
+  // Build budget lines map after features are loaded
+  useEffect(() => {
+    loadBudgetLines();
+  }, [features]);
 
   const loadProduct = async () => {
     try {
@@ -83,6 +95,31 @@ const ProductRoadmapPage: React.FC = () => {
       }
     } finally {
       setValidationLoading(false);
+    }
+  };
+
+  const loadBudgetLines = async () => {
+    try {
+      // Build budget lines map from features' budget allocations
+      // This ensures we only show budget lines that are actually used by features in this product
+      const map: Record<string, string> = {};
+      
+      features.forEach((feature: RoadmapFeature) => {
+        if (feature.budget_allocations && Array.isArray(feature.budget_allocations)) {
+          feature.budget_allocations.forEach((alloc: any) => {
+            const lineId = alloc.budget_line_id;
+            const lineName = alloc.budget_line_name;
+            
+            if (lineId && lineName && !map[lineId]) {
+              map[lineId] = lineName;
+            }
+          });
+        }
+      });
+      
+      setBudgetLinesMap(map);
+    } catch (error) {
+      console.error('Failed to build budget lines map:', error);
     }
   };
 
@@ -137,6 +174,21 @@ const ProductRoadmapPage: React.FC = () => {
     loadValidation();
   };
 
+  const openFeaturePanel = (feature: RoadmapFeature) => {
+    setSelectedFeature(feature);
+    setIsPanelOpen(true);
+  };
+
+  const closePanel = () => {
+    setIsPanelOpen(false);
+    setTimeout(() => setSelectedFeature(null), 300);
+  };
+
+  const handleEditFromPanel = (feature: RoadmapFeature) => {
+    closePanel();
+    handleEditFeature(feature);
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'planned': return 'blue';
@@ -147,88 +199,255 @@ const ProductRoadmapPage: React.FC = () => {
     }
   };
 
-  // Helper to get quarterly allocation for a specific quarter
-  const getQuarterlyAllocation = (record: RoadmapFeature, quarter: number): number => {
-    const currentYear = new Date().getFullYear();
+  // Memoize years to display based on feature data and selected year
+  const yearsToDisplay = useMemo(() => {
+    const yearsWithData = new Set<number>();
+    yearsWithData.add(selectedYear); // Always include selected year
+    
+    features.forEach(feature => {
+      feature.quarterly_allocations?.forEach(qa => {
+        yearsWithData.add(qa.year);
+      });
+    });
+    
+    return Array.from(yearsWithData).sort();
+  }, [features, selectedYear]);
+
+  // Helper to get quarterly allocation for a specific year and quarter
+  const getQuarterlyAllocation = (record: RoadmapFeature, year: number, quarter: number): number => {
     const allocation = record.quarterly_allocations?.find(
-      a => a.year === currentYear && a.quarter === quarter
+      a => a.year === year && a.quarter === quarter
     );
     return allocation?.allocated_ed || 0;
   };
 
+  // Helper to render quarter cell with improved UX
+  const renderQuarterCell = (value: number) => {
+    if (value === 0) {
+      return (
+        <div 
+          style={{ 
+            backgroundColor: '#f5f5f5', 
+            minHeight: 24,
+            borderRadius: 4,
+          }} 
+        />
+      );
+    }
+    return (
+      <div 
+        style={{ 
+          backgroundColor: '#e6f7ff', 
+          padding: '2px 8px', 
+          borderRadius: 4,
+          textAlign: 'center',
+          color: '#1890ff',
+          fontWeight: 500,
+        }}
+      >
+        {value}
+      </div>
+    );
+  };
+
+  // Memoize year-grouped columns for performance
+  // Show current year Q1-Q4, next year as total only
+  const yearColumns = useMemo(() => {
+    if (yearsToDisplay.length === 0) return [];
+    
+    const currentYear = selectedYear;
+    const nextYear = currentYear + 1;
+    const columns = [];
+    
+    // Current year - full quarterly breakdown
+    columns.push({
+      title: currentYear.toString(),
+      children: [1, 2, 3, 4].map(quarter => ({
+        title: `Q${quarter}`,
+        key: `${currentYear}-q${quarter}`,
+        width: 70,
+        align: 'center' as const,
+        render: (_: any, record: RoadmapFeature) => {
+          const value = getQuarterlyAllocation(record, currentYear, quarter);
+          return renderQuarterCell(value);
+        },
+      })),
+    });
+    
+    // Next year - summary only with tooltip
+    columns.push({
+      title: `${nextYear} Total`,
+      key: `${nextYear}-total`,
+      width: 90,
+      align: 'center' as const,
+      render: (_: any, record: RoadmapFeature) => {
+        const q1 = getQuarterlyAllocation(record, nextYear, 1);
+        const q2 = getQuarterlyAllocation(record, nextYear, 2);
+        const q3 = getQuarterlyAllocation(record, nextYear, 3);
+        const q4 = getQuarterlyAllocation(record, nextYear, 4);
+        const total = q1 + q2 + q3 + q4;
+        
+        if (total === 0) {
+          return (
+            <div 
+              style={{ 
+                backgroundColor: '#f5f5f5', 
+                minHeight: 24,
+                borderRadius: 4,
+              }} 
+            />
+          );
+        }
+        
+        return (
+          <Tooltip title={`Q1: ${q1}, Q2: ${q2}, Q3: ${q3}, Q4: ${q4}`}>
+            <div 
+              style={{ 
+                backgroundColor: '#f0f5ff', 
+                padding: '2px 8px', 
+                borderRadius: 4,
+                textAlign: 'center',
+                color: '#2f54eb',
+                fontWeight: 500,
+                cursor: 'help',
+              }}
+            >
+              {total}
+            </div>
+          </Tooltip>
+        );
+      },
+    });
+    
+    return columns;
+  }, [selectedYear]);
+
   const columns = [
+    // Fixed LEFT columns
     {
       title: 'Name',
       dataIndex: 'name',
       key: 'name',
+      fixed: 'left' as const,
       width: 200,
-      ellipsis: true,
+      render: (name: string, record: RoadmapFeature) => (
+        <Space>
+          <a 
+            onClick={() => openFeaturePanel(record)}
+            style={{ cursor: 'pointer' }}
+          >
+            {name}
+          </a>
+          {record.remarks && (
+            <Tooltip title={record.remarks} placement="topLeft" overlayStyle={{ maxWidth: 400 }}>
+              <InfoCircleOutlined style={{ color: '#1890ff', cursor: 'help' }} />
+            </Tooltip>
+          )}
+        </Space>
+      ),
+    },
+    {
+      title: 'Budget Line',
+      dataIndex: 'budget_allocations',
+      key: 'budget_line',
+      fixed: 'left' as const,
+      width: 150,
+      render: (_: any, record: any) => {
+        const allocations = record.budget_allocations || [];
+        
+        if (!allocations || allocations.length === 0) {
+          return <span style={{ color: '#bbb' }}>—</span>;
+        }
+        
+        const getName = (a: any) => {
+          // Try direct name properties first
+          if (a.budget_line_name) return a.budget_line_name;
+          if (a.name) return a.name;
+          
+          // Fallback to lookup by ID
+          const id = a.budget_line_id;
+          if (id && budgetLinesMap[id]) {
+            return budgetLinesMap[id];
+          }
+          
+          return 'Unknown';
+        };
+        
+        const firstName = getName(allocations[0]);
+        
+        if (allocations.length === 1) {
+          return firstName;
+        }
+        
+        return (
+          <Tooltip 
+            title={allocations.map((a: any) => {
+              const name = getName(a);
+              const pct = a.allocation_percentage || 100;
+              return `${name} (${pct}%)`;
+            }).join(', ')}
+          >
+            <span>
+              {firstName}
+              <span style={{ color: '#888', marginLeft: 4 }}>+{allocations.length - 1}</span>
+            </span>
+          </Tooltip>
+        );
+      },
     },
     {
       title: 'Customer',
       dataIndex: 'customer',
       key: 'customer',
+      fixed: 'left' as const,
       width: 120,
       ellipsis: true,
+    },
+    {
+      title: 'Priority',
+      dataIndex: 'priority',
+      key: 'priority',
+      fixed: 'left' as const,
+      width: 110,
+      render: (priority: number) => {
+        const config: Record<number, { label: string; color: string }> = {
+          0: { label: 'Critical', color: 'red' },
+          1: { label: 'High', color: 'orange' },
+          2: { label: 'Medium', color: 'blue' },
+          3: { label: 'Low', color: 'default' },
+        };
+        const { label, color } = config[priority] || config[3];
+        return <Tag color={color}>{priority} - {label}</Tag>;
+      },
     },
     {
       title: 'Net eD',
       dataIndex: 'net_sizing_ed',
       key: 'net_sizing_ed',
+      fixed: 'left' as const,
       width: 80,
+      align: 'right' as const,
       render: (value: number) => value?.toFixed(1) || '0.0',
     },
-    {
-      title: 'Q1',
-      key: 'q1',
-      width: 70,
-      align: 'center' as const,
-      render: (_: any, record: RoadmapFeature) => {
-        const value = getQuarterlyAllocation(record, 1);
-        return value > 0 ? <Tag color="blue">{value}</Tag> : '-';
-      },
-    },
-    {
-      title: 'Q2',
-      key: 'q2',
-      width: 70,
-      align: 'center' as const,
-      render: (_: any, record: RoadmapFeature) => {
-        const value = getQuarterlyAllocation(record, 2);
-        return value > 0 ? <Tag color="green">{value}</Tag> : '-';
-      },
-    },
-    {
-      title: 'Q3',
-      key: 'q3',
-      width: 70,
-      align: 'center' as const,
-      render: (_: any, record: RoadmapFeature) => {
-        const value = getQuarterlyAllocation(record, 3);
-        return value > 0 ? <Tag color="orange">{value}</Tag> : '-';
-      },
-    },
-    {
-      title: 'Q4',
-      key: 'q4',
-      width: 70,
-      align: 'center' as const,
-      render: (_: any, record: RoadmapFeature) => {
-        const value = getQuarterlyAllocation(record, 4);
-        return value > 0 ? <Tag color="purple">{value}</Tag> : '-';
-      },
-    },
+    
+    // Dynamic YEAR columns (scrollable)
+    ...yearColumns,
+    
+    // Fixed RIGHT columns
     {
       title: 'Cost (k€)',
       dataIndex: 'total_cost_keur',
       key: 'total_cost_keur',
+      fixed: 'right' as const,
       width: 90,
+      align: 'right' as const,
       render: (value: number) => value?.toFixed(2) || '0.00',
     },
     {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
+      fixed: 'right' as const,
       width: 100,
       render: (status: string) => (
         <Tag color={getStatusColor(status)}>
@@ -239,8 +458,8 @@ const ProductRoadmapPage: React.FC = () => {
     {
       title: 'Actions',
       key: 'actions',
-      width: 180,
       fixed: 'right' as const,
+      width: 180,
       render: (_: any, record: RoadmapFeature) => (
         <Space>
           <Button
@@ -307,12 +526,40 @@ const ProductRoadmapPage: React.FC = () => {
         <Card>
           <Space style={{ marginBottom: 16, width: '100%' }} direction="vertical">
             <Space>
+              <span style={{ fontWeight: 500 }}>Fiscal Year:</span>
+              <Select
+                value={selectedYear}
+                onChange={setSelectedYear}
+                style={{ width: 100 }}
+              >
+                {[2024, 2025, 2026, 2027, 2028, 2029, 2030].map(year => (
+                  <Option key={year} value={year}>{year}</Option>
+                ))}
+              </Select>
+              {yearsToDisplay.length > 1 && (
+                <span style={{ color: '#888', fontSize: 12 }}>
+                  Showing {yearsToDisplay.length} year{yearsToDisplay.length > 1 ? 's' : ''} with allocations
+                </span>
+              )}
+            </Space>
+            <Space>
               <Input
                 placeholder="Search features..."
                 prefix={<SearchOutlined />}
                 style={{ width: 300 }}
                 onChange={() => setFilters({ ...filters, page: 1 })}
               />
+              <Select
+                placeholder="Filter by Budget Line"
+                allowClear
+                value={selectedBudgetLine}
+                onChange={setSelectedBudgetLine}
+                style={{ width: 250 }}
+              >
+                {Object.entries(budgetLinesMap).map(([id, name]) => (
+                  <Option key={id} value={id}>{name}</Option>
+                ))}
+              </Select>
               <Select
                 placeholder="Status"
                 style={{ width: 150 }}
@@ -329,9 +576,14 @@ const ProductRoadmapPage: React.FC = () => {
 
           <Table
             columns={columns}
-            dataSource={features}
+            dataSource={features.filter(feature => {
+              if (!selectedBudgetLine) return true;
+              return feature.budget_allocations?.some(alloc => alloc.budget_line_id === selectedBudgetLine);
+            })}
             rowKey="id"
             loading={loading}
+            bordered
+            size="middle"
             pagination={{
               current: filters.page,
               pageSize: filters.page_size,
@@ -342,7 +594,7 @@ const ProductRoadmapPage: React.FC = () => {
                 setFilters({ ...filters, page, page_size: pageSize });
               },
             }}
-            scroll={{ x: 'max-content' }}
+            scroll={{ x: 'max-content', y: 600 }}
           />
         </Card>
       </Space>
@@ -357,6 +609,15 @@ const ProductRoadmapPage: React.FC = () => {
         visible={executionPlanningVisible}
         feature={executionPlanningFeature}
         onClose={handleExecutionPlanningClose}
+      />
+
+      <FeatureDetailPanel
+        feature={selectedFeature}
+        open={isPanelOpen}
+        onClose={closePanel}
+        onEdit={handleEditFromPanel}
+        productName={product?.name}
+        budgetLinesMap={budgetLinesMap}
       />
     </div>
   );

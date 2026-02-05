@@ -13,14 +13,90 @@ from app.schemas.roadmap_v4 import (
     CreateJiraRecordRequest, UpdateJiraRecordRequest, JiraRecordResponse,
     CalculateSizingRequest, CalculateSizingResponse,
     BudgetValidationResult, CapacityValidationResult, ValidationSummaryResponse,
-    TrainConfigResponse, UpdateTrainConfigRequest, QuarterlyAllocationInput
+    TrainConfigResponse, UpdateTrainConfigRequest, QuarterlyAllocationInput,
+    BudgetLineAllocationResponse
 )
 from app.services.feature_service_v4 import FeatureServiceV4
 from app.services.calculation_service import CalculationService
 from app.services.validation_service_v4 import ValidationServiceV4
 from app.models.global_settings import GlobalSettings
+from app.models.roadmap_v4 import RoadmapFeature
 
 router = APIRouter(prefix="/api/features", tags=["Features V4"])
+
+
+def serialize_feature(feature: RoadmapFeature) -> dict:
+    """Serialize feature with budget line names populated"""
+    feature_dict = {
+        "id": feature.id,
+        "product_id": feature.product_id,
+        "name": feature.name,
+        "customer": feature.customer,
+        "priority": feature.priority,
+        "status": feature.status,
+        "remarks": feature.remarks,
+        "gross_sizing_ed": feature.gross_sizing_ed,
+        "net_sizing_ed": feature.net_sizing_ed,
+        "total_cost_keur": feature.total_cost_keur,
+        "created_at": feature.created_at,
+        "updated_at": feature.updated_at,
+        "created_by": feature.created_by,
+        "teams": [{"id": str(team.id), "name": team.name} for team in feature.teams],
+        "quarterly_allocations": [
+            {
+                "id": str(qa.id),
+                "year": qa.year,
+                "quarter": qa.quarter,
+                "allocated_ed": qa.allocated_ed,
+                "created_at": qa.created_at,
+                "updated_at": qa.updated_at
+            }
+            for qa in feature.quarterly_allocations
+        ],
+        "budget_allocations": [
+            {
+                "id": str(alloc.id),
+                "budget_line_id": str(alloc.budget_line_id),
+                "budget_line_name": alloc.budget_line.name if alloc.budget_line else None,
+                "category_id": str(alloc.category_id) if alloc.category_id else None,
+                "allocation_percentage": alloc.allocation_percentage,
+                "allocated_effort_days": alloc.allocated_effort_days,
+                "created_at": alloc.created_at,
+                "updated_at": alloc.updated_at
+            }
+            for alloc in feature.budget_allocations
+        ],
+        "jira_records": [
+            {
+                "id": str(jr.id),
+                "feature_id": str(jr.feature_id),
+                "jira_key": jr.jira_key,
+                "summary": jr.summary,
+                "team_id": str(jr.team_id),
+                "team": {"id": str(jr.team.id), "name": jr.team.name} if jr.team else None,
+                "status": jr.status,
+                "is_spillover": jr.is_spillover,
+                "spillover_from_quarter": jr.spillover_from_quarter,
+                "spillover_from_year": jr.spillover_from_year,
+                "remarks": jr.remarks,
+                "quarterly_allocations": [
+                    {
+                        "id": str(qa.id),
+                        "year": qa.year,
+                        "quarter": qa.quarter,
+                        "allocated_ed": qa.allocated_ed,
+                        "created_at": qa.created_at,
+                        "updated_at": qa.updated_at
+                    }
+                    for qa in jr.quarterly_allocations
+                ],
+                "created_at": jr.created_at,
+                "updated_at": jr.updated_at
+            }
+            for jr in (feature.jira_records or [])
+        ]
+    }
+    return feature_dict
 
 
 # ============================================
@@ -36,7 +112,7 @@ def create_feature(
     """Create a new roadmap feature"""
     service = FeatureServiceV4(db)
     feature = service.create_feature(request, created_by)
-    return feature
+    return serialize_feature(feature)
 
 
 @router.get("", response_model=FeatureListResponse)
@@ -52,7 +128,16 @@ def list_features(
     """List features with filters and pagination"""
     service = FeatureServiceV4(db)
     result = service.list_features(product_id, budget_line_id, year, status, page, page_size)
-    return result
+    
+    # Serialize all features with budget line names
+    serialized_features = [serialize_feature(feature) for feature in result['data']]
+    
+    return {
+        "data": serialized_features,
+        "total": result['total'],
+        "page": result['page'],
+        "page_size": result['page_size']
+    }
 
 
 @router.get("/{feature_id}", response_model=FeatureResponse)
@@ -66,7 +151,7 @@ def get_feature(
     feature = service.get_feature(feature_id, include_jira)
     if not feature:
         raise HTTPException(status_code=404, detail="Feature not found")
-    return feature
+    return serialize_feature(feature)
 
 
 @router.put("/{feature_id}", response_model=FeatureResponse)
@@ -79,7 +164,7 @@ def update_feature(
     service = FeatureServiceV4(db)
     try:
         feature = service.update_feature(feature_id, request)
-        return feature
+        return serialize_feature(feature)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 

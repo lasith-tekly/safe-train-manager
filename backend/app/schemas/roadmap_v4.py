@@ -232,6 +232,7 @@ class BudgetLineAllocationResponse(BaseModel):
     """Budget line allocation response"""
     id: str
     budget_line_id: str
+    budget_line_name: Optional[str] = None
     category_id: Optional[str]
     allocation_percentage: Decimal
     allocated_effort_days: Optional[Decimal]

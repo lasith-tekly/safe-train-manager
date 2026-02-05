@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Form, Input, InputNumber, Select, Button, message, Row, Col, Space, Card } from 'antd';
+import { Modal, Form, Input, InputNumber, Select, Button, message, Row, Col, Space, Card, Tag, Collapse } from 'antd';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { createFeature, updateFeature } from '../../services/featureApi';
 import { RoadmapFeature, CreateFeatureRequest, UpdateFeatureRequest, QuarterlyAllocationInput } from '../../types/roadmap_v4';
 import QuarterlyPlanningGrid from './QuarterlyPlanningGrid';
+import { CustomerTagSelect } from './components/CustomerTagSelect';
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -57,11 +58,14 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
   ]);
 
   const [quarterlyAllocations, setQuarterlyAllocations] = useState<QuarterlyAllocationInput[]>([]);
+  const [customerRefreshKey, setCustomerRefreshKey] = useState<number>(0);
 
   useEffect(() => {
     if (visible) {
       loadProducts();
       loadBudgetProducts();
+      // Increment refresh key to trigger customer list refetch
+      setCustomerRefreshKey(prev => prev + 1);
     }
   }, [visible]);
 
@@ -379,8 +383,21 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
                 </Form.Item>
               </Col>
               <Col span={6}>
-                <Form.Item name="priority" label="Priority">
-                  <InputNumber min={0} style={{ width: '100%' }} placeholder="0" />
+                <Form.Item name="priority" label="Priority" rules={[{ required: true, message: 'Please select priority' }]}>
+                  <Select placeholder="Select priority" style={{ width: '100%' }}>
+                    <Option value={0}>
+                      <Tag color="red">0 - Critical</Tag>
+                    </Option>
+                    <Option value={1}>
+                      <Tag color="orange">1 - High</Tag>
+                    </Option>
+                    <Option value={2}>
+                      <Tag color="blue">2 - Medium</Tag>
+                    </Option>
+                    <Option value={3}>
+                      <Tag color="default">3 - Low</Tag>
+                    </Option>
+                  </Select>
                 </Form.Item>
               </Col>
               <Col span={6}>
@@ -404,7 +421,7 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
             </Form.Item>
 
             <Form.Item name="customer" label="Customer">
-              <Input placeholder="Enter customer name" />
+              <CustomerTagSelect refreshKey={customerRefreshKey} />
             </Form.Item>
 
             <Card 
@@ -541,9 +558,18 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
               </Col>
             </Row>
 
-            <Form.Item name="remarks" label="Remarks">
-              <TextArea rows={3} placeholder="Enter remarks" />
-            </Form.Item>
+            <Collapse ghost style={{ marginBottom: 16 }}>
+              <Collapse.Panel header="Additional Details (Remarks)" key="remarks">
+                <Form.Item name="remarks" style={{ marginBottom: 0 }}>
+                  <TextArea 
+                    rows={3} 
+                    placeholder="Enter remarks or notes (optional)" 
+                    maxLength={500}
+                    showCount
+                  />
+                </Form.Item>
+              </Collapse.Panel>
+            </Collapse>
 
             <QuarterlyPlanningGrid
               value={quarterlyAllocations}
