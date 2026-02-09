@@ -123,7 +123,7 @@ export const FeatureDetailPanel: React.FC<FeatureDetailPanelProps> = ({
     <Drawer
       title={null}
       placement="right"
-      width={550}
+      width="50%"
       open={open}
       onClose={onClose}
       headerStyle={{ display: 'none' }}

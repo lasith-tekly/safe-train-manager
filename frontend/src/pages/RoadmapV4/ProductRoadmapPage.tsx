@@ -7,9 +7,13 @@ import { listFeatures, deleteFeature } from '../../services/featureApi';
 import { RoadmapFeature, FeatureFilters } from '../../types/roadmap_v4';
 import FeatureFormModal from './CreateFeatureModal';
 import ValidationPanel from './ValidationPanel';
-import ExecutionPlanningModal from './ExecutionPlanningModal';
+import { ExecutionPlanningPanel } from './components/ExecutionPlanningPanel';
 import { FeatureDetailPanel } from './FeatureDetailPanel';
 import { getValidationSummary } from '../../services/validationApi';
+import { VersionSelector } from './components/VersionSelector';
+import { CreateVersionModal } from './components/CreateVersionModal';
+import { PublishVersionModal } from './components/PublishVersionModal';
+import { roadmapVersionApi, RoadmapVersion } from '../../services/roadmapVersionApi';
 
 const { Option } = Select;
 const { confirm } = Modal;
@@ -40,6 +44,17 @@ const ProductRoadmapPage: React.FC = () => {
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [budgetLinesMap, setBudgetLinesMap] = useState<Record<string, string>>({});
   const [selectedBudgetLine, setSelectedBudgetLine] = useState<string | undefined>(undefined);
+
+  // Version state
+  const [versions, setVersions] = useState<RoadmapVersion[]>([]);
+  const [currentVersionId, setCurrentVersionId] = useState<string | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showPublishModal, setShowPublishModal] = useState(false);
+  const [versionLoading, setVersionLoading] = useState(false);
+
+  // Derived version state
+  const currentVersion = versions.find(v => v.id === currentVersionId);
+  const isReadOnly = currentVersion?.status === 'PUBLISHED';
 
   useEffect(() => {
     if (productId) {
@@ -120,6 +135,62 @@ const ProductRoadmapPage: React.FC = () => {
       setBudgetLinesMap(map);
     } catch (error) {
       console.error('Failed to build budget lines map:', error);
+    }
+  };
+
+  // Load versions on mount
+  useEffect(() => {
+    const fetchVersions = async () => {
+      if (!productId) return;
+      
+      try {
+        const response = await roadmapVersionApi.list(productId);
+        const versionList = response.data.items || [];
+        setVersions(versionList);
+        
+        // Select draft version by default, or latest
+        const draft = versionList.find(v => v.status === 'DRAFT');
+        setCurrentVersionId(draft?.id || versionList[0]?.id || null);
+      } catch (error) {
+        console.error('Failed to fetch versions:', error);
+      }
+    };
+    
+    fetchVersions();
+  }, [productId]);
+
+  // Version change handlers
+  const handleCreateVersion = async (data: any) => {
+    setVersionLoading(true);
+    try {
+      const response = await roadmapVersionApi.create(productId!, data);
+      setVersions(prev => [response.data, ...prev]);
+      setCurrentVersionId(response.data.id);
+      setShowCreateModal(false);
+      message.success('Version created successfully');
+      loadFeatures(); // Reload features for new version
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.detail || 'Failed to create version';
+      message.error(errorMsg);
+    } finally {
+      setVersionLoading(false);
+    }
+  };
+
+  const handlePublish = async () => {
+    if (!currentVersionId) return;
+    
+    setVersionLoading(true);
+    try {
+      const response = await roadmapVersionApi.publish(productId!, currentVersionId);
+      setVersions(prev => prev.map(v => v.id === currentVersionId ? response.data : v));
+      setShowPublishModal(false);
+      message.success('Version published successfully');
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.detail || 'Failed to publish version';
+      message.error(errorMsg);
+    } finally {
+      setVersionLoading(false);
     }
   };
 
@@ -492,27 +563,40 @@ const ProductRoadmapPage: React.FC = () => {
     <div style={{ padding: 24 }}>
       <Space direction="vertical" style={{ width: '100%' }} size="large">
         <Card>
-          <Space style={{ width: '100%', justifyContent: 'space-between' }}>
-            <Space>
-              <Button
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <Button 
+                type="text" 
                 icon={<ArrowLeftOutlined />}
                 onClick={() => navigate('/roadmap')}
+                style={{ padding: '4px 8px' }}
               >
-                Back to Products
+                Products
               </Button>
-              <Title level={3} style={{ margin: 0 }}>
-                {product?.name || 'Product'} - Roadmap Planning
-              </Title>
-            </Space>
+              <span style={{ color: '#d9d9d9', fontSize: 16 }}>/</span>
+              <Title level={4} style={{ margin: 0 }}>{product?.name || 'Product'}</Title>
+              <span style={{ color: '#888', fontSize: 14 }}>Roadmap Planning</span>
+            </div>
             <Button
               type="primary"
               icon={<PlusOutlined />}
               onClick={handleCreateFeature}
+              disabled={isReadOnly}
             >
               Add Feature
             </Button>
-          </Space>
+          </div>
         </Card>
+
+        {/* Version Selector */}
+        <VersionSelector
+          versions={versions}
+          currentVersionId={currentVersionId}
+          onVersionChange={setCurrentVersionId}
+          onCreateVersion={() => setShowCreateModal(true)}
+          onPublish={() => setShowPublishModal(true)}
+          isReadOnly={isReadOnly}
+        />
 
         {validation && (
           <ValidationPanel
@@ -605,8 +689,8 @@ const ProductRoadmapPage: React.FC = () => {
         onClose={handleModalClose}
       />
 
-      <ExecutionPlanningModal
-        visible={executionPlanningVisible}
+      <ExecutionPlanningPanel
+        open={executionPlanningVisible}
         feature={executionPlanningFeature}
         onClose={handleExecutionPlanningClose}
       />
@@ -618,6 +702,22 @@ const ProductRoadmapPage: React.FC = () => {
         onEdit={handleEditFromPanel}
         productName={product?.name}
         budgetLinesMap={budgetLinesMap}
+      />
+
+      <CreateVersionModal
+        open={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onCreate={handleCreateVersion}
+        versions={versions}
+        loading={versionLoading}
+      />
+
+      <PublishVersionModal
+        open={showPublishModal}
+        onClose={() => setShowPublishModal(false)}
+        onPublish={handlePublish}
+        versionName={currentVersion?.version_name || ''}
+        loading={versionLoading}
       />
     </div>
   );

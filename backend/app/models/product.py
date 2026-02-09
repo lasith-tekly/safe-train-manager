@@ -30,6 +30,12 @@ class Product(Base):
     created_by = Column(String(36), nullable=True)
 
     # Relationships
+    roadmap_versions = relationship(
+        "RoadmapVersion", 
+        back_populates="product", 
+        order_by="desc(RoadmapVersion.created_at)",
+        cascade="all, delete-orphan"
+    )
     # budget_versions = relationship(  # Old budget relationship - commented out
     #     "BudgetVersion",
     #     back_populates="product",

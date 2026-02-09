@@ -63,6 +63,7 @@ class Team(Base):
         secondary=team_products,
         backref="teams"
     )
+    jira_records = relationship("JiraRecord", back_populates="team")
 
     def __repr__(self):
         return f"<Team {self.short_code}: {self.name}>"

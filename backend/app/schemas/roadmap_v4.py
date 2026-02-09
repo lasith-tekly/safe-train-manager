@@ -151,48 +151,64 @@ class UpdateFeatureRequest(BaseModel):
 
 
 class CreateJiraRecordRequest(BaseModel):
-    """Create JIRA record request"""
+    """Create JIRA record request - supports both old and new field names"""
     jira_key: str = Field(..., max_length=50)
+    
+    # New PI-based fields (primary)
+    title: Optional[str] = Field(None, max_length=500)
+    description: Optional[str] = None
+    pi_id: Optional[str] = None
+    planned_effort: float = Field(default=0, ge=0)
+    
+    # Old quarter-based fields (deprecated, for backward compatibility)
     summary: Optional[str] = Field(None, max_length=500)
-    team_id: str
-    status: Literal["planned", "in_progress", "done", "spillover"] = "planned"
-    is_spillover: bool = False
+    remarks: Optional[str] = None
+    is_spillover: Optional[bool] = False
     spillover_from_quarter: Optional[int] = Field(None, ge=1, le=4)
     spillover_from_year: Optional[int] = Field(None, ge=2020, le=2050)
-    remarks: Optional[str] = None
+    
+    # Common fields
+    team_id: str
+    status: Literal["PLANNED", "IN_PROGRESS", "COMPLETED", "SPILLOVER", "planned", "in_progress", "done", "spillover"] = "PLANNED"
     quarterly_allocations: List[QuarterlyAllocationInput] = Field(default_factory=list)
-
-    @validator('spillover_from_quarter')
-    def validate_spillover_quarter(cls, v, values):
-        """If spillover, must have spillover_from_quarter"""
-        if values.get('is_spillover') and not v:
-            raise ValueError("spillover_from_quarter required when is_spillover=True")
-        return v
 
     class Config:
         json_schema_extra = {
             "example": {
                 "jira_key": "AOP-25718",
-                "summary": "User authentication module",
+                "title": "User authentication module",
+                "description": "Implement JWT authentication",
                 "team_id": "team-uuid",
-                "status": "planned",
-                "quarterly_allocations": [
-                    {"year": 2026, "quarter": 1, "allocated_ed": 20.0}
-                ]
+                "pi_id": "pi-uuid",
+                "planned_effort": 15.0,
+                "status": "PLANNED"
             }
         }
 
 
 class UpdateJiraRecordRequest(BaseModel):
-    """Update JIRA record request"""
+    """Update JIRA record request - supports both old and new field names"""
     jira_key: Optional[str] = Field(None, max_length=50)
+    
+    # New PI-based fields (primary)
+    title: Optional[str] = Field(None, max_length=500)
+    description: Optional[str] = None
+    pi_id: Optional[str] = None
+    planned_effort: Optional[float] = Field(None, ge=0)
+    actual_effort: Optional[float] = Field(None, ge=0)
+    spillover_from_pi_id: Optional[str] = None
+    spillover_reason: Optional[str] = None
+    
+    # Old quarter-based fields (deprecated, for backward compatibility)
     summary: Optional[str] = Field(None, max_length=500)
-    team_id: Optional[str] = None
-    status: Optional[Literal["planned", "in_progress", "done", "spillover"]] = None
+    remarks: Optional[str] = None
     is_spillover: Optional[bool] = None
     spillover_from_quarter: Optional[int] = Field(None, ge=1, le=4)
     spillover_from_year: Optional[int] = Field(None, ge=2020, le=2050)
-    remarks: Optional[str] = None
+    
+    # Common fields
+    team_id: Optional[str] = None
+    status: Optional[Literal["PLANNED", "IN_PROGRESS", "COMPLETED", "SPILLOVER", "planned", "in_progress", "done", "spillover"]] = None
     quarterly_allocations: Optional[List[QuarterlyAllocationInput]] = None
 
 
@@ -256,21 +272,35 @@ class TeamSummary(BaseModel):
 
 
 class JiraRecordResponse(BaseModel):
-    """JIRA record response"""
+    """JIRA record response - supports both old and new schemas"""
     id: str
     feature_id: str
-    jira_key: str
-    summary: Optional[str]
-    team_id: str
-    team: Optional[TeamSummary]
-    status: str
-    is_spillover: bool
-    spillover_from_quarter: Optional[int]
-    spillover_from_year: Optional[int]
-    remarks: Optional[str]
-    quarterly_allocations: List[QuarterlyAllocationResponse]
-    created_at: datetime
-    updated_at: datetime
+    jira_key: Optional[str] = None
+    
+    # New PI-based fields (primary)
+    title: Optional[str] = None
+    description: Optional[str] = None
+    pi_id: Optional[str] = None
+    pi: Optional[dict] = None
+    planned_effort: float = 0
+    actual_effort: Optional[float] = None
+    spillover_from_pi_id: Optional[str] = None
+    spillover_reason: Optional[str] = None
+    
+    # Old quarter-based fields (deprecated, for backward compatibility)
+    summary: Optional[str] = None
+    remarks: Optional[str] = None
+    is_spillover: Optional[bool] = False
+    spillover_from_quarter: Optional[int] = None
+    spillover_from_year: Optional[int] = None
+    
+    # Common fields
+    team_id: Optional[str] = None
+    team: Optional[TeamSummary] = None
+    status: str = "PLANNED"
+    quarterly_allocations: Optional[List[QuarterlyAllocationResponse]] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True

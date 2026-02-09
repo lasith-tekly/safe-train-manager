@@ -102,21 +102,35 @@ class TeamSummary(BaseModel):
 
 
 class JiraRecordResponse(BaseModel):
-    """Response schema for JIRA record"""
+    """Response schema for JIRA record - supports both old and new schemas"""
     id: str
     feature_id: str
-    jira_key: str
-    summary: Optional[str]
-    team_id: str
+    jira_key: Optional[str] = None
+    
+    # New PI-based fields (primary)
+    title: Optional[str] = None
+    description: Optional[str] = None
+    pi_id: Optional[str] = None
+    pi: Optional[dict] = None
+    planned_effort: float = 0
+    actual_effort: Optional[float] = None
+    spillover_from_pi_id: Optional[str] = None
+    spillover_reason: Optional[str] = None
+    
+    # Old quarter-based fields (deprecated, for backward compatibility)
+    summary: Optional[str] = None
+    remarks: Optional[str] = None
+    is_spillover: Optional[bool] = False
+    spillover_from_year: Optional[int] = None
+    spillover_from_quarter: Optional[int] = None
+    
+    # Common fields
+    team_id: Optional[str] = None
     team: Optional[TeamSummary] = None
-    status: str
-    is_spillover: bool
-    spillover_from_year: Optional[int]
-    spillover_from_quarter: Optional[int]
-    remarks: Optional[str]
-    quarterly_allocations: List[JiraQuarterlyAllocationResponse]
-    created_at: datetime
-    updated_at: datetime
+    status: str = "PLANNED"
+    quarterly_allocations: Optional[List[JiraQuarterlyAllocationResponse]] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True

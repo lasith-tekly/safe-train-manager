@@ -85,6 +85,10 @@ class FeatureServiceV4:
         if not feature:
             raise ValueError(f"Feature {feature_id} not found")
         
+        # Check if version is published (read-only)
+        if feature.roadmap_version and feature.roadmap_version.status == "PUBLISHED":
+            raise ValueError("Cannot edit features in a published version. Create a new version to make changes.")
+        
         # Update basic fields
         if request.name is not None:
             feature.name = request.name
@@ -216,6 +220,10 @@ class FeatureServiceV4:
         if not feature:
             return False
         
+        # Check if version is published (read-only)
+        if feature.roadmap_version and feature.roadmap_version.status == "PUBLISHED":
+            raise ValueError("Cannot delete features in a published version. Create a new version to make changes.")
+        
         self.db.delete(feature)
         self.db.commit()
         
@@ -245,19 +253,24 @@ class FeatureServiceV4:
     
     # JIRA Record Methods
     
-    def create_jira_record(self, feature_id: str, request: CreateJiraRecordRequest) -> JiraRecord:
+    def create_jira_record(self, feature_id: str, request: CreateJiraRecordRequest) -> dict:
         """Create a JIRA record for a feature"""
+        # Get title from new field or fall back to old field
+        title = request.title if request.title else (request.summary if request.summary else '')
+        
+        # Get description from new field or fall back to old field
+        description = request.description if request.description else request.remarks
+        
         jira_record = JiraRecord(
             id=str(uuid.uuid4()),
             feature_id=feature_id,
             jira_key=request.jira_key,
-            summary=request.summary,
+            title=title,
+            description=description,
             team_id=request.team_id,
-            status=request.status,
-            is_spillover=request.is_spillover,
-            spillover_from_quarter=request.spillover_from_quarter,
-            spillover_from_year=request.spillover_from_year,
-            remarks=request.remarks
+            pi_id=request.pi_id,
+            planned_effort=request.planned_effort,
+            status=request.status
         )
         
         self.db.add(jira_record)
@@ -270,7 +283,32 @@ class FeatureServiceV4:
         self.db.commit()
         self.db.refresh(jira_record)
         
-        return jira_record
+        # Convert to dict with proper serialization of relationships
+        return {
+            "id": jira_record.id,
+            "feature_id": jira_record.feature_id,
+            "jira_key": jira_record.jira_key,
+            "title": jira_record.title or "Untitled",
+            "description": jira_record.description,
+            "team_id": jira_record.team_id,
+            "team": {"id": jira_record.team.id, "name": jira_record.team.name} if jira_record.team else None,
+            "pi_id": jira_record.pi_id,
+            "pi": {"id": str(jira_record.pi.id), "name": jira_record.pi.name, "year": jira_record.pi.year} if jira_record.pi else None,
+            "planned_effort": float(jira_record.planned_effort) if jira_record.planned_effort else 0.0,
+            "actual_effort": float(jira_record.actual_effort) if jira_record.actual_effort else None,
+            "status": jira_record.status or "PLANNED",
+            "spillover_from_pi_id": jira_record.spillover_from_pi_id,
+            "spillover_reason": jira_record.spillover_reason,
+            "created_at": jira_record.created_at,
+            "updated_at": jira_record.updated_at,
+            # Legacy fields for backward compatibility
+            "summary": jira_record.title,
+            "remarks": jira_record.description,
+            "is_spillover": jira_record.status == "SPILLOVER",
+            "spillover_from_quarter": None,
+            "spillover_from_year": None,
+            "quarterly_allocations": []
+        }
     
     def update_jira_record(self, jira_id: str, request: UpdateJiraRecordRequest) -> JiraRecord:
         """Update a JIRA record"""
@@ -278,23 +316,38 @@ class FeatureServiceV4:
         if not jira_record:
             raise ValueError(f"JIRA record {jira_id} not found")
         
-        # Update fields
+        # Update fields - support both old and new field names
         if request.jira_key is not None:
             jira_record.jira_key = request.jira_key
-        if request.summary is not None:
-            jira_record.summary = request.summary
+        
+        # Handle title/summary
+        if hasattr(request, 'title') and request.title is not None:
+            jira_record.title = request.title
+        elif hasattr(request, 'summary') and request.summary is not None:
+            jira_record.title = request.summary
+        
+        # Handle description/remarks
+        if hasattr(request, 'description') and request.description is not None:
+            jira_record.description = request.description
+        elif hasattr(request, 'remarks') and request.remarks is not None:
+            jira_record.description = request.remarks
+        
         if request.team_id is not None:
             jira_record.team_id = request.team_id
         if request.status is not None:
             jira_record.status = request.status
-        if request.is_spillover is not None:
-            jira_record.is_spillover = request.is_spillover
-        if request.spillover_from_quarter is not None:
-            jira_record.spillover_from_quarter = request.spillover_from_quarter
-        if request.spillover_from_year is not None:
-            jira_record.spillover_from_year = request.spillover_from_year
-        if request.remarks is not None:
-            jira_record.remarks = request.remarks
+        
+        # Handle new PI-based fields
+        if hasattr(request, 'pi_id') and request.pi_id is not None:
+            jira_record.pi_id = request.pi_id
+        if hasattr(request, 'planned_effort') and request.planned_effort is not None:
+            jira_record.planned_effort = request.planned_effort
+        if hasattr(request, 'actual_effort') and request.actual_effort is not None:
+            jira_record.actual_effort = request.actual_effort
+        if hasattr(request, 'spillover_from_pi_id') and request.spillover_from_pi_id is not None:
+            jira_record.spillover_from_pi_id = request.spillover_from_pi_id
+        if hasattr(request, 'spillover_reason') and request.spillover_reason is not None:
+            jira_record.spillover_reason = request.spillover_reason
         
         # Update quarterly allocations
         if request.quarterly_allocations is not None:
@@ -306,7 +359,32 @@ class FeatureServiceV4:
         self.db.commit()
         self.db.refresh(jira_record)
         
-        return jira_record
+        # Convert to dict with proper serialization of relationships
+        return {
+            "id": jira_record.id,
+            "feature_id": jira_record.feature_id,
+            "jira_key": jira_record.jira_key,
+            "title": jira_record.title or "Untitled",
+            "description": jira_record.description,
+            "team_id": jira_record.team_id,
+            "team": {"id": jira_record.team.id, "name": jira_record.team.name} if jira_record.team else None,
+            "pi_id": jira_record.pi_id,
+            "pi": {"id": str(jira_record.pi.id), "name": jira_record.pi.name, "year": jira_record.pi.year} if jira_record.pi else None,
+            "planned_effort": float(jira_record.planned_effort) if jira_record.planned_effort else 0.0,
+            "actual_effort": float(jira_record.actual_effort) if jira_record.actual_effort else None,
+            "status": jira_record.status or "PLANNED",
+            "spillover_from_pi_id": jira_record.spillover_from_pi_id,
+            "spillover_reason": jira_record.spillover_reason,
+            "created_at": jira_record.created_at,
+            "updated_at": jira_record.updated_at,
+            # Legacy fields for backward compatibility
+            "summary": jira_record.title,
+            "remarks": jira_record.description,
+            "is_spillover": jira_record.status == "SPILLOVER",
+            "spillover_from_quarter": None,
+            "spillover_from_year": None,
+            "quarterly_allocations": []
+        }
     
     def delete_jira_record(self, jira_id: str) -> bool:
         """Delete a JIRA record"""

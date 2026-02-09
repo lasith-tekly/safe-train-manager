@@ -25,12 +25,9 @@ def list_jira_records(
 ):
     """Get all JIRA records for a feature"""
     service = JiraRecordService(db)
-    jira_records = service.list_jira_records_for_feature(feature_id)
+    response = service.get_feature_jira_records(feature_id)
     
-    return JiraRecordListResponse(
-        data=jira_records,
-        total=len(jira_records)
-    )
+    return response
 
 
 @router.post("/features/{feature_id}/jira-records", response_model=JiraRecordResponse, status_code=status.HTTP_201_CREATED)
@@ -43,7 +40,8 @@ def create_jira_record(
     service = JiraRecordService(db)
     
     try:
-        jira_record = service.create_jira_record(feature_id, request)
+        jira_record, capacity_warning = service.create_jira_record(feature_id, request)
+        # TODO: Handle capacity_warning (maybe add to response headers or separate field)
         return jira_record
     except ValueError as e:
         raise HTTPException(

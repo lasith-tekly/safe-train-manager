@@ -28,6 +28,7 @@ class RoadmapFeature(Base):
     
     # Relationships to existing tables
     product_id = Column(String(36), ForeignKey("products.id"), nullable=False)
+    version_id = Column(String(36), ForeignKey("roadmap_versions.id", ondelete="CASCADE"), nullable=True)
     # budget_line_id and category_id removed - now using budget_allocations relationship
     
     # Feature details
@@ -49,6 +50,7 @@ class RoadmapFeature(Base):
     
     # Relationships
     product = relationship("Product", backref="roadmap_features")
+    roadmap_version = relationship("RoadmapVersion", back_populates="features")
     teams = relationship("Team", secondary="feature_teams", backref="assigned_features")
     quarterly_allocations = relationship("FeatureQuarterlyAllocation", back_populates="feature", cascade="all, delete-orphan")
     jira_records = relationship("JiraRecord", back_populates="feature", cascade="all, delete-orphan")
@@ -102,36 +104,50 @@ class FeatureQuarterlyAllocation(Base):
 
 class JiraRecord(Base):
     """
-    JIRA Record - Execution-level tracking
+    JIRA Record - PI-Level Execution Planning
     
-    Links features to actual JIRA issues with team assignments
+    Links strategic roadmap features to team execution at PI granularity.
+    Supports spillover tracking and capacity validation.
     """
     __tablename__ = "jira_records"
     
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    
+    # JIRA Integration
+    jira_key = Column(String(50), nullable=True, unique=True)  # e.g., "PROJ-123"
+    title = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
+    
+    # Relationships
     feature_id = Column(String(36), ForeignKey("roadmap_features.id", ondelete="CASCADE"), nullable=False)
+    team_id = Column(String(36), ForeignKey("teams.id", ondelete="SET NULL"), nullable=True)
+    pi_id = Column(String(36), ForeignKey("pis.id", ondelete="SET NULL"), nullable=True)
     
-    # JIRA details
-    jira_key = Column(String(50), nullable=False)  # e.g., "AOP-25718"
-    summary = Column(String(500), nullable=True)
+    # Effort Tracking
+    planned_effort = Column(Float, nullable=False, default=0)  # in eD (effort days)
+    actual_effort = Column(Float, nullable=True)  # filled after completion
     
-    # Assignment
-    team_id = Column(String(36), ForeignKey("teams.id"), nullable=False)
+    # Status & Spillover
+    status = Column(String(20), nullable=False, default="PLANNED")  # PLANNED, IN_PROGRESS, COMPLETED, SPILLOVER
+    spillover_from_pi_id = Column(String(36), ForeignKey("pis.id", ondelete="SET NULL"), nullable=True)
+    spillover_reason = Column(String(100), nullable=True)  # "Capacity", "Scope Change", "Dependencies", "Other"
     
-    # Status
-    status = Column(String(50), default="planned")  # planned, in_progress, done, spillover
-    is_spillover = Column(Boolean, default=False)
-    spillover_from_quarter = Column(Integer, nullable=True)
-    spillover_from_year = Column(Integer, nullable=True)
-    
-    remarks = Column(Text, nullable=True)
+    # Timestamps
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
     
     # Relationships
     feature = relationship("RoadmapFeature", back_populates="jira_records")
-    team = relationship("Team", backref="jira_records")
+    team = relationship("Team", back_populates="jira_records")
+    pi = relationship("PI", foreign_keys=[pi_id], back_populates="jira_records")
+    spillover_from_pi = relationship("PI", foreign_keys=[spillover_from_pi_id])
     quarterly_allocations = relationship("JiraQuarterlyAllocation", back_populates="jira_record", cascade="all, delete-orphan")
+    
+    # Constraints
+    __table_args__ = (
+        CheckConstraint("status IN ('PLANNED', 'IN_PROGRESS', 'COMPLETED', 'SPILLOVER')", name="ck_jira_status"),
+        CheckConstraint("planned_effort >= 0", name="ck_planned_effort_positive"),
+    )
 
 
 class JiraQuarterlyAllocation(Base):

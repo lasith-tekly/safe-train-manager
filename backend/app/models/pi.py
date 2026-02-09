@@ -43,6 +43,7 @@ class PI(Base):
         cascade="all, delete-orphan",
         order_by="Iteration.sequence"
     )
+    jira_records = relationship("JiraRecord", foreign_keys="JiraRecord.pi_id", back_populates="pi")
 
     @property
     def start_week(self) -> int:
