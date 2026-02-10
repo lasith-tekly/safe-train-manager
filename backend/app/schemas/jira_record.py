@@ -4,9 +4,21 @@ Pydantic schemas for JIRA Records API
 Handles request/response validation for execution planning endpoints.
 """
 from pydantic import BaseModel, Field, validator
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Any
 from datetime import datetime
 from decimal import Decimal
+from enum import Enum
+
+
+class WorkflowStatus(str, Enum):
+    """Workflow status enum for JIRA records (Phase 3.2)"""
+    PLANNED = "PLANNED"
+    IMPLEMENTING = "IMPLEMENTING"
+    INTERNAL_TESTING = "INTERNAL_TESTING"
+    LOAD_TO_UAT = "LOAD_TO_UAT"
+    CUSTOMER_TESTING = "CUSTOMER_TESTING"
+    LOAD_TO_PRD = "LOAD_TO_PRD"
+    COMPLETED = "COMPLETED"
 
 
 class JiraRecordCreate(BaseModel):
@@ -43,6 +55,7 @@ class JiraRecordUpdate(BaseModel):
     planned_effort: Optional[float] = Field(None, ge=0)
     actual_effort: Optional[float] = Field(None, ge=0)
     status: Optional[str] = None
+    workflow_status: Optional[str] = None  # Phase 3.2: New workflow status field
     spillover_from_pi_id: Optional[str] = None
     spillover_reason: Optional[str] = Field(None, max_length=100)
     
@@ -69,10 +82,18 @@ class JiraRecordResponse(BaseModel):
     pi_name: Optional[str] = None
     planned_effort: float
     actual_effort: Optional[float]
-    status: str
+    status: str  # Legacy field
+    workflow_status: Optional[str] = "PLANNED"  # Phase 3.2: New workflow status
+    is_spillover: bool = False  # Phase 3.2: Spillover flag
     spillover_from_pi_id: Optional[str]
     spillover_from_pi_name: Optional[str] = None
     spillover_reason: Optional[str]
+    spillover_category: Optional[str] = None
+    spillover_effort: Optional[float] = None
+    completed_effort: float = 0
+    spillover_count: int = 0
+    original_pi_id: Optional[str] = None
+    original_pi_name: Optional[str] = None
     created_at: datetime
     updated_at: Optional[datetime]
     
@@ -80,24 +101,104 @@ class JiraRecordResponse(BaseModel):
         from_attributes = True
 
 
+class SpilloverSummary(BaseModel):
+    """Schema for spillover summary statistics."""
+    count: int = Field(..., description="Number of spillover records")
+    total_effort: float = Field(..., description="Total planned effort of spillover records")
+    by_source_pi: List[Dict[str, Any]] = Field(default_factory=list, description="Breakdown by source PI")
+
+
+class UpdateSpilloverRequest(BaseModel):
+    """Schema for updating spillover details (Phase 3.2)"""
+    spillover_reason: str = Field(..., min_length=10, max_length=500, description="Reason for spillover")
+    spillover_category: str = Field(..., description="Category: technical_debt, dependencies, scope_creep, etc.")
+    spillover_effort: float = Field(..., ge=0.5, description="Effort spilling over (eD)")
+    completed_effort: float = Field(..., ge=0, description="Effort completed before spillover (eD)")
+    edit_reason: Optional[str] = Field(None, max_length=500, description="Reason for editing spillover details")
+
+
+class RecordHistoryResponse(BaseModel):
+    """Schema for record history entry (Phase 3.2)"""
+    id: str
+    jira_record_id: str
+    event_type: str
+    from_value: Optional[str]
+    to_value: Optional[str]
+    field_name: Optional[str]
+    from_pi_id: Optional[str]
+    to_pi_id: Optional[str]
+    from_pi_name: Optional[str] = None
+    to_pi_name: Optional[str] = None
+    spillover_effort: Optional[float]
+    completed_effort: Optional[float]
+    spillover_reason: Optional[str]
+    spillover_category: Optional[str]
+    metadata: Optional[Dict[str, Any]]
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+
+class RecordHistoryListResponse(BaseModel):
+    """Schema for paginated list of record history."""
+    data: List[RecordHistoryResponse]
+    total: int
+
+
 class JiraRecordListResponse(BaseModel):
     """Schema for paginated list of JIRA records."""
-    items: List[JiraRecordResponse]
+    data: List[JiraRecordResponse]
     total: int
-    summary: Dict[str, float] = Field(default_factory=dict, description="Effort summaries")
+    summary: Optional[Dict] = Field(default=None, description="Effort summaries")
+    spillover_summary: Optional[SpilloverSummary] = Field(default=None, description="Spillover statistics")
 
 
-class SpilloverRequest(BaseModel):
+class MarkSpilloverRequest(BaseModel):
     """Schema for marking a JIRA record as spillover."""
-    new_pi_id: str = Field(..., description="Target PI to move the record to")
-    reason: str = Field(..., max_length=100, description="Reason for spillover")
+    new_pi_id: str = Field(..., description="Target PI ID where work will be completed")
+    spillover_from_pi_id: str = Field(..., description="Original PI ID where work was planned")
+    spillover_reason: str = Field(..., min_length=10, max_length=500, description="Reason for spillover (10-500 characters)")
+    spillover_category: str = Field(..., description="Category: technical_debt, dependencies, scope_creep, resource_constraints, external_factors, other")
+    spillover_category_other: Optional[str] = Field(None, max_length=500, description="Custom reason when category is 'other'")
+    spillover_effort: Optional[float] = Field(None, gt=0, description="Effort amount spilling over (defaults to planned_effort)")
+    completed_effort: Optional[float] = Field(0, ge=0, description="Effort completed in original PI (defaults to 0)")
     
-    @validator('reason')
-    def validate_reason(cls, v):
-        allowed = ['Capacity', 'Scope Change', 'Dependencies', 'Other']
+    @validator('spillover_category')
+    def validate_category(cls, v):
+        allowed = ['technical_debt', 'dependencies', 'scope_creep', 'resource_constraints', 'external_factors', 'other']
         if v not in allowed:
-            raise ValueError(f'Reason must be one of: {", ".join(allowed)}')
+            raise ValueError(f'Category must be one of: {", ".join(allowed)}')
         return v
+    
+    @validator('spillover_reason')
+    def validate_reason_content(cls, v):
+        # Reject meaningless reasons
+        if v.strip().lower() in ['n/a', 'tbd', 'delayed', 'late', 'na']:
+            raise ValueError('Please provide a meaningful spillover reason')
+        return v.strip()
+
+
+# Alias for backward compatibility
+SpilloverRequest = MarkSpilloverRequest
+
+
+class SpilloverHistoryResponse(BaseModel):
+    """Schema for spillover history entry."""
+    id: str
+    sequence: int
+    from_pi_id: Optional[str]
+    from_pi_name: Optional[str]
+    to_pi_id: Optional[str]
+    to_pi_name: Optional[str]
+    spillover_effort: float
+    completed_effort: float
+    reason: str
+    category: Optional[str]
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
 
 
 class TeamPIAllocationResponse(BaseModel):

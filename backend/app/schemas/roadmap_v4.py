@@ -198,6 +198,8 @@ class UpdateJiraRecordRequest(BaseModel):
     actual_effort: Optional[float] = Field(None, ge=0)
     spillover_from_pi_id: Optional[str] = None
     spillover_reason: Optional[str] = None
+    spillover_category: Optional[str] = None
+    spillover_category_other: Optional[str] = Field(None, max_length=500)
     
     # Old quarter-based fields (deprecated, for backward compatibility)
     summary: Optional[str] = Field(None, max_length=500)

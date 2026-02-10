@@ -1,8 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Drawer, Table, Button, Tag, Progress, Space, Alert, Tooltip, message, Modal } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, WarningOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import { PlusOutlined, EditOutlined, DeleteOutlined, ExclamationCircleOutlined, SwapOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { jiraRecordApi, JiraRecord } from '../../../services/jiraRecordApi';
 import { JiraRecordModal } from './JiraRecordModal';
+import { SpilloverModal } from './SpilloverModal';
+import { 
+  WorkflowStatus,
+  WORKFLOW_STATUS_COLORS,
+  WORKFLOW_STATUS_ICONS
+} from '../../../types/jiraRecord';
 
 interface Feature {
   id: string;
@@ -30,6 +36,8 @@ export const ExecutionPlanningPanel: React.FC<ExecutionPlanningPanelProps> = ({
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [editingRecord, setEditingRecord] = useState<JiraRecord | null>(null);
+  const [spilloverModalOpen, setSpilloverModalOpen] = useState(false);
+  const [selectedRecord, setSelectedRecord] = useState<JiraRecord | null>(null);
 
   useEffect(() => {
     if (feature && open) {
@@ -58,11 +66,13 @@ export const ExecutionPlanningPanel: React.FC<ExecutionPlanningPanelProps> = ({
   const gap = strategicTotal - totalPlannedEffort;
   const progressPercent = strategicTotal > 0 ? (totalPlannedEffort / strategicTotal) * 100 : 0;
 
-  const statusColors: Record<string, string> = {
-    PLANNED: 'blue',
-    IN_PROGRESS: 'orange',
-    COMPLETED: 'green',
-    SPILLOVER: 'red',
+  // Phase 3.2: Use workflow status colors
+  const getWorkflowStatusColor = (status: string): string => {
+    return WORKFLOW_STATUS_COLORS[status as WorkflowStatus] || 'default';
+  };
+
+  const getWorkflowStatusIcon = (status: string): string => {
+    return WORKFLOW_STATUS_ICONS[status as WorkflowStatus] || '';
   };
 
   const columns = [
@@ -103,39 +113,113 @@ export const ExecutionPlanningPanel: React.FC<ExecutionPlanningPanelProps> = ({
     },
     { 
       title: 'Status', 
-      dataIndex: 'status', 
-      width: 130,
+      dataIndex: 'workflow_status', 
+      width: 180,
       align: 'center' as const,
-      render: (status: string, record: JiraRecord) => (
-        <Space>
-          <Tag color={statusColors[status]}>{status}</Tag>
-          {record.spillover_reason && (
-            <Tooltip title={`Spillover: ${record.spillover_reason}`}>
-              <WarningOutlined style={{ color: '#ff4d4f' }} />
-            </Tooltip>
-          )}
-        </Space>
-      ),
+      render: (workflow_status: string, record: JiraRecord) => {
+        // Phase 3.2: Show workflow status + spillover overlay
+        const displayStatus = workflow_status || record.status || 'PLANNED';
+        const statusIcon = getWorkflowStatusIcon(displayStatus);
+        
+        return (
+          <Space direction="vertical" size={4} style={{ width: '100%' }}>
+            {/* Primary Workflow Status Tag */}
+            <Tag 
+              color={getWorkflowStatusColor(displayStatus)}
+              style={{ margin: 0 }}
+            >
+              {statusIcon && <span style={{ marginRight: 4 }}>{statusIcon}</span>}
+              {displayStatus}
+            </Tag>
+            
+            {/* Spillover Overlay Badge */}
+            {record.is_spillover && (
+              <Space size={4} style={{ justifyContent: 'center' }}>
+                <Tag 
+                  color="orange" 
+                  icon={<SwapOutlined />}
+                  style={{ margin: 0 }}
+                >
+                  SPILLOVER
+                </Tag>
+                {record.spillover_count && record.spillover_count > 1 && (
+                  <Tag 
+                    color={record.spillover_count >= 3 ? 'red' : 'orange'}
+                    style={{ margin: 0 }}
+                  >
+                    ×{record.spillover_count}
+                  </Tag>
+                )}
+              </Space>
+            )}
+            
+            {/* Spillover Info Tooltip */}
+            {record.is_spillover && record.spillover_from_pi_name && (
+              <Tooltip 
+                title={
+                  <div>
+                    <div><strong>Spillover from:</strong> {record.spillover_from_pi_name}</div>
+                    {record.spillover_reason && (
+                      <div><strong>Reason:</strong> {record.spillover_reason}</div>
+                    )}
+                    {record.spillover_count && record.spillover_count > 1 && (
+                      <div><strong>Cascading:</strong> {record.spillover_count} times</div>
+                    )}
+                  </div>
+                }
+              >
+                <InfoCircleOutlined style={{ color: '#faad14', fontSize: 12 }} />
+              </Tooltip>
+            )}
+          </Space>
+        );
+      },
     },
     {
       title: 'Actions',
-      width: 100,
+      width: 120,
       align: 'center' as const,
-      render: (_: any, record: JiraRecord) => (
-        <Space>
-          <Button 
-            size="small" 
-            icon={<EditOutlined />} 
-            onClick={() => handleEdit(record)}
-          />
-          <Button 
-            size="small" 
-            danger 
-            icon={<DeleteOutlined />} 
-            onClick={() => handleDelete(record.id)}
-          />
-        </Space>
-      ),
+      render: (_: any, record: JiraRecord) => {
+        // Phase 3.2: Hide spillover button for LOAD_TO_PRD and COMPLETED
+        const workflowStatus = record.workflow_status || record.status || 'PLANNED';
+        const canSpillover = workflowStatus !== 'LOAD_TO_PRD' && 
+                            workflowStatus !== 'COMPLETED';
+        
+        return (
+          <Space size="small">
+            {/* Edit Button */}
+            <Tooltip title="Edit Record">
+              <Button 
+                size="small" 
+                icon={<EditOutlined />} 
+                onClick={() => handleEdit(record)}
+              />
+            </Tooltip>
+            
+            {/* Spillover Button - visible for cascading too */}
+            {canSpillover && (
+              <Tooltip title={record.is_spillover ? "Mark as Cascading Spillover" : "Mark as Spillover"}>
+                <Button
+                  size="small"
+                  icon={<SwapOutlined />}
+                  onClick={() => handleMarkSpillover(record)}
+                  style={{ color: record.is_spillover ? '#fa8c16' : '#faad14' }}
+                />
+              </Tooltip>
+            )}
+            
+            {/* Delete Button */}
+            <Tooltip title="Delete Record">
+              <Button 
+                size="small" 
+                danger 
+                icon={<DeleteOutlined />} 
+                onClick={() => handleDelete(record.id)}
+              />
+            </Tooltip>
+          </Space>
+        );
+      },
     },
   ];
 
@@ -171,6 +255,35 @@ export const ExecutionPlanningPanel: React.FC<ExecutionPlanningPanelProps> = ({
 
   const handleModalSuccess = () => {
     setShowModal(false);
+    fetchJiraRecords();
+  };
+
+  const handleMarkSpillover = (record: JiraRecord) => {
+    // Phase 3.2: Allow cascading spillovers, check workflow_status
+    const workflowStatus = record.workflow_status || record.status || 'PLANNED';
+    
+    if (workflowStatus === 'COMPLETED' || workflowStatus === 'LOAD_TO_PRD') {
+      message.warning('Cannot mark completed or production-loaded records as spillover');
+      return;
+    }
+    
+    if (!record.pi_id) {
+      message.warning('Record must have a PI assigned before marking as spillover');
+      return;
+    }
+    
+    // Allow cascading spillovers
+    if (record.is_spillover) {
+      message.info('Creating cascading spillover for this record');
+    }
+    
+    setSelectedRecord(record);
+    setSpilloverModalOpen(true);
+  };
+
+  const handleSpilloverSuccess = () => {
+    setSpilloverModalOpen(false);
+    setSelectedRecord(null);
     fetchJiraRecords();
   };
 
@@ -269,6 +382,14 @@ export const ExecutionPlanningPanel: React.FC<ExecutionPlanningPanelProps> = ({
         onSuccess={handleModalSuccess}
         feature={feature}
         record={editingRecord}
+      />
+
+      {/* Spillover Modal */}
+      <SpilloverModal
+        open={spilloverModalOpen}
+        onClose={() => setSpilloverModalOpen(false)}
+        onSuccess={handleSpilloverSuccess}
+        record={selectedRecord}
       />
     </>
   );

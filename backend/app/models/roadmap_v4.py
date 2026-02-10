@@ -127,10 +127,20 @@ class JiraRecord(Base):
     planned_effort = Column(Float, nullable=False, default=0)  # in eD (effort days)
     actual_effort = Column(Float, nullable=True)  # filled after completion
     
-    # Status & Spillover
-    status = Column(String(20), nullable=False, default="PLANNED")  # PLANNED, IN_PROGRESS, COMPLETED, SPILLOVER
+    # Status & Spillover (Phase 3.2: Separated workflow status from spillover state)
+    status = Column(String(20), nullable=False, default="PLANNED")  # Legacy - kept for backward compatibility
+    workflow_status = Column(String(50), nullable=True, default="PLANNED")  # PLANNED, IMPLEMENTING, INTERNAL_TESTING, LOAD_TO_UAT, CUSTOMER_TESTING, LOAD_TO_PRD, COMPLETED
+    is_spillover = Column(Boolean, default=False)  # True if record has been marked as spillover
     spillover_from_pi_id = Column(String(36), ForeignKey("pis.id", ondelete="SET NULL"), nullable=True)
-    spillover_reason = Column(String(100), nullable=True)  # "Capacity", "Scope Change", "Dependencies", "Other"
+    spillover_reason = Column(String(500), nullable=True)  # Detailed reason for spillover
+    spillover_category = Column(String(50), nullable=True)  # technical_debt, dependencies, scope_creep, resource_constraints, external_factors, other
+    spillover_category_other = Column(String(500), nullable=True)  # Custom reason when category is "other"
+    
+    # Partial Spillover & Cascading History (Phase 3.1)
+    spillover_effort = Column(Float, nullable=True)  # Effort amount spilling over (may be < planned_effort)
+    completed_effort = Column(Float, default=0)  # Effort completed before spillover
+    spillover_count = Column(Integer, default=0)  # Number of times this record has spilled
+    original_pi_id = Column(String(36), ForeignKey("pis.id", ondelete="SET NULL"), nullable=True)  # First PI where work was planned
     
     # Timestamps
     created_at = Column(DateTime, server_default=func.now())
@@ -141,6 +151,7 @@ class JiraRecord(Base):
     team = relationship("Team", back_populates="jira_records")
     pi = relationship("PI", foreign_keys=[pi_id], back_populates="jira_records")
     spillover_from_pi = relationship("PI", foreign_keys=[spillover_from_pi_id])
+    original_pi = relationship("PI", foreign_keys=[original_pi_id])
     quarterly_allocations = relationship("JiraQuarterlyAllocation", back_populates="jira_record", cascade="all, delete-orphan")
     
     # Constraints

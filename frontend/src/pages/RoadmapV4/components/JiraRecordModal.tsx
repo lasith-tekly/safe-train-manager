@@ -1,8 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Form, Input, Select, InputNumber, Alert, Space, Tag, Divider, message } from 'antd';
-import { InfoCircleOutlined } from '@ant-design/icons';
+import { Modal, Form, Input, Select, InputNumber, Alert, Space, Tag, message, Tabs } from 'antd';
+import { InfoCircleOutlined, SwapOutlined } from '@ant-design/icons';
+import RecordHistory from './RecordHistory';
+import SpilloverStackManager from './SpilloverStackManager';
 import { jiraRecordApi, JiraRecord, JiraRecordCreate, JiraRecordUpdate, TeamPIAllocation } from '../../../services/jiraRecordApi';
+import { WorkflowStatus, WORKFLOW_STATUS_ICONS } from '../../../types/jiraRecord';
 import axios from 'axios';
+
+const { TabPane } = Tabs;
 
 interface Feature {
   id: string;
@@ -41,6 +46,7 @@ export const JiraRecordModal: React.FC<JiraRecordModalProps> = ({
   const [teams, setTeams] = useState<Team[]>([]);
   const [pis, setPIs] = useState<PI[]>([]);
   const [teamAllocation, setTeamAllocation] = useState<TeamPIAllocation | null>(null);
+  const [activeTab, setActiveTab] = useState<string>('details');
 
   const isEdit = !!record;
 
@@ -57,6 +63,7 @@ export const JiraRecordModal: React.FC<JiraRecordModalProps> = ({
           pi_id: record.pi_id,
           planned_effort: record.planned_effort,
           status: record.status,
+          workflow_status: record.workflow_status || WorkflowStatus.PLANNED,
           spillover_from_pi_id: record.spillover_from_pi_id,
           spillover_reason: record.spillover_reason,
         });
@@ -133,10 +140,12 @@ export const JiraRecordModal: React.FC<JiraRecordModalProps> = ({
           team_id: values.team_id,
           pi_id: values.pi_id,
           planned_effort: values.planned_effort,
-          status: values.status,
+          status: values.workflow_status || values.status,
           spillover_from_pi_id: values.spillover_from_pi_id,
           spillover_reason: values.spillover_reason,
         };
+        // @ts-ignore - workflow_status is optional in update
+        updateData.workflow_status = values.workflow_status;
         await jiraRecordApi.update(record.id, updateData);
         message.success('JIRA record updated');
       } else if (feature) {
@@ -173,6 +182,8 @@ export const JiraRecordModal: React.FC<JiraRecordModalProps> = ({
     }
   };
 
+  // Spillover details editing moved to Spillovers tab
+
   return (
     <Modal
       title={isEdit ? 'Edit JIRA Record' : 'Add JIRA Record'}
@@ -184,14 +195,17 @@ export const JiraRecordModal: React.FC<JiraRecordModalProps> = ({
       okText={isEdit ? 'Update' : 'Save'}
       zIndex={1100}
     >
-      <Form form={form} layout="vertical">
-        <Form.Item 
-          name="jira_key" 
-          label="JIRA Key"
-          help="Optional - Link to actual JIRA ticket"
-        >
-          <Input placeholder="PROJ-123" maxLength={50} />
-        </Form.Item>
+      {isEdit && record ? (
+        <Tabs activeKey={activeTab} onChange={setActiveTab}>
+          <TabPane tab="Details" key="details">
+            <Form form={form} layout="vertical">
+              <Form.Item 
+                name="jira_key" 
+                label="JIRA Key"
+                help="Optional - Link to actual JIRA ticket"
+              >
+                <Input placeholder="PROJ-123" maxLength={50} />
+              </Form.Item>
 
         <Form.Item 
           name="title" 
@@ -281,43 +295,224 @@ export const JiraRecordModal: React.FC<JiraRecordModalProps> = ({
           />
         </Form.Item>
 
-        <Form.Item name="status" label="Status" initialValue="PLANNED">
+        <Form.Item 
+          name="workflow_status" 
+          label="Workflow Status" 
+          initialValue={WorkflowStatus.PLANNED}
+          rules={[{ required: true, message: 'Status is required' }]}
+        >
           <Select>
-            <Select.Option value="PLANNED">Planned</Select.Option>
-            <Select.Option value="IN_PROGRESS">In Progress</Select.Option>
-            <Select.Option value="COMPLETED">Completed</Select.Option>
-            <Select.Option value="SPILLOVER">Spillover</Select.Option>
+            <Select.Option value={WorkflowStatus.PLANNED}>
+              {WORKFLOW_STATUS_ICONS[WorkflowStatus.PLANNED]} Planned
+            </Select.Option>
+            <Select.Option value={WorkflowStatus.IMPLEMENTING}>
+              {WORKFLOW_STATUS_ICONS[WorkflowStatus.IMPLEMENTING]} Implementing
+            </Select.Option>
+            <Select.Option value={WorkflowStatus.INTERNAL_TESTING}>
+              {WORKFLOW_STATUS_ICONS[WorkflowStatus.INTERNAL_TESTING]} Internal Testing
+            </Select.Option>
+            <Select.Option value={WorkflowStatus.LOAD_TO_UAT}>
+              {WORKFLOW_STATUS_ICONS[WorkflowStatus.LOAD_TO_UAT]} Load to UAT
+            </Select.Option>
+            <Select.Option value={WorkflowStatus.CUSTOMER_TESTING}>
+              {WORKFLOW_STATUS_ICONS[WorkflowStatus.CUSTOMER_TESTING]} Customer Testing
+            </Select.Option>
+            <Select.Option value={WorkflowStatus.LOAD_TO_PRD}>
+              {WORKFLOW_STATUS_ICONS[WorkflowStatus.LOAD_TO_PRD]} Load to PRD
+            </Select.Option>
+            <Select.Option value={WorkflowStatus.COMPLETED}>
+              {WORKFLOW_STATUS_ICONS[WorkflowStatus.COMPLETED]} Completed
+            </Select.Option>
           </Select>
         </Form.Item>
 
-        {/* Spillover Section */}
-        <Form.Item noStyle shouldUpdate={(prev, curr) => prev.status !== curr.status}>
-          {({ getFieldValue }) => 
-            getFieldValue('status') === 'SPILLOVER' && (
-              <>
-                <Divider>Spillover Details</Divider>
-                
-                <Form.Item name="spillover_from_pi_id" label="Spilled From PI">
-                  <Select placeholder="Select original PI">
-                    {(pis || []).map(p => (
-                      <Select.Option key={p.id} value={p.id}>{p.name}</Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-                
-                <Form.Item name="spillover_reason" label="Spillover Reason">
-                  <Select placeholder="Select reason">
-                    <Select.Option value="Capacity">Capacity Constraints</Select.Option>
-                    <Select.Option value="Scope Change">Scope Change</Select.Option>
-                    <Select.Option value="Dependencies">Dependencies</Select.Option>
-                    <Select.Option value="Other">Other</Select.Option>
-                  </Select>
-                </Form.Item>
-              </>
-            )
-          }
-        </Form.Item>
-      </Form>
+        <Alert
+          message="To mark as spillover, use the ↔️ button in the Actions column"
+          type="info"
+          showIcon
+          icon={<SwapOutlined />}
+          style={{ marginBottom: 16 }}
+        />
+
+        {/* Spillover Badge */}
+        {record?.is_spillover && (
+          <Alert
+            message={
+              <Space>
+                <Tag color="orange" icon={<SwapOutlined />}>
+                  SPILLOVER
+                </Tag>
+                {record.spillover_count && record.spillover_count > 1 && (
+                  <Tag color={record.spillover_count >= 3 ? 'red' : 'orange'}>
+                    ×{record.spillover_count}
+                  </Tag>
+                )}
+              </Space>
+            }
+            type="warning"
+            showIcon
+            style={{ marginBottom: 16 }}
+          />
+        )}
+
+              {/* Phase 3.2: Spillover details moved to Spillovers tab */}
+            </Form>
+          </TabPane>
+          
+          {record?.is_spillover && (
+            <TabPane 
+              tab={`Spillovers (${record.spillover_count || 1})`} 
+              key="spillovers"
+            >
+              <SpilloverStackManager
+                recordId={record.id}
+                spilloverCount={record.spillover_count || 1}
+                onUpdate={onSuccess}
+              />
+            </TabPane>
+          )}
+          
+          <TabPane tab="History" key="history">
+            <RecordHistory recordId={record.id} />
+          </TabPane>
+        </Tabs>
+      ) : (
+        <Form form={form} layout="vertical">
+          <Form.Item 
+            name="jira_key" 
+            label="JIRA Key"
+            help="Optional - Link to actual JIRA ticket"
+          >
+            <Input placeholder="PROJ-123" maxLength={50} />
+          </Form.Item>
+
+          <Form.Item 
+            name="title" 
+            label="Title" 
+            rules={[{ required: true, message: 'Title is required' }]}
+          >
+            <Input placeholder="e.g., Implement user authentication" maxLength={255} />
+          </Form.Item>
+
+          <Form.Item name="description" label="Description">
+            <Input.TextArea 
+              rows={3} 
+              placeholder="Additional details about this work item"
+              maxLength={1000}
+            />
+          </Form.Item>
+
+          <Form.Item 
+            name="team_id" 
+            label="Team" 
+            rules={[{ required: true, message: 'Team is required' }]}
+          >
+            <Select 
+              placeholder="Select team" 
+              onChange={handleTeamOrPIChange}
+              showSearch
+              filterOption={(input, option) =>
+                String(option?.children || '').toLowerCase().includes(input.toLowerCase())
+              }
+            >
+              {(teams || []).map(t => (
+                <Select.Option key={t.id} value={t.id}>{t.name}</Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+
+          <Form.Item 
+            name="pi_id" 
+            label="PI" 
+            rules={[{ required: true, message: 'PI is required' }]}
+          >
+            <Select 
+              placeholder="Select PI" 
+              onChange={handleTeamOrPIChange}
+            >
+              {(pis || []).map(p => (
+                <Select.Option key={p.id} value={p.id}>{p.name}</Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+
+          {teamAllocation && (
+            <Alert
+              message={
+                <Space>
+                  <InfoCircleOutlined />
+                  <span>Team {teamAllocation.team_name}:</span>
+                  <Tag color={teamAllocation.is_over_allocated ? 'red' : 'blue'}>
+                    {teamAllocation.available_effort_ed.toFixed(1)} eD available
+                  </Tag>
+                  <span style={{ fontSize: '12px', color: '#666' }}>
+                    ({teamAllocation.total_capacity_ed.toFixed(1)} total, {teamAllocation.allocated_effort_ed.toFixed(1)} allocated)
+                  </span>
+                </Space>
+              }
+              type={teamAllocation.is_over_allocated ? 'warning' : 'info'}
+              showIcon={false}
+              style={{ marginBottom: 16 }}
+            />
+          )}
+
+          <Form.Item 
+            name="planned_effort" 
+            label="Planned Effort (eD)" 
+            rules={[
+              { required: true, message: 'Planned effort is required' },
+              { type: 'number', min: 0, message: 'Must be >= 0' }
+            ]}
+          >
+            <InputNumber 
+              min={0} 
+              step={0.5} 
+              precision={1}
+              style={{ width: '200px' }}
+              addonAfter="eD"
+            />
+          </Form.Item>
+
+          <Form.Item 
+            name="workflow_status" 
+            label="Workflow Status" 
+            initialValue={WorkflowStatus.PLANNED}
+            rules={[{ required: true, message: 'Status is required' }]}
+          >
+            <Select>
+              <Select.Option value={WorkflowStatus.PLANNED}>
+                {WORKFLOW_STATUS_ICONS[WorkflowStatus.PLANNED]} Planned
+              </Select.Option>
+              <Select.Option value={WorkflowStatus.IMPLEMENTING}>
+                {WORKFLOW_STATUS_ICONS[WorkflowStatus.IMPLEMENTING]} Implementing
+              </Select.Option>
+              <Select.Option value={WorkflowStatus.INTERNAL_TESTING}>
+                {WORKFLOW_STATUS_ICONS[WorkflowStatus.INTERNAL_TESTING]} Internal Testing
+              </Select.Option>
+              <Select.Option value={WorkflowStatus.LOAD_TO_UAT}>
+                {WORKFLOW_STATUS_ICONS[WorkflowStatus.LOAD_TO_UAT]} Load to UAT
+              </Select.Option>
+              <Select.Option value={WorkflowStatus.CUSTOMER_TESTING}>
+                {WORKFLOW_STATUS_ICONS[WorkflowStatus.CUSTOMER_TESTING]} Customer Testing
+              </Select.Option>
+              <Select.Option value={WorkflowStatus.LOAD_TO_PRD}>
+                {WORKFLOW_STATUS_ICONS[WorkflowStatus.LOAD_TO_PRD]} Load to PRD
+              </Select.Option>
+              <Select.Option value={WorkflowStatus.COMPLETED}>
+                {WORKFLOW_STATUS_ICONS[WorkflowStatus.COMPLETED]} Completed
+              </Select.Option>
+            </Select>
+          </Form.Item>
+
+          <Alert
+            message="To mark as spillover, use the ↔️ button in the Actions column"
+            type="info"
+            showIcon
+            icon={<SwapOutlined />}
+            style={{ marginBottom: 16 }}
+          />
+        </Form>
+      )}
     </Modal>
   );
 };

@@ -15,7 +15,7 @@ from app.schemas.jira_record import (
     JiraRecordUpdate,
     JiraRecordResponse,
     JiraRecordListResponse,
-    SpilloverRequest,
+    MarkSpilloverRequest,
     TeamPIAllocationResponse,
     ExecutionValidationResponse
 )
@@ -144,22 +144,57 @@ def delete_jira_record(
 @router.post("/jira-records/{record_id}/spillover", response_model=JiraRecordResponse)
 def mark_as_spillover(
     record_id: str,
-    data: SpilloverRequest,
+    request: MarkSpilloverRequest,
     db: Session = Depends(get_db)
 ):
     """
-    Mark a JIRA record as spillover and move it to a new PI.
+    Mark a JIRA record as spillover from a previous PI.
     
-    Sets spillover_from_pi_id to the current PI, updates pi_id to the new PI,
-    sets status to SPILLOVER, and records the spillover reason.
+    - **record_id**: UUID of the JIRA record
+    - **new_pi_id**: Target PI where work will be completed
+    - **spillover_from_pi_id**: Original PI where work was planned
+    - **spillover_reason**: Reason for spillover (10-500 chars)
+    - **spillover_category**: Category of spillover
     """
     try:
         service = JiraRecordService(db)
-        return service.mark_as_spillover(record_id, data)
+        result = service.mark_as_spillover(
+            record_id=record_id,
+            new_pi_id=request.new_pi_id,
+            spillover_from_pi_id=request.spillover_from_pi_id,
+            spillover_reason=request.spillover_reason,
+            spillover_category=request.spillover_category,
+            spillover_effort=request.spillover_effort,
+            completed_effort=request.completed_effort
+        )
+        return result
     except ValueError as e:
-        if "not found" in str(e):
-            raise HTTPException(status_code=404, detail=str(e))
         raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@router.get("/jira-records/{record_id}/spillover-history")
+def get_spillover_history(
+    record_id: str,
+    db: Session = Depends(get_db)
+):
+    """
+    Get spillover history for a JIRA record.
+    
+    Returns a list of all spillover events for this record in chronological order.
+    """
+    try:
+        service = JiraRecordService(db)
+        history = service.get_spillover_history(record_id)
+        return {
+            "data": history,
+            "total": len(history)
+        }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 

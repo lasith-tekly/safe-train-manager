@@ -59,15 +59,25 @@ class CreateJiraRecordRequest(BaseModel):
 class UpdateJiraRecordRequest(BaseModel):
     """Request schema for updating a JIRA record"""
     jira_key: Optional[str] = Field(None, min_length=1, max_length=50)
+    title: Optional[str] = Field(None, max_length=500)
     summary: Optional[str] = Field(None, max_length=500)
+    description: Optional[str] = None
     team_id: Optional[str] = None
+    pi_id: Optional[str] = None
+    planned_effort: Optional[float] = Field(None, ge=0)
+    actual_effort: Optional[float] = Field(None, ge=0)
     status: Optional[str] = None
     is_spillover: Optional[bool] = None
     spillover_from_year: Optional[int] = None
     spillover_from_quarter: Optional[int] = Field(None, ge=1, le=4)
+    spillover_from_pi_id: Optional[str] = None
+    spillover_reason: Optional[str] = Field(None, max_length=500)
+    spillover_category: Optional[str] = None
+    spillover_category_other: Optional[str] = Field(None, max_length=500)
     remarks: Optional[str] = None
 
     class Config:
+        extra = "ignore"
         json_schema_extra = {
             "example": {
                 "status": "in_progress",
@@ -116,6 +126,14 @@ class JiraRecordResponse(BaseModel):
     actual_effort: Optional[float] = None
     spillover_from_pi_id: Optional[str] = None
     spillover_reason: Optional[str] = None
+    spillover_category: Optional[str] = None
+    
+    # Phase 3.1: Partial spillover and cascading history fields
+    spillover_effort: Optional[float] = None
+    completed_effort: Optional[float] = 0.0
+    spillover_count: Optional[int] = 0
+    original_pi_id: Optional[str] = None
+    original_pi_name: Optional[str] = None
     
     # Old quarter-based fields (deprecated, for backward compatibility)
     summary: Optional[str] = None
