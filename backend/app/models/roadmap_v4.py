@@ -98,6 +98,11 @@ class FeatureQuarterlyAllocation(Base):
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
     
+    # Deviation tracking columns (added for Phase 4)
+    deviation_acknowledged = Column(Boolean, default=False, nullable=True)
+    deviation_note = Column(Text, nullable=True)
+    deviation_acknowledged_at = Column(DateTime, nullable=True)
+    
     # Relationships
     feature = relationship("RoadmapFeature", back_populates="quarterly_allocations")
 
@@ -120,6 +125,7 @@ class JiraRecord(Base):
     
     # Relationships
     feature_id = Column(String(36), ForeignKey("roadmap_features.id", ondelete="CASCADE"), nullable=False)
+    version_id = Column(String(36), ForeignKey("roadmap_versions.id", ondelete="CASCADE"), nullable=False)
     team_id = Column(String(36), ForeignKey("teams.id", ondelete="SET NULL"), nullable=True)
     pi_id = Column(String(36), ForeignKey("pis.id", ondelete="SET NULL"), nullable=True)
     
@@ -148,6 +154,7 @@ class JiraRecord(Base):
     
     # Relationships
     feature = relationship("RoadmapFeature", back_populates="jira_records")
+    version = relationship("RoadmapVersion", back_populates="jira_records")
     team = relationship("Team", back_populates="jira_records")
     pi = relationship("PI", foreign_keys=[pi_id], back_populates="jira_records")
     spillover_from_pi = relationship("PI", foreign_keys=[spillover_from_pi_id])

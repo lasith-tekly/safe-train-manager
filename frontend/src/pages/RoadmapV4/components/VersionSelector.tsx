@@ -72,10 +72,7 @@ export const VersionSelector: React.FC<VersionSelectorProps> = ({
           message={
             <Space>
               <LockOutlined />
-              This version is published and cannot be edited.
-              <Button type="link" size="small" onClick={onCreateVersion}>
-                Create New Version from This
-              </Button>
+              This version is published and cannot be edited. Use "Create New Version" to make changes.
             </Space>
           }
           type="info"

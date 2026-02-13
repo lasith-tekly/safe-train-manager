@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Drawer, Table, Button, Tag, Progress, Space, Alert, Tooltip, message, Modal } from 'antd';
+import { Drawer, Table, Button, Tag, Progress, Space, Alert, Tooltip, message, Modal, Card } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, ExclamationCircleOutlined, SwapOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { jiraRecordApi, JiraRecord } from '../../../services/jiraRecordApi';
 import { JiraRecordModal } from './JiraRecordModal';
@@ -9,6 +9,7 @@ import {
   WORKFLOW_STATUS_COLORS,
   WORKFLOW_STATUS_ICONS
 } from '../../../types/jiraRecord';
+import FeatureDeviationTable from '../../../components/Deviation/FeatureDeviationTable';
 
 interface Feature {
   id: string;
@@ -25,12 +26,14 @@ interface ExecutionPlanningPanelProps {
   feature: Feature | null;
   open: boolean;
   onClose: () => void;
+  versionId?: string | null;
 }
 
 export const ExecutionPlanningPanel: React.FC<ExecutionPlanningPanelProps> = ({
   feature,
   open,
   onClose,
+  versionId,
 }) => {
   const [jiraRecords, setJiraRecords] = useState<JiraRecord[]>([]);
   const [loading, setLoading] = useState(false);
@@ -348,6 +351,16 @@ export const ExecutionPlanningPanel: React.FC<ExecutionPlanningPanelProps> = ({
               type={gap > 0 ? 'warning' : 'error'}
               showIcon
             />
+          )}
+
+          {/* Quarterly Deviation Comparison */}
+          {versionId && feature && (
+            <Card title="Strategic vs Execution by Quarter" size="small">
+              <FeatureDeviationTable
+                featureId={feature.id}
+                versionId={versionId}
+              />
+            </Card>
           )}
 
           {/* Add Button */}

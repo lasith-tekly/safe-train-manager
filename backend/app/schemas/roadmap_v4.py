@@ -159,6 +159,7 @@ class CreateJiraRecordRequest(BaseModel):
     description: Optional[str] = None
     pi_id: Optional[str] = None
     planned_effort: float = Field(default=0, ge=0)
+    version_id: str = Field(..., description="Roadmap version ID")
     
     # Old quarter-based fields (deprecated, for backward compatibility)
     summary: Optional[str] = Field(None, max_length=500)
@@ -180,6 +181,7 @@ class CreateJiraRecordRequest(BaseModel):
                 "description": "Implement JWT authentication",
                 "team_id": "team-uuid",
                 "pi_id": "pi-uuid",
+                "version_id": "version-uuid",
                 "planned_effort": 15.0,
                 "status": "PLANNED"
             }

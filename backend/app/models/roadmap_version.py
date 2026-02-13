@@ -35,6 +35,7 @@ class RoadmapVersion(Base):
     # Relationships
     product = relationship("Product", back_populates="roadmap_versions")
     features = relationship("RoadmapFeature", back_populates="roadmap_version", cascade="all, delete-orphan")
+    jira_records = relationship("JiraRecord", back_populates="version", cascade="all, delete-orphan")
 
     # Constraints
     __table_args__ = (

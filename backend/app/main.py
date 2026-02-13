@@ -27,6 +27,8 @@ from app.routes.jira_v4 import router as jira_v4_router
 from app.routes.validation_v4 import router as validation_v4_router
 from app.routes.roadmap_versions import router as roadmap_versions_router
 from app.routes.jira_records import router as jira_records_router
+from app.routes.deviation import router as deviation_router
+from app.routes.alignment import router as alignment_router
 from app.database import engine, Base
 
 # Create tables - DISABLED: Using SQL migrations instead
@@ -83,6 +85,8 @@ app.include_router(jira_v4_router)
 app.include_router(validation_v4_router)
 app.include_router(roadmap_versions_router)
 app.include_router(jira_records_router)
+app.include_router(deviation_router)
+app.include_router(alignment_router)
 
 
 @app.get("/health", tags=["health"])

@@ -6,14 +6,16 @@ import axios from 'axios';
 import { listFeatures, deleteFeature } from '../../services/featureApi';
 import { RoadmapFeature, FeatureFilters } from '../../types/roadmap_v4';
 import FeatureFormModal from './CreateFeatureModal';
-import ValidationPanel from './ValidationPanel';
 import { ExecutionPlanningPanel } from './components/ExecutionPlanningPanel';
 import { FeatureDetailPanel } from './FeatureDetailPanel';
-import { getValidationSummary } from '../../services/validationApi';
 import { VersionSelector } from './components/VersionSelector';
 import { CreateVersionModal } from './components/CreateVersionModal';
 import { PublishVersionModal } from './components/PublishVersionModal';
 import { roadmapVersionApi, RoadmapVersion } from '../../services/roadmapVersionApi';
+import DeviationAlertBanner from '../../components/Deviation/DeviationAlertBanner';
+import { deviationApi, ProductDeviationSummary } from '../../services/deviationApi';
+import ReviewAlignPanel from '../../components/Alignment/ReviewAlignPanel';
+import BudgetValidationTree from '../../components/Deviation/BudgetValidationTree';
 
 const { Option } = Select;
 const { confirm } = Modal;
@@ -34,8 +36,6 @@ const ProductRoadmapPage: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingFeature, setEditingFeature] = useState<RoadmapFeature | null>(null);
   const [product, setProduct] = useState<any>(null);
-  const [validation, setValidation] = useState<any>(null);
-  const [validationLoading, setValidationLoading] = useState(false);
   const [executionPlanningVisible, setExecutionPlanningVisible] = useState(false);
   const [executionPlanningFeature, setExecutionPlanningFeature] = useState<RoadmapFeature | null>(null);
   const currentYear = new Date().getFullYear();
@@ -52,6 +52,10 @@ const ProductRoadmapPage: React.FC = () => {
   const [showPublishModal, setShowPublishModal] = useState(false);
   const [versionLoading, setVersionLoading] = useState(false);
 
+  // Deviation state
+  const [deviationSummary, setDeviationSummary] = useState<ProductDeviationSummary | null>(null);
+  const [showReviewPanel, setShowReviewPanel] = useState(false);
+
   // Derived version state
   const currentVersion = versions.find(v => v.id === currentVersionId);
   const isReadOnly = currentVersion?.status === 'PUBLISHED';
@@ -60,7 +64,6 @@ const ProductRoadmapPage: React.FC = () => {
     if (productId) {
       loadProduct();
       loadFeatures();
-      loadValidation();
     }
   }, [productId]);
 
@@ -97,21 +100,6 @@ const ProductRoadmapPage: React.FC = () => {
     }
   };
 
-  const loadValidation = async () => {
-    setValidationLoading(true);
-    try {
-      const currentYear = new Date().getFullYear();
-      const validationData = await getValidationSummary(productId, currentYear);
-      setValidation(validationData);
-    } catch (error: any) {
-      // Silently handle validation errors (expected when no data exists)
-      if (error.response?.status !== 404) {
-        console.warn('Validation error:', error.message);
-      }
-    } finally {
-      setValidationLoading(false);
-    }
-  };
 
   const loadBudgetLines = async () => {
     try {
@@ -138,6 +126,39 @@ const ProductRoadmapPage: React.FC = () => {
     }
   };
 
+  const loadDeviationSummary = async () => {
+    if (!productId || !currentVersionId) return;
+    try {
+      const summary = await deviationApi.getProductDeviationSummary(productId, currentVersionId);
+      setDeviationSummary(summary);
+    } catch (error) {
+      console.error('Failed to load deviation summary:', error);
+    }
+  };
+
+  const handleReviewAlignments = () => {
+    setShowReviewPanel(true);
+  };
+
+  const handleVersionCreated = (version: any) => {
+    message.success(`Version "${version.version_name}" created successfully`);
+    loadVersions();
+    setCurrentVersionId(version.version_id);
+    loadFeatures();
+    loadDeviationSummary();
+  };
+
+  const loadVersions = async () => {
+    if (!productId) return;
+    try {
+      const response = await roadmapVersionApi.list(productId);
+      const versionList = response.data.items || [];
+      setVersions(versionList);
+    } catch (error) {
+      console.error('Failed to fetch versions:', error);
+    }
+  };
+
   // Load versions on mount
   useEffect(() => {
     const fetchVersions = async () => {
@@ -158,6 +179,13 @@ const ProductRoadmapPage: React.FC = () => {
     
     fetchVersions();
   }, [productId]);
+
+  // Load deviation summary when version changes
+  useEffect(() => {
+    if (currentVersionId) {
+      loadDeviationSummary();
+    }
+  }, [currentVersionId]);
 
   // Version change handlers
   const handleCreateVersion = async (data: any) => {
@@ -209,7 +237,6 @@ const ProductRoadmapPage: React.FC = () => {
     setEditingFeature(null);
     if (refresh) {
       loadFeatures();
-      loadValidation();
     }
   };
 
@@ -225,7 +252,6 @@ const ProductRoadmapPage: React.FC = () => {
           await deleteFeature(feature.id);
           message.success('Feature deleted successfully');
           loadFeatures();
-          loadValidation();
         } catch (error: any) {
           message.error(error.response?.data?.detail || 'Failed to delete feature');
         }
@@ -242,7 +268,6 @@ const ProductRoadmapPage: React.FC = () => {
     setExecutionPlanningVisible(false);
     setExecutionPlanningFeature(null);
     loadFeatures();
-    loadValidation();
   };
 
   const openFeaturePanel = (feature: RoadmapFeature) => {
@@ -574,8 +599,8 @@ const ProductRoadmapPage: React.FC = () => {
                 Products
               </Button>
               <span style={{ color: '#d9d9d9', fontSize: 16 }}>/</span>
-              <Title level={4} style={{ margin: 0 }}>{product?.name || 'Product'}</Title>
-              <span style={{ color: '#888', fontSize: 14 }}>Roadmap Planning</span>
+              <Title level={4} style={{ margin: 0, lineHeight: 1.2 }}>{product?.name || 'Product'}</Title>
+              <span style={{ color: '#888', fontSize: 14, lineHeight: 1.2 }}>Roadmap Planning</span>
             </div>
             <Button
               type="primary"
@@ -598,13 +623,23 @@ const ProductRoadmapPage: React.FC = () => {
           isReadOnly={isReadOnly}
         />
 
-        {validation && (
-          <ValidationPanel
-            budgetValidations={validation.budget_validations}
-            capacityValidations={validation.capacity_validations}
-            consistencyValidations={validation.consistency_validations}
-            loading={validationLoading}
+        {/* Deviation Alert Banner */}
+        {currentVersionId && productId && (
+          <DeviationAlertBanner
+            productId={productId}
+            versionId={currentVersionId}
+            onReviewClick={handleReviewAlignments}
           />
+        )}
+
+        {/* Budget Validation */}
+        {currentVersionId && productId && (
+          <Card title="Budget Validation" size="small" style={{ marginBottom: 16 }}>
+            <BudgetValidationTree
+              productId={productId}
+              versionId={currentVersionId}
+            />
+          </Card>
         )}
 
         <Card>
@@ -693,6 +728,7 @@ const ProductRoadmapPage: React.FC = () => {
         open={executionPlanningVisible}
         feature={executionPlanningFeature}
         onClose={handleExecutionPlanningClose}
+        versionId={currentVersionId}
       />
 
       <FeatureDetailPanel
@@ -719,6 +755,17 @@ const ProductRoadmapPage: React.FC = () => {
         versionName={currentVersion?.version_name || ''}
         loading={versionLoading}
       />
+
+      {/* Review & Align Panel */}
+      {currentVersionId && productId && (
+        <ReviewAlignPanel
+          visible={showReviewPanel}
+          productId={productId}
+          versionId={currentVersionId}
+          onClose={() => setShowReviewPanel(false)}
+          onVersionCreated={handleVersionCreated}
+        />
+      )}
     </div>
   );
 };

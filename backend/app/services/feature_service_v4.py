@@ -264,6 +264,7 @@ class FeatureServiceV4:
         jira_record = JiraRecord(
             id=str(uuid.uuid4()),
             feature_id=feature_id,
+            version_id=request.version_id,
             jira_key=request.jira_key,
             title=title,
             description=description,
