@@ -105,14 +105,23 @@ class DeviationService:
         
         Returns quarterly breakdown and totals.
         """
-        # Get feature
+        # Get feature - first try with requested version
         feature = self.db.query(RoadmapFeature).filter(
             RoadmapFeature.id == feature_id,
             RoadmapFeature.version_id == version_id
         ).first()
         
+        # If not found, try to find feature in any version (it might not have been copied to new version yet)
         if not feature:
-            raise ValueError(f"Feature {feature_id} not found in version {version_id}")
+            feature = self.db.query(RoadmapFeature).filter(
+                RoadmapFeature.id == feature_id
+            ).first()
+            
+            if not feature:
+                raise ValueError(f"Feature {feature_id} not found")
+            
+            # Feature exists but in different version - this is OK for deviation calculation
+            # The JIRA records should still be associated with the feature regardless of version
         
         # Get strategic allocations (quarterly)
         strategic_allocations = self.db.query(
