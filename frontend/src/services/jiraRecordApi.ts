@@ -299,3 +299,9 @@ export const jiraRecordApi = {
     return response.data;
   }
 };
+
+// Named exports for backward compatibility
+export const createJiraRecord = jiraRecordApi.create;
+export const updateJiraRecord = jiraRecordApi.update;
+export const listJiraRecords = jiraRecordApi.list;
+export const deleteJiraRecord = jiraRecordApi.delete;

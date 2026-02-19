@@ -23,7 +23,7 @@ import {
   Divider,
   Popconfirm
 } from 'antd';
-import { EditOutlined, SaveOutlined, CloseOutlined, DeleteOutlined, RollbackOutlined } from '@ant-design/icons';
+import { EditOutlined, SaveOutlined, CloseOutlined, RollbackOutlined } from '@ant-design/icons';
 import { JiraRecord, jiraRecordApi } from '../../../services/jiraRecordApi';
 import {
   UpdateSpilloverDetailsRequest,
@@ -65,7 +65,7 @@ export const SpilloverDetailsEditor: React.FC<SpilloverDetailsEditorProps> = ({
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [spilloverHistory, setSpilloverHistory] = useState<SpilloverHistoryEvent[]>([]);
-  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [_loadingHistory, setLoadingHistory] = useState(false);
   const [formData, setFormData] = useState<UpdateSpilloverDetailsRequest>({
     spillover_reason: record.spillover_reason || '',
     spillover_category: (record.spillover_category as SpilloverCategory) || SpilloverCategory.DEPENDENCIES,

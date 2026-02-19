@@ -1,0 +1,17 @@
+
+> safe-train-manager@1.0.0 build
+> tsc && vite build
+
+src/pages/RoadmapV4/components/SpilloverDetailsEditor.tsx(68,10): error TS6133: 'loadingHistory' is declared but its value is never read.
+src/pages/RoadmapV4/FeatureForm.tsx(177,5): error TS2322: Type 'any' is not assignable to type 'never'.
+src/pages/RoadmapV4/FeatureFormOld.tsx(103,33): error TS2339: Property 'budget_line_id' does not exist on type 'RoadmapFeature'.
+src/pages/RoadmapV4/FeatureFormOld.tsx(104,30): error TS2339: Property 'category_id' does not exist on type 'RoadmapFeature'.
+src/pages/RoadmapV4/FeatureFormOld.tsx(199,11): error TS2353: Object literal may only specify known properties, and 'budget_line_id' does not exist in type 'CreateFeatureRequest'.
+src/pages/RoadmapV4/JiraRecordForm.tsx(91,47): error TS2345: Argument of type 'CreateJiraRecordRequest | UpdateJiraRecordRequest' is not assignable to parameter of type 'JiraRecordUpdate'.
+  Type 'CreateJiraRecordRequest' is not assignable to type 'JiraRecordUpdate'.
+    Types of property 'status' are incompatible.
+      Type '"in_progress" | "done" | "planned" | "spillover" | undefined' is not assignable to type '"PLANNED" | "COMPLETED" | "SPILLOVER" | "IN_PROGRESS" | undefined'.
+        Type '"in_progress"' is not assignable to type '"PLANNED" | "COMPLETED" | "SPILLOVER" | "IN_PROGRESS" | undefined'. Did you mean '"IN_PROGRESS"'?
+src/pages/RoadmapV4/JiraRecordForm.tsx(94,43): error TS2345: Argument of type 'CreateJiraRecordRequest' is not assignable to parameter of type 'JiraRecordCreate'.
+  Type 'CreateJiraRecordRequest' is missing the following properties from type 'JiraRecordCreate': title, pi_id, planned_effort
+src/pages/RoadmapV4/JiraRecordSection.tsx(29,22): error TS2345: Argument of type 'JiraRecordListResponse' is not assignable to parameter of type 'SetStateAction<JiraRecord[]>'.

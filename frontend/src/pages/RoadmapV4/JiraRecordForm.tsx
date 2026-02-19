@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Form, Input, Select, Button, message, Row, Col, InputNumber, Checkbox, Space, Card } from 'antd';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
-import { CreateJiraRecordRequest, UpdateJiraRecordRequest, JiraRecord, QuarterlyAllocationInput } from '../../types/roadmap_v4';
+import { JiraRecord, QuarterlyAllocationInput } from '../../types/roadmap_v4';
 import { createJiraRecord, updateJiraRecord } from '../../services/jiraRecordApi';
 
 const { Option } = Select;
@@ -75,7 +75,7 @@ const JiraRecordForm: React.FC<JiraRecordFormProps> = ({ visible, featureId, jir
       setLoading(true);
       const values = form.getFieldsValue();
 
-      const requestData: CreateJiraRecordRequest | UpdateJiraRecordRequest = {
+      const requestData: any = {
         jira_key: values.jira_key,
         summary: values.summary,
         team_id: values.team_id,
@@ -88,10 +88,10 @@ const JiraRecordForm: React.FC<JiraRecordFormProps> = ({ visible, featureId, jir
       };
 
       if (jiraRecord) {
-        await updateJiraRecord(jiraRecord.id, requestData);
+        await updateJiraRecord(jiraRecord.id, requestData as any);
         message.success('JIRA record updated successfully');
       } else {
-        await createJiraRecord(featureId, requestData as CreateJiraRecordRequest);
+        await createJiraRecord(featureId, requestData as any);
         message.success('JIRA record created successfully');
       }
 

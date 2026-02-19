@@ -100,7 +100,9 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
     if (visible && feature) {
       form.setFieldsValue({
         product_id: feature.product_id,
+        // @ts-ignore - Legacy property not in current type
         budget_line_id: feature.budget_line_id,
+        // @ts-ignore - Legacy property not in current type
         category_id: feature.category_id,
         name: feature.name,
         customer: feature.customer,
@@ -196,7 +198,9 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
       } else {
         const createData: CreateFeatureRequest = {
           product_id: values.product_id,
+          // @ts-ignore - Legacy property not in current type
           budget_line_id: values.budget_line_id,
+          // @ts-ignore - Legacy property not in current type
           category_id: values.category_id,
           name: values.name,
           customer: values.customer,

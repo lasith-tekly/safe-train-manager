@@ -14,6 +14,7 @@ import { SettingsPage } from './pages/Settings';
 import RoadmapV4Page from './pages/RoadmapV4';
 import ProductsOverviewPage from './pages/RoadmapV4/ProductsOverviewPage';
 import ProductRoadmapPage from './pages/RoadmapV4/ProductRoadmapPage';
+import TeamPlanningPage from './pages/TeamPlanning/TeamPlanningPage';
 
 // Import Amadeus theme
 import './styles/amadeus-theme.css';
@@ -40,6 +41,9 @@ const App: React.FC = () => {
           
           {/* Teams Section */}
           <Route path="/teams" element={<TeamsPage />} />
+          
+          {/* Team Planning - Phase 5+6 */}
+          <Route path="/team-planning" element={<TeamPlanningPage />} />
           
           {/* Roadmap Planning */}
           <Route path="/roadmap" element={<ProductsOverviewPage />} />

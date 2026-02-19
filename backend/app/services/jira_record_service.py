@@ -345,6 +345,11 @@ class JiraRecordService:
         if not record:
             raise ValueError(f"JIRA record {record_id} not found")
         
+        # Track if assignment-related fields changed (for PO notification)
+        old_team_id = record.team_id
+        old_pi_id = record.pi_id
+        old_planned_effort = record.planned_effort
+        
         # Check for duplicate jira_key if changing
         if data.jira_key and data.jira_key != record.jira_key:
             existing = self.db.query(JiraRecord).filter(
@@ -362,10 +367,67 @@ class JiraRecordService:
         
         record.updated_at = datetime.utcnow()
         
+        # Check if assignment-related fields changed
+        assignment_changed = (
+            (data.team_id is not None and data.team_id != old_team_id) or
+            (data.pi_id is not None and data.pi_id != old_pi_id) or
+            (data.planned_effort is not None and data.planned_effort != old_planned_effort)
+        )
+        
+        # Notify PO if their draft plan is affected
+        if assignment_changed and record.team_id and record.pi_id:
+            self._notify_po_of_assignment_change(record, old_team_id, old_pi_id)
+        
         self.db.commit()
         self.db.refresh(record)
         
         return self._build_jira_record_response(record)
+    
+    def _notify_po_of_assignment_change(
+        self,
+        jira_record: JiraRecord,
+        old_team_id: str,
+        old_pi_id: str
+    ):
+        """
+        Notify PO when PM changes JIRA assignments that affect their draft plan.
+        Marks affected draft plans as outdated and creates notifications.
+        """
+        from app.models.team_planning import POPlanVersion, PlanningNotification
+        
+        # Check both old and new team/PI combinations for draft plans
+        affected_combinations = set()
+        if old_team_id and old_pi_id:
+            affected_combinations.add((old_team_id, old_pi_id))
+        if jira_record.team_id and jira_record.pi_id:
+            affected_combinations.add((jira_record.team_id, jira_record.pi_id))
+        
+        for team_id, pi_id in affected_combinations:
+            # Find draft plan for this team+PI
+            draft_plan = self.db.query(POPlanVersion).filter(
+                POPlanVersion.team_id == team_id,
+                POPlanVersion.pi_id == pi_id,
+                POPlanVersion.status == 'draft'
+            ).first()
+            
+            if draft_plan:
+                # Mark plan as outdated
+                draft_plan.is_outdated = True
+                draft_plan.outdated_reason = f"PM updated JIRA assignments: {jira_record.jira_key or 'record'} was modified"
+                draft_plan.outdated_at = datetime.utcnow()
+                
+                # Create notification for PO
+                notification = PlanningNotification(
+                    team_id=team_id,
+                    pi_id=pi_id,
+                    product_id=jira_record.feature.product_id if jira_record.feature else None,
+                    notification_type='version_changed',
+                    message=f'PM has updated JIRA assignments for your team. JIRA {jira_record.jira_key or "record"} was modified. Please review your plan.',
+                    target_role='po',
+                    is_read=False,
+                    plan_version_id=draft_plan.id
+                )
+                self.db.add(notification)
     
     def delete_jira_record(self, record_id: str) -> bool:
         """Delete a JIRA record"""

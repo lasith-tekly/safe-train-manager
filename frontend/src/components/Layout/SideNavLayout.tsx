@@ -58,6 +58,7 @@ const menuItems: MenuItem[] = [
     getItem('Product List', '/products/list'),
     getItem('Features', '/products/features', <AppstoreOutlined />),
     getItem('Roadmap Planning', '/roadmap', <ProjectOutlined />),
+    getItem('Team Planning', '/team-planning', <ScheduleOutlined />),
   ]),
   getItem('PI Calendar', '/pi-calendar', <CalendarOutlined />),
   getItem('Teams', '/teams', <TeamOutlined />),

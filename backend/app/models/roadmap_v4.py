@@ -160,6 +160,7 @@ class JiraRecord(Base):
     spillover_from_pi = relationship("PI", foreign_keys=[spillover_from_pi_id])
     original_pi = relationship("PI", foreign_keys=[original_pi_id])
     quarterly_allocations = relationship("JiraQuarterlyAllocation", back_populates="jira_record", cascade="all, delete-orphan")
+    team_planning = relationship("TeamPlanning", back_populates="jira_record")
     
     # Constraints
     __table_args__ = (

@@ -94,7 +94,7 @@ const AlignmentActionModal: React.FC<AlignmentActionModalProps> = ({
       dataIndex: 'execution_effort', 
       key: 'execution', 
       width: 100,
-      render: (value: number, record: QuarterDeviation, index: number) => (
+      render: (value: number, _record: QuarterDeviation, index: number) => (
         <Input
           type="number"
           value={manualAllocations[index]?.execution_effort || value}

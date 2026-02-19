@@ -31,7 +31,7 @@ import { deviationApi, ProductDeviationSummary, FeatureDeviationSummary } from '
 import AlignmentActionModal from './AlignmentActionModal';
 import VersionPublishModal from './VersionPublishModal';
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 interface ReviewAlignPanelProps {
   visible: boolean;

@@ -48,7 +48,6 @@ export const SpilloverStackManager: React.FC<Props> = ({
   recordId,
   spilloverCount,
   onUpdate,
-  onEditSpillover,
 }) => {
   const [events, setEvents] = useState<SpilloverHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);

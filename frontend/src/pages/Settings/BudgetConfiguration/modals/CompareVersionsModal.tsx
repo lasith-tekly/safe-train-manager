@@ -12,7 +12,6 @@ interface CompareVersionsModalProps {
 
 export const CompareVersionsModal: React.FC<CompareVersionsModalProps> = ({
   visible,
-  fiscalYearId,
   budgetVersions,
   onClose,
 }) => {

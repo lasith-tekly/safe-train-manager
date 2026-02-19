@@ -3,7 +3,7 @@
  * Panel for adjusting JIRA records to resolve deviations
  */
 import React, { useState, useEffect } from 'react';
-import { Card, Table, Button, Select, Space, message, Spin, Alert, Typography, Tag } from 'antd';
+import { Card, Table, Button, Select, message, Spin, Alert, Typography, Tag } from 'antd';
 import { SaveOutlined } from '@ant-design/icons';
 import { alignmentApi, BatchJiraUpdateItem } from '../../services/alignmentApi';
 import axios from 'axios';
@@ -29,7 +29,6 @@ interface AdjustExecutionPanelProps {
 
 const AdjustExecutionPanel: React.FC<AdjustExecutionPanelProps> = ({
   featureId,
-  versionId,
   onApplied,
 }) => {
   const [records, setRecords] = useState<JiraRecord[]>([]);
@@ -66,12 +65,7 @@ const AdjustExecutionPanel: React.FC<AdjustExecutionPanelProps> = ({
     setChanges(newChanges);
   };
 
-  const handleEffortChange = (recordId: string, effort: number) => {
-    const newChanges = new Map(changes);
-    const existing = newChanges.get(recordId) || {};
-    newChanges.set(recordId, { ...existing, planned_effort: effort });
-    setChanges(newChanges);
-  };
+  // Removed unused handleEffortChange function
 
   const handleApply = async () => {
     if (changes.size === 0) {

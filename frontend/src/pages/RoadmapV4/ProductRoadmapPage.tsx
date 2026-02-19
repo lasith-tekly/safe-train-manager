@@ -53,7 +53,7 @@ const ProductRoadmapPage: React.FC = () => {
   const [versionLoading, setVersionLoading] = useState(false);
 
   // Deviation state
-  const [deviationSummary, setDeviationSummary] = useState<ProductDeviationSummary | null>(null);
+  const [_deviationSummary, setDeviationSummary] = useState<ProductDeviationSummary | null>(null);
   const [showReviewPanel, setShowReviewPanel] = useState(false);
 
   // Derived version state

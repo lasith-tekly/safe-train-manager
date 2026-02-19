@@ -174,7 +174,7 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
 
   const updateBudgetAllocation = (index: number, field: keyof BudgetAllocation, value: any) => {
     const newAllocations = [...budgetAllocations];
-    newAllocations[index][field] = value;
+    (newAllocations[index] as any)[field] = value;
     setBudgetAllocations(newAllocations);
   };
 

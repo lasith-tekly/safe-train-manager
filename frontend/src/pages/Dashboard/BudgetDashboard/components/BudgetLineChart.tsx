@@ -29,7 +29,7 @@ export const BudgetLineChart: React.FC<BudgetLineChartProps> = ({ data, loading 
           <XAxis dataKey="name" />
           <YAxis />
           <Tooltip
-            formatter={(value: number) => `${value.toFixed(1)} KEUR`}
+            formatter={(value) => value !== undefined ? `${Number(value).toFixed(1)} KEUR` : ''}
             contentStyle={{ backgroundColor: '#fff', border: '1px solid #d9d9d9' }}
           />
           <Legend />

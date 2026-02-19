@@ -25,8 +25,8 @@ const JiraRecordSection: React.FC<JiraRecordSectionProps> = ({ featureId, teams 
   const loadJiraRecords = async () => {
     setLoading(true);
     try {
-      const records = await listJiraRecords(featureId);
-      setJiraRecords(records);
+      const response = await listJiraRecords(featureId);
+      setJiraRecords(response.data as unknown as JiraRecord[]);
     } catch (error) {
       console.error('Failed to load JIRA records:', error);
       message.error('Failed to load JIRA records');

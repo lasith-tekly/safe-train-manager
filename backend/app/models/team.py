@@ -64,6 +64,8 @@ class Team(Base):
         backref="teams"
     )
     jira_records = relationship("JiraRecord", back_populates="team")
+    plan_versions = relationship("POPlanVersion", back_populates="team")
+    planning_items = relationship("TeamPlanning", back_populates="team")
 
     def __repr__(self):
         return f"<Team {self.short_code}: {self.name}>"

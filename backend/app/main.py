@@ -29,6 +29,8 @@ from app.routes.roadmap_versions import router as roadmap_versions_router
 from app.routes.jira_records import router as jira_records_router
 from app.routes.deviation import router as deviation_router
 from app.routes.alignment import router as alignment_router
+from app.routes.team_planning import router as team_planning_router
+from app.routes.pm_review import router as pm_review_router
 from app.database import engine, Base
 
 # Create tables - DISABLED: Using SQL migrations instead
@@ -87,6 +89,8 @@ app.include_router(roadmap_versions_router)
 app.include_router(jira_records_router)
 app.include_router(deviation_router)
 app.include_router(alignment_router)
+app.include_router(team_planning_router)
+app.include_router(pm_review_router)
 
 
 @app.get("/health", tags=["health"])
