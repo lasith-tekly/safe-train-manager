@@ -255,6 +255,21 @@ class FeatureServiceV4:
     
     def create_jira_record(self, feature_id: str, request: CreateJiraRecordRequest) -> dict:
         """Create a JIRA record for a feature"""
+        # Fetch parent feature to inherit version_id if not provided
+        feature = self.db.query(RoadmapFeature).filter(
+            RoadmapFeature.id == feature_id
+        ).first()
+        if not feature:
+            raise ValueError(f"Feature {feature_id} not found")
+        
+        # Inherit version_id from feature if not provided in request
+        version_id = request.version_id if request.version_id else feature.version_id
+        
+        print(f"DEBUG: Creating JIRA record - feature={feature_id}, version_id={version_id}")
+        
+        if not version_id:
+            raise ValueError(f"Feature {feature_id} has no version_id - cannot create JIRA record")
+        
         # Get title from new field or fall back to old field
         title = request.title if request.title else (request.summary if request.summary else '')
         
@@ -264,7 +279,7 @@ class FeatureServiceV4:
         jira_record = JiraRecord(
             id=str(uuid.uuid4()),
             feature_id=feature_id,
-            version_id=request.version_id,
+            version_id=version_id,  # Use inherited or provided version_id
             jira_key=request.jira_key,
             title=title,
             description=description,

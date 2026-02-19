@@ -283,6 +283,11 @@ class JiraRecordService:
         if not feature:
             raise ValueError(f"Feature {feature_id} not found")
         
+        print(f"DEBUG: Feature found - id={feature.id}, version_id={feature.version_id}")
+        
+        if not feature.version_id:
+            raise ValueError(f"Feature {feature_id} has no version_id - cannot create JIRA record")
+        
         # Verify team exists if provided
         if data.team_id:
             team = self.db.query(Team).filter(Team.id == data.team_id).first()
