@@ -637,17 +637,18 @@ class TeamPlanningService:
         """
         print(f"DEBUG: Commit request - team={team_id}, pi={pi_id}")
         
-        # Validate items first
+        # Validate items first - get_team_planning_items returns List[TeamPlanning] (SQLAlchemy objects)
         items = self.get_team_planning_items(team_id, pi_id)
         unplanned = [
             i for i in items
-            if not i.get('is_descoped')
-            and (float(i.get('dev_effort', 0)) + 
-                 float(i.get('pd_effort', 0)) + 
-                 float(i.get('qa_effort', 0))) == 0
+            if not i.is_descoped
+            and (float(i.dev_effort or 0) + 
+                 float(i.pd_effort or 0) + 
+                 float(i.qa_effort or 0)) == 0
         ]
         if unplanned:
-            raise ValueError(f"{len(unplanned)} item(s) still need role breakdown")
+            jira_keys = [i.jira_key for i in unplanned[:5]]
+            raise ValueError(f"{len(unplanned)} item(s) still need role breakdown: {', '.join(jira_keys)}")
 
         # Find existing plan - NEVER create new
         po_plan = self.db.query(POPlanVersion).filter(

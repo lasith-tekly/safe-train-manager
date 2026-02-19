@@ -65,6 +65,11 @@ def create_jira_record(
     will be over-allocated in the assigned PI.
     """
     try:
+        print(f"=== JIRA RECORD CREATE DEBUG ===")
+        print(f"Feature ID: {feature_id}")
+        print(f"Request data: {data.dict()}")
+        print(f"================================")
+        
         service = JiraRecordService(db)
         record, capacity_warning = service.create_jira_record(feature_id, data)
         

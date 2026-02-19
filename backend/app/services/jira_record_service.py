@@ -303,10 +303,11 @@ class JiraRecordService:
             if existing:
                 raise ValueError(f"JIRA key {data.jira_key} already exists")
         
-        # Create JIRA record
+        # Create JIRA record - inherit version_id from feature
         record = JiraRecord(
             id=str(uuid.uuid4()),
             feature_id=feature_id,
+            version_id=feature.version_id,  # Inherit from parent feature
             jira_key=data.jira_key,
             title=data.title,
             description=data.description,
