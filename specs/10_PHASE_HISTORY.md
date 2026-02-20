@@ -428,6 +428,49 @@ This document tracks the development history of Amadeus Elevate, documenting eac
 
 ---
 
+## Phase 6E: Integration & E2E Testing ✅ COMPLETE
+
+**Date:** 2026-02-20  
+**Status:** ✅ Complete
+
+### Test Results
+- **Database Integrity:** 7/7 PASSED ✅
+- **API Contract Tests:** 35/35 PASSED ✅
+- **E2E Browser Testing:** Manually validated by Lasith
+  - PM Review panel working ✅
+  - Capacity bar displaying correctly ✅
+  - Role breakdown persistence confirmed ✅
+  - Commit workflow working ✅
+
+### Key Findings
+- All Phase 6 modules functioning correctly
+- Duplicate commit prevention confirmed working
+- Test script URL paths corrected to match actual routes
+- version_id inheritance working correctly (verified in DB)
+- No production code bugs found - all failures were test script issues
+
+### Test Script Fixes Applied
+1. **Capacity field names**: Updated to match API (`available_ed`, `used_ed`, `remaining_ed`, `utilization_percent`)
+2. **Status calculation test**: Corrected effort values to properly test "modified" status
+3. **PM Review endpoint**: Updated URL to `/api/teams/{team_id}/planning/review`
+4. **version_id verification**: Query DB directly (field not in API response)
+5. **Commit test setup**: Ensure planning data exists before committing
+6. **PM Review response**: Handle dict response structure
+
+### Decision
+✅ Phase 6 complete - Ready for Phase 7
+
+### Modules Tested
+- Team Planning (Phase 6A-6C)
+- PM Review (Phase 6D)
+- JIRA Record Management
+- Capacity Calculation
+- Status Auto-Calculation
+- Descope/Restore Workflow
+- Commit Plan Workflow
+
+---
+
 ## Phase 7: Change Propagation (Planned)
 
 **Timeline:** Q2 2026  
