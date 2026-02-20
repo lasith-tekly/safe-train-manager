@@ -110,18 +110,22 @@ export const ManageTeamPanel: React.FC<ManageTeamPanelProps> = ({
     }
   };
 
-  const loadMembers = async () => {
+  const loadMembersForPi = async (piId: string | null) => {
     if (!team) return;
     setLoading(true);
     try {
-      // Pass selectedPiId for PI-aware is_active computation
-      const data = await getTeamMembers(team.id, selectedPiId || undefined);
+      // Pass piId for PI-aware is_active computation
+      const data = await getTeamMembers(team.id, piId || undefined);
       setMembers(data);
     } catch (error) {
       message.error('Failed to load team members');
     } finally {
       setLoading(false);
     }
+  };
+
+  const loadMembers = async () => {
+    await loadMembersForPi(selectedPiId);
   };
 
   const handleEditMember = (member: TeamMember) => {
@@ -215,7 +219,8 @@ export const ManageTeamPanel: React.FC<ManageTeamPanelProps> = ({
         { pi_id: selectedPiId }
       );
       message.success('Member removed from this PI onwards');
-      await loadMembers();
+      // Reload with current PI context to show updated is_active status
+      await loadMembersForPi(selectedPiId);
       onUpdate?.();
     } catch (error) {
       message.error('Failed to remove member');
@@ -380,7 +385,8 @@ export const ManageTeamPanel: React.FC<ManageTeamPanelProps> = ({
               onChange={(value, option: any) => {
                 setSelectedPiId(value);
                 setSelectedPiName(option?.label ?? '');
-                loadMembers();
+                // Pass value directly to avoid stale state
+                loadMembersForPi(value);
               }}
               loading={loadingPis}
               style={{ minWidth: 150 }}

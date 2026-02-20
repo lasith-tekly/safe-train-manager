@@ -1,5 +1,5 @@
 {
-  "date": "2026-02-20T12:44:02.915796",
+  "date": "2026-02-20T15:05:39.241163",
   "summary": {
     "passed": 31,
     "failed": 2,
@@ -144,12 +144,12 @@
     {
       "test": "POST /commit first call \u2192 success",
       "status": "FAIL",
-      "notes": "Got: 400 {\"detail\":\"2 item(s) still need role breakdown: AOP-121234245, TEST-6E-999\"}"
+      "notes": "Got: 400 {\"detail\":\"1 item(s) still need role breakdown: AOP-121234245\"}"
     },
     {
       "test": "POST /commit second call \u2192 no UNIQUE error",
       "status": "FAIL",
-      "notes": "Got: 400 {\"detail\":\"2 item(s) still need role breakdown: AOP-121234245, TEST-6E-999\"}"
+      "notes": "Got: 400 {\"detail\":\"1 item(s) still need role breakdown: AOP-121234245\"}"
     },
     {
       "test": "GET /teams/{team_id}/planning/review \u2192 HTTP 200 or 404",
@@ -159,7 +159,7 @@
     {
       "test": "POST /jira-records no version_id \u2192 HTTP 200/201",
       "status": "PASS",
-      "notes": "Got: 201 {\"id\":\"37ecd0e7-48db-485d-83e4-32a3235871ef\",\"feature_id\":\"cfd3eb64-421a-4c9b-96b0-91414b93fe8a\",\"jira_key\":\"TEST-6E-999\",\"title\":\"Phase 6E Automated Test Record\",\"description\":null,\"pi_id\":\"4f96e0b1-5d2f-4552-b4f0-c8031e3c5d27\",\"pi\":{\"id\":\"4f96e0b1-5d2f-4552-b4f0-c8031e3c5d27\",\"name\":\"PI 2026.1\",\"y"
+      "notes": "Got: 201 {\"id\":\"2d8fc5f5-94e5-4c97-b690-be7980146260\",\"feature_id\":\"cfd3eb64-421a-4c9b-96b0-91414b93fe8a\",\"jira_key\":\"TEST-6E-999\",\"title\":\"Phase 6E Automated Test Record\",\"description\":null,\"pi_id\":\"4f96e0b1-5d2f-4552-b4f0-c8031e3c5d27\",\"pi\":{\"id\":\"4f96e0b1-5d2f-4552-b4f0-c8031e3c5d27\",\"name\":\"PI 2026.1\",\"y"
     },
     {
       "test": "JIRA created has version_id (inherited)",
@@ -175,11 +175,11 @@
   "bugs": [
     {
       "test": "POST /commit first call \u2192 success",
-      "notes": "Got: 400 {\"detail\":\"2 item(s) still need role breakdown: AOP-121234245, TEST-6E-999\"}"
+      "notes": "Got: 400 {\"detail\":\"1 item(s) still need role breakdown: AOP-121234245\"}"
     },
     {
       "test": "POST /commit second call \u2192 no UNIQUE error",
-      "notes": "Got: 400 {\"detail\":\"2 item(s) still need role breakdown: AOP-121234245, TEST-6E-999\"}"
+      "notes": "Got: 400 {\"detail\":\"1 item(s) still need role breakdown: AOP-121234245\"}"
     }
   ],
   "decision": "FAIL - 2 issues found"
