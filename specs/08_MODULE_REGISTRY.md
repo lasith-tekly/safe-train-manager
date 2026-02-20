@@ -4,6 +4,15 @@
 
 This document tracks all modules in the Amadeus Elevate system, their lock status, dependencies, and change impact. Modules marked as 🔒 LOCKED require impact analysis before modification.
 
+## ⚠️ Active vs Legacy Route Files
+Always use _v4 versions. Legacy files exist but are NOT active:
+
+| Legacy (DO NOT USE) | Active (USE THIS) |
+|---------------------|-------------------|
+| `jira_records.py` | `jira_v4.py` |
+| `features.py` | `features_v4.py` |
+| `feature_service.py` | `feature_service_v4.py` |
+
 ## 🔒 LOCKED Modules (Phases 2-6 Complete)
 
 ### Phase 2: Budget Configuration
@@ -230,8 +239,10 @@ This document tracks all modules in the Amadeus Elevate system, their lock statu
 **Risk Level:** 🔴 High
 
 **Backend Files:**
-- `backend/app/routes/jira_records.py`
+- `backend/app/routes/jira_v4.py`              ← ACTIVE - use this
+- `backend/app/routes/jira_records.py`         ← LEGACY - do not use
 - `backend/app/services/jira_record_service.py`
+- `backend/app/services/feature_service_v4.py` ← handles JIRA creation
 
 **Frontend Files:**
 - `frontend/src/components/RoadmapV4/JiraRecordModal.tsx`
