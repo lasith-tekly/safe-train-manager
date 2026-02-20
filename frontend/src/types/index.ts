@@ -403,6 +403,11 @@ export interface TeamMember {
   updated_at: string | null;
   availability: MemberAvailability[];
   component_hats: ComponentHat[];
+  // PI-scoped membership fields
+  effective_from_pi_id?: string | null;
+  left_after_pi_id?: string | null;
+  effective_from_pi_name?: string | null;
+  left_after_pi_name?: string | null;
 }
 
 export interface TeamMemberCreate {
@@ -420,6 +425,8 @@ export interface TeamMemberCreate {
   individual_productivity?: number;
   start_date?: string;
   end_date?: string;
+  // PI-scoped membership field
+  effective_from_pi_id?: string | null;
 }
 
 export interface TeamMemberUpdate {

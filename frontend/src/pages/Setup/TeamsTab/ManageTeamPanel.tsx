@@ -17,7 +17,9 @@ import {
   Statistic,
   Row,
   Col,
-  Tooltip
+  Tooltip,
+  Alert,
+  Divider
 } from 'antd';
 import {
   PlusOutlined,
@@ -25,10 +27,12 @@ import {
   DeleteOutlined,
   EditOutlined,
   CloseOutlined,
-  UserOutlined
+  UserOutlined,
+  UserDeleteOutlined
 } from '@ant-design/icons';
 import type { Team, TeamMember, TeamMemberCreate, TeamMemberUpdate, MemberRole } from '../../../types';
-import { getTeamMembers, createTeamMember, updateTeamMember, deleteTeamMember } from '../../../services/api';
+import { getTeamMembers, createTeamMember, updateTeamMember, deleteTeamMember, getPIs } from '../../../services/api';
+import axios from 'axios';
 
 const { Text } = Typography;
 
@@ -61,6 +65,12 @@ export const ManageTeamPanel: React.FC<ManageTeamPanelProps> = ({
   const [showAddForm, setShowAddForm] = useState(false);
   const [form] = Form.useForm();
   const [addForm] = Form.useForm();
+  
+  // PI state - ManageTeamPanel manages its own PI context
+  const [pis, setPis] = useState<{ id: string; name: string }[]>([]);
+  const [selectedPiId, setSelectedPiId] = useState<string>('');
+  const [selectedPiName, setSelectedPiName] = useState<string>('');
+  const [loadingPis, setLoadingPis] = useState(false);
 
   useEffect(() => {
     if (visible && team) {
@@ -72,6 +82,33 @@ export const ManageTeamPanel: React.FC<ManageTeamPanelProps> = ({
       loadMembers();
     }
   }, [visible, team]);
+
+  // Load PIs when panel opens
+  useEffect(() => {
+    if (visible) {
+      loadPIsData();
+    }
+  }, [visible]);
+
+  const loadPIsData = async () => {
+    setLoadingPis(true);
+    try {
+      const currentYear = new Date().getFullYear();
+      const response = await getPIs(currentYear);
+      const piList = response.data || [];
+      setPis(piList);
+      // Default to the first PI if not already selected
+      if (piList.length > 0 && !selectedPiId) {
+        const firstPi = piList[0];
+        setSelectedPiId(firstPi.id);
+        setSelectedPiName(firstPi.name);
+      }
+    } catch (error) {
+      console.error('Failed to load PIs:', error);
+    } finally {
+      setLoadingPis(false);
+    }
+  };
 
   const loadMembers = async () => {
     if (!team) return;
@@ -138,7 +175,8 @@ export const ManageTeamPanel: React.FC<ManageTeamPanelProps> = ({
         role: values.role,
         train_allocation_percent: values.train_allocation_percent || 100,
         allocation_percentage: 100,
-        hours_per_day: 8
+        hours_per_day: 8,
+        effective_from_pi_id: selectedPiId || undefined
       };
       
       await createTeamMember(team.id, createData);
@@ -167,9 +205,36 @@ export const ManageTeamPanel: React.FC<ManageTeamPanelProps> = ({
     }
   };
 
+  const handleSoftRemoveMember = async (memberId: string) => {
+    if (!team || !selectedPiId) return;
+
+    try {
+      await axios.post(
+        `/api/teams/${team.id}/members/${memberId}/remove-from-pi`,
+        { pi_id: selectedPiId }
+      );
+      message.success('Member removed from this PI onwards');
+      loadMembers();
+      onUpdate?.();
+    } catch (error) {
+      message.error('Failed to remove member');
+    }
+  };
+
+  // Split members into active and inactive based on PI scope
+  const isMemberActive = (member: TeamMember): boolean => {
+    // If left_after_pi_id is set, member has been soft-removed
+    if ((member as any).left_after_pi_id) return false;
+    return true;
+  };
+
+  const activeMembers = members.filter(isMemberActive);
+  const inactiveMembers = members.filter(m => !isMemberActive(m));
+
   const getRoleCounts = () => {
     const counts: Record<string, number> = {};
-    members.forEach(m => {
+    // Only count active members in stats
+    activeMembers.forEach(m => {
       const role = m.role || 'other';
       counts[role] = (counts[role] || 0) + 1;
     });
@@ -184,10 +249,19 @@ export const ManageTeamPanel: React.FC<ManageTeamPanelProps> = ({
       dataIndex: 'name',
       key: 'name',
       render: (name: string, record: TeamMember) => (
-        <Space>
+        <Space wrap>
           <UserOutlined />
           <Text strong>{name}</Text>
           {record.status === 'inactive' && <Tag color="red">Inactive</Tag>}
+          {(record as any).effective_from_pi_id && (
+            <Tooltip
+              title={`Joined from ${(record as any).effective_from_pi_name ?? 'specific PI'}`}
+            >
+              <Tag color="blue" style={{ fontSize: 10, cursor: 'help' }}>
+                From {(record as any).effective_from_pi_name ?? '...'}
+              </Tag>
+            </Tooltip>
+          )}
         </Space>
       )
     },
@@ -210,7 +284,7 @@ export const ManageTeamPanel: React.FC<ManageTeamPanelProps> = ({
     {
       title: 'Actions',
       key: 'actions',
-      width: 100,
+      width: 130,
       render: (_: unknown, record: TeamMember) => (
         <Space size="small">
           <Button
@@ -219,12 +293,27 @@ export const ManageTeamPanel: React.FC<ManageTeamPanelProps> = ({
             onClick={() => handleEditMember(record)}
           />
           <Popconfirm
-            title="Remove this member?"
-            onConfirm={() => handleDeleteMember(record.id)}
+            title={`Remove ${record.name} from ${selectedPiName || 'this PI'} onwards?`}
+            description={
+              <div style={{ maxWidth: 260, fontSize: 12 }}>
+                This member will not be counted in{' '}
+                <strong>{selectedPiName}</strong> and future PIs.
+                <br />
+                Past PI capacity data is preserved.
+              </div>
+            }
+            onConfirm={() => handleSoftRemoveMember(record.id)}
             okText="Remove"
             cancelText="Cancel"
+            okButtonProps={{ danger: true }}
           >
-            <Button size="small" danger icon={<DeleteOutlined />} />
+            <Button
+              size="small"
+              danger
+              icon={<UserDeleteOutlined />}
+            >
+              Remove →
+            </Button>
           </Popconfirm>
         </Space>
       )
@@ -240,7 +329,7 @@ export const ManageTeamPanel: React.FC<ManageTeamPanelProps> = ({
         </Space>
       }
       placement="right"
-      width={900}
+      width="55%"
       open={visible}
       onClose={onClose}
       extra={
@@ -268,11 +357,46 @@ export const ManageTeamPanel: React.FC<ManageTeamPanelProps> = ({
         </h3>
       </div>
 
+      {/* PI Context Selector */}
+      <Alert
+        type="info"
+        style={{ marginBottom: 16 }}
+        message={
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 12,
+            flexWrap: 'wrap'
+          }}>
+            <span style={{ fontWeight: 500, whiteSpace: 'nowrap' }}>
+              Managing members for PI:
+            </span>
+            <Select
+              value={selectedPiId}
+              onChange={(value, option: any) => {
+                setSelectedPiId(value);
+                setSelectedPiName(option?.label ?? '');
+                loadMembers();
+              }}
+              loading={loadingPis}
+              style={{ minWidth: 150 }}
+              size="small"
+              options={pis.map(pi => ({ value: pi.id, label: pi.name }))}
+            />
+            <span style={{ color: '#8c8c8c', fontSize: 12 }}>
+              Members added here will join from{' '}
+              <strong>{selectedPiName}</strong> onwards.
+              Past PI capacity is unaffected.
+            </span>
+          </div>
+        }
+      />
+
       {/* Team Summary */}
       <Row gutter={16} style={{ marginBottom: 16 }}>
         <Col span={6}>
           <Card size="small">
-            <Statistic title="Total Members" value={members.length} />
+            <Statistic title="Total Members" value={activeMembers.length} />
           </Card>
         </Col>
         <Col span={6}>
@@ -356,7 +480,7 @@ export const ManageTeamPanel: React.FC<ManageTeamPanelProps> = ({
         <Skeleton active paragraph={{ rows: 6 }} />
       ) : (
         <Table
-          dataSource={members}
+          dataSource={activeMembers}
           columns={columns}
           rowKey="id"
           size="small"
@@ -366,6 +490,55 @@ export const ManageTeamPanel: React.FC<ManageTeamPanelProps> = ({
             editingMember?.id === record.id ? 'ant-table-row-selected' : ''
           }
         />
+      )}
+
+      {/* Inactive Members Section */}
+      {inactiveMembers.length > 0 && (
+        <>
+          <Divider style={{ margin: '24px 0 12px' }}>
+            <Text type="secondary" style={{ fontSize: 12 }}>
+              Inactive Members — removed from {selectedPiName} onwards
+            </Text>
+          </Divider>
+
+          <Table
+            dataSource={inactiveMembers}
+            rowKey="id"
+            size="small"
+            pagination={false}
+            style={{ opacity: 0.5 }}
+            columns={[
+              {
+                title: 'Name',
+                dataIndex: 'name',
+                render: (name: string, record: TeamMember) => (
+                  <Space>
+                    <UserOutlined />
+                    <Text>{name}</Text>
+                    <Tag color="default" style={{ fontSize: 10 }}>
+                      Left after {(record as any).left_after_pi_name ?? 'previous PI'}
+                    </Tag>
+                  </Space>
+                )
+              },
+              {
+                title: 'Role',
+                key: 'role',
+                width: 100,
+                render: (_: unknown, record: TeamMember) => {
+                  const option = PRIMARY_ROLE_OPTIONS.find(o => o.value === record.role);
+                  return <Tag color={option?.color}>{option?.label || record.role}</Tag>;
+                }
+              },
+              {
+                title: 'Train Alloc',
+                dataIndex: 'train_allocation_percent',
+                width: 100,
+                render: (val: number) => `${val}%` 
+              }
+            ]}
+          />
+        </>
       )}
 
       {/* Edit Member Form - Simplified */}

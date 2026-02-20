@@ -444,6 +444,13 @@ export const PIAllocationsPanel: React.FC<PIAllocationsPanelProps> = ({
     return fieldData?.[iterationId] !== undefined ? fieldData[iterationId] : defaultValue;
   };
 
+  // Filter out inactive members (those with left_after_pi_id set)
+  const activeAllocations = allocations.filter(allocation => {
+    // If member has left_after_pi_id, they are inactive
+    const member = allocation as any;
+    return !member.left_after_pi_id;
+  });
+
   return (
     <Drawer
       title={<Title level={4} style={{ margin: 0 }}>{`PI Allocations - ${team?.name || ''}`}</Title>}
@@ -527,18 +534,18 @@ export const PIAllocationsPanel: React.FC<PIAllocationsPanelProps> = ({
             {/* Member List (Left Panel - 40%) */}
             <Col span={10}>
               <Card
-                title={`Team Members (${allocations.length})`}
+                title={`Team Members (${activeAllocations.length})`}
                 size="small"
                 style={{ height: 'calc(100vh - 400px)', overflowY: 'auto' }}
               >
-                {allocations.length === 0 ? (
+                {activeAllocations.length === 0 ? (
                   <div style={{ textAlign: 'center', padding: '40px 20px', color: '#999' }}>
                     <UserOutlined style={{ fontSize: 48, marginBottom: 16 }} />
                     <div>No team members found</div>
                   </div>
                 ) : (
                   <List
-                    dataSource={allocations}
+                    dataSource={activeAllocations}
                     renderItem={(allocation) => (
                     <List.Item
                       key={allocation.member_id}
