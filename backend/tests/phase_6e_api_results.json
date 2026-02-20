@@ -1,0 +1,227 @@
+{
+  "date": "2026-02-20T08:58:43.839278",
+  "summary": {
+    "passed": 23,
+    "failed": 11,
+    "total": 34
+  },
+  "results": [
+    {
+      "test": "GET /planning - HTTP 200",
+      "status": "PASS",
+      "notes": ""
+    },
+    {
+      "test": "GET /planning - has 'team'",
+      "status": "PASS",
+      "notes": ""
+    },
+    {
+      "test": "GET /planning - has 'pi'",
+      "status": "PASS",
+      "notes": ""
+    },
+    {
+      "test": "GET /planning - has 'capacity'",
+      "status": "PASS",
+      "notes": ""
+    },
+    {
+      "test": "GET /planning - has 'items'",
+      "status": "PASS",
+      "notes": ""
+    },
+    {
+      "test": "GET /planning - has 'summary'",
+      "status": "PASS",
+      "notes": ""
+    },
+    {
+      "test": "capacity has 'total'",
+      "status": "FAIL",
+      "notes": ""
+    },
+    {
+      "test": "capacity has 'allocated'",
+      "status": "FAIL",
+      "notes": ""
+    },
+    {
+      "test": "capacity has 'remaining'",
+      "status": "FAIL",
+      "notes": ""
+    },
+    {
+      "test": "capacity has 'utilization'",
+      "status": "FAIL",
+      "notes": ""
+    },
+    {
+      "test": "capacity has 'status'",
+      "status": "PASS",
+      "notes": ""
+    },
+    {
+      "test": "summary has 'not_planned'",
+      "status": "PASS",
+      "notes": ""
+    },
+    {
+      "test": "summary has 'accepted'",
+      "status": "PASS",
+      "notes": ""
+    },
+    {
+      "test": "summary has 'modified'",
+      "status": "PASS",
+      "notes": ""
+    },
+    {
+      "test": "summary has 'descoped'",
+      "status": "PASS",
+      "notes": ""
+    },
+    {
+      "test": "item has 'dev_effort'",
+      "status": "PASS",
+      "notes": ""
+    },
+    {
+      "test": "item has 'pd_effort'",
+      "status": "PASS",
+      "notes": ""
+    },
+    {
+      "test": "item has 'qa_effort'",
+      "status": "PASS",
+      "notes": ""
+    },
+    {
+      "test": "item has 'status'",
+      "status": "PASS",
+      "notes": ""
+    },
+    {
+      "test": "item has 'is_descoped'",
+      "status": "PASS",
+      "notes": ""
+    },
+    {
+      "test": "POST /planning zeros \u2192 not_planned",
+      "status": "PASS",
+      "notes": "Got status: not_planned"
+    },
+    {
+      "test": "POST /planning = pm_effort \u2192 accepted",
+      "status": "PASS",
+      "notes": "dev=1.8 pd=0.6 qa=0.6 total=3.0 pm=3.0 got: accepted"
+    },
+    {
+      "test": "POST /planning \u2260 pm_effort \u2192 modified",
+      "status": "FAIL",
+      "notes": "Got status: accepted"
+    },
+    {
+      "test": "POST /descope empty reason \u2192 error",
+      "status": "FAIL",
+      "notes": "Got: 404"
+    },
+    {
+      "test": "POST /descope <10 chars \u2192 error",
+      "status": "FAIL",
+      "notes": "Got: 404"
+    },
+    {
+      "test": "POST /descope valid reason \u2192 is_descoped=true",
+      "status": "FAIL",
+      "notes": "Got: 404 {\"detail\":\"Not Found\"}"
+    },
+    {
+      "test": "POST /restore \u2192 is_descoped=false",
+      "status": "FAIL",
+      "notes": "Got: 404 {\"detail\":\"Not Found\"}"
+    },
+    {
+      "test": "POST /commit first call \u2192 success",
+      "status": "PASS",
+      "notes": "Got: 200 {\"status\":\"committed\",\"message\":\"Plan submitted for PM review\",\"plan_version_id\":\"00df9fe5-71b8-41e7-908c-701c25306ec9\",\"committed_at\":\"2026-02-20T08:58:43.818637\",\"items_count\":1}"
+    },
+    {
+      "test": "POST /commit second call \u2192 no UNIQUE error",
+      "status": "PASS",
+      "notes": "Got: 200 {\"status\":\"committed\",\"message\":\"Plan submitted for PM review\",\"plan_version_id\":\"00df9fe5-71b8-41e7-908c-701c25306ec9\",\"committed_at\":\"2026-02-20T08:58:43.824987\",\"items_count\":1}"
+    },
+    {
+      "test": "POST /commit returns status=committed",
+      "status": "PASS",
+      "notes": "Got: committed"
+    },
+    {
+      "test": "GET /pm-review/plans \u2192 HTTP 200",
+      "status": "FAIL",
+      "notes": "Got: 404"
+    },
+    {
+      "test": "POST /jira-records no version_id \u2192 HTTP 200/201",
+      "status": "PASS",
+      "notes": "Got: 201 {\"id\":\"67ca0a82-0f0b-4c90-a709-93c3c34baab3\",\"feature_id\":\"cfd3eb64-421a-4c9b-96b0-91414b93fe8a\",\"jira_key\":\"TEST-6E-999\",\"title\":\"Phase 6E Automated Test Record\",\"description\":null,\"pi_id\":\"4f96e0b1-5d2f-4552-b4f0-c8031e3c5d27\",\"pi\":{\"id\":\"4f96e0b1-5d2f-4552-b4f0-c8031e3c5d27\",\"name\":\"PI 2026.1\",\"y"
+    },
+    {
+      "test": "JIRA created has version_id (inherited)",
+      "status": "FAIL",
+      "notes": "version_id: None"
+    },
+    {
+      "test": "JIRA created - no 422 error",
+      "status": "PASS",
+      "notes": ""
+    }
+  ],
+  "bugs": [
+    {
+      "test": "capacity has 'total'",
+      "notes": ""
+    },
+    {
+      "test": "capacity has 'allocated'",
+      "notes": ""
+    },
+    {
+      "test": "capacity has 'remaining'",
+      "notes": ""
+    },
+    {
+      "test": "capacity has 'utilization'",
+      "notes": ""
+    },
+    {
+      "test": "POST /planning \u2260 pm_effort \u2192 modified",
+      "notes": "Got status: accepted"
+    },
+    {
+      "test": "POST /descope empty reason \u2192 error",
+      "notes": "Got: 404"
+    },
+    {
+      "test": "POST /descope <10 chars \u2192 error",
+      "notes": "Got: 404"
+    },
+    {
+      "test": "POST /descope valid reason \u2192 is_descoped=true",
+      "notes": "Got: 404 {\"detail\":\"Not Found\"}"
+    },
+    {
+      "test": "POST /restore \u2192 is_descoped=false",
+      "notes": "Got: 404 {\"detail\":\"Not Found\"}"
+    },
+    {
+      "test": "GET /pm-review/plans \u2192 HTTP 200",
+      "notes": "Got: 404"
+    },
+    {
+      "test": "JIRA created has version_id (inherited)",
+      "notes": "version_id: None"
+    }
+  ],
+  "decision": "FAIL - 11 issues found"
+}

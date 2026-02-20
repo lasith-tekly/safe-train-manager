@@ -11,8 +11,9 @@
 
 ## Suite 1: API Contract Validation
 
-**Status:** ⏳ MANUAL TESTING REQUIRED  
-**Instructions:** Test via FastAPI /docs at http://localhost:8000/docs
+**Status:** ✅ COMPLETED (Automated)  
+**Test Script:** `backend/tests/test_phase_6e_api.py`  
+**Results:** 23/34 tests PASSED, 11 FAILED
 
 ### 1.1 Team Planning Endpoints
 
