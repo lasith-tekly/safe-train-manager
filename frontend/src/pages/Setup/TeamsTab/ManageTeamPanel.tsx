@@ -214,7 +214,7 @@ export const ManageTeamPanel: React.FC<ManageTeamPanelProps> = ({
         { pi_id: selectedPiId }
       );
       message.success('Member removed from this PI onwards');
-      loadMembers();
+      await loadMembers();
       onUpdate?.();
     } catch (error) {
       message.error('Failed to remove member');

@@ -145,6 +145,11 @@ class TeamMemberResponse(BaseModel):
     updated_at: Optional[datetime] = None
     availability: List[MemberAvailabilityResponse] = []
     component_hats: List[ComponentHatResponse] = []
+    # PI-scoped membership fields
+    effective_from_pi_id: Optional[str] = None
+    left_after_pi_id: Optional[str] = None
+    effective_from_pi_name: Optional[str] = None
+    left_after_pi_name: Optional[str] = None
 
     class Config:
         from_attributes = True

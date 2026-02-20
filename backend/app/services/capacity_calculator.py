@@ -252,15 +252,19 @@ class CapacityCalculator:
         
         current_year = datetime.now().year
         
-        # Get active members count
-        active_members = [m for m in team.members if m.status.value == 'active']
-        
         # Get PI - use provided or get first of year
         pi = None
         if pi_id:
             pi = db.query(PI).filter(PI.id == pi_id).first()
         else:
             pi = db.query(PI).filter(PI.year == current_year).order_by(PI.sequence).first()
+        
+        # Get active members for this PI (filters by PI scope)
+        if pi:
+            active_members = CapacityCalculator.get_active_members_for_pi(db, team.id, str(pi.id))
+            active_members = [m for m in active_members if m.status.value == 'active']
+        else:
+            active_members = [m for m in team.members if m.status.value == 'active']
         
         if not pi or not active_members:
             # Return empty capacity if no PI or no members

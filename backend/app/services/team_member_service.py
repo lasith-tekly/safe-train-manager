@@ -230,6 +230,25 @@ class TeamMemberService:
             ) for hat in member.component_hats
         ]
         
+        # Lookup PI names for PI-scoped membership
+        from app.models.pi import PI
+        from sqlalchemy import func, String
+        
+        effective_from_pi_name = None
+        left_after_pi_name = None
+        
+        if member.effective_from_pi_id:
+            from_pi = db.query(PI).filter(
+                func.lower(func.cast(PI.id, String)) == str(member.effective_from_pi_id).lower()
+            ).first()
+            effective_from_pi_name = from_pi.name if from_pi else None
+            
+        if member.left_after_pi_id:
+            left_pi = db.query(PI).filter(
+                func.lower(func.cast(PI.id, String)) == str(member.left_after_pi_id).lower()
+            ).first()
+            left_after_pi_name = left_pi.name if left_pi else None
+        
         return TeamMemberResponse(
             id=member.id,
             team_id=member.team_id,
@@ -251,7 +270,12 @@ class TeamMemberService:
             created_at=member.created_at,
             updated_at=member.updated_at,
             availability=[TeamMemberService.build_availability_response(a) for a in availabilities],
-            component_hats=component_hats
+            component_hats=component_hats,
+            # PI-scoped membership fields
+            effective_from_pi_id=str(member.effective_from_pi_id) if member.effective_from_pi_id else None,
+            left_after_pi_id=str(member.left_after_pi_id) if member.left_after_pi_id else None,
+            effective_from_pi_name=effective_from_pi_name,
+            left_after_pi_name=left_after_pi_name
         )
     
     @staticmethod
