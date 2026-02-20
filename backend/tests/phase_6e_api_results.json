@@ -1,8 +1,8 @@
 {
-  "date": "2026-02-20T08:58:43.839278",
+  "date": "2026-02-20T09:26:05.618021",
   "summary": {
-    "passed": 23,
-    "failed": 11,
+    "passed": 27,
+    "failed": 7,
     "total": 34
   },
   "results": [
@@ -123,33 +123,33 @@
     },
     {
       "test": "POST /descope empty reason \u2192 error",
-      "status": "FAIL",
-      "notes": "Got: 404"
+      "status": "PASS",
+      "notes": "Got: 422"
     },
     {
       "test": "POST /descope <10 chars \u2192 error",
-      "status": "FAIL",
-      "notes": "Got: 404"
+      "status": "PASS",
+      "notes": "Got: 422"
     },
     {
       "test": "POST /descope valid reason \u2192 is_descoped=true",
-      "status": "FAIL",
-      "notes": "Got: 404 {\"detail\":\"Not Found\"}"
+      "status": "PASS",
+      "notes": "Got: 200 True"
     },
     {
       "test": "POST /restore \u2192 is_descoped=false",
-      "status": "FAIL",
-      "notes": "Got: 404 {\"detail\":\"Not Found\"}"
+      "status": "PASS",
+      "notes": "Got: 200 False"
     },
     {
       "test": "POST /commit first call \u2192 success",
       "status": "PASS",
-      "notes": "Got: 200 {\"status\":\"committed\",\"message\":\"Plan submitted for PM review\",\"plan_version_id\":\"00df9fe5-71b8-41e7-908c-701c25306ec9\",\"committed_at\":\"2026-02-20T08:58:43.818637\",\"items_count\":1}"
+      "notes": "Got: 200 {\"status\":\"committed\",\"message\":\"Plan submitted for PM review\",\"plan_version_id\":\"00df9fe5-71b8-41e7-908c-701c25306ec9\",\"committed_at\":\"2026-02-20T09:26:05.595873\",\"items_count\":1}"
     },
     {
       "test": "POST /commit second call \u2192 no UNIQUE error",
       "status": "PASS",
-      "notes": "Got: 200 {\"status\":\"committed\",\"message\":\"Plan submitted for PM review\",\"plan_version_id\":\"00df9fe5-71b8-41e7-908c-701c25306ec9\",\"committed_at\":\"2026-02-20T08:58:43.824987\",\"items_count\":1}"
+      "notes": "Got: 200 {\"status\":\"committed\",\"message\":\"Plan submitted for PM review\",\"plan_version_id\":\"00df9fe5-71b8-41e7-908c-701c25306ec9\",\"committed_at\":\"2026-02-20T09:26:05.602266\",\"items_count\":1}"
     },
     {
       "test": "POST /commit returns status=committed",
@@ -164,7 +164,7 @@
     {
       "test": "POST /jira-records no version_id \u2192 HTTP 200/201",
       "status": "PASS",
-      "notes": "Got: 201 {\"id\":\"67ca0a82-0f0b-4c90-a709-93c3c34baab3\",\"feature_id\":\"cfd3eb64-421a-4c9b-96b0-91414b93fe8a\",\"jira_key\":\"TEST-6E-999\",\"title\":\"Phase 6E Automated Test Record\",\"description\":null,\"pi_id\":\"4f96e0b1-5d2f-4552-b4f0-c8031e3c5d27\",\"pi\":{\"id\":\"4f96e0b1-5d2f-4552-b4f0-c8031e3c5d27\",\"name\":\"PI 2026.1\",\"y"
+      "notes": "Got: 201 {\"id\":\"fc894266-0223-4fe2-9c60-7d794d79d40e\",\"feature_id\":\"cfd3eb64-421a-4c9b-96b0-91414b93fe8a\",\"jira_key\":\"TEST-6E-999\",\"title\":\"Phase 6E Automated Test Record\",\"description\":null,\"pi_id\":\"4f96e0b1-5d2f-4552-b4f0-c8031e3c5d27\",\"pi\":{\"id\":\"4f96e0b1-5d2f-4552-b4f0-c8031e3c5d27\",\"name\":\"PI 2026.1\",\"y"
     },
     {
       "test": "JIRA created has version_id (inherited)",
@@ -199,22 +199,6 @@
       "notes": "Got status: accepted"
     },
     {
-      "test": "POST /descope empty reason \u2192 error",
-      "notes": "Got: 404"
-    },
-    {
-      "test": "POST /descope <10 chars \u2192 error",
-      "notes": "Got: 404"
-    },
-    {
-      "test": "POST /descope valid reason \u2192 is_descoped=true",
-      "notes": "Got: 404 {\"detail\":\"Not Found\"}"
-    },
-    {
-      "test": "POST /restore \u2192 is_descoped=false",
-      "notes": "Got: 404 {\"detail\":\"Not Found\"}"
-    },
-    {
       "test": "GET /pm-review/plans \u2192 HTTP 200",
       "notes": "Got: 404"
     },
@@ -223,5 +207,5 @@
       "notes": "version_id: None"
     }
   ],
-  "decision": "FAIL - 11 issues found"
+  "decision": "FAIL - 7 issues found"
 }

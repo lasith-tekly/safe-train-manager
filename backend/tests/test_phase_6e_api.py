@@ -144,29 +144,29 @@ def test_descope_restore():
     print("\n=== Test 3: Descope & Restore ===")
     
     # 3a: Empty reason → fail
-    r = requests.post(f"{BASE_URL}/api/planning/{PLANNING_ITEM_ID}/descope",
-        json={"descope_reason": ""})
+    r = requests.post(f"{BASE_URL}/api/teams/{TEAM_ID}/planning/{JIRA_RECORD_ID}/descope",
+        json={"reason": ""})
     log("POST /descope empty reason → error",
         r.status_code in [400, 422],
         f"Got: {r.status_code}", r)
     
     # 3b: Short reason → fail  
-    r = requests.post(f"{BASE_URL}/api/planning/{PLANNING_ITEM_ID}/descope",
-        json={"descope_reason": "short"})
+    r = requests.post(f"{BASE_URL}/api/teams/{TEAM_ID}/planning/{JIRA_RECORD_ID}/descope",
+        json={"reason": "short"})
     log("POST /descope <10 chars → error",
         r.status_code in [400, 422],
         f"Got: {r.status_code}", r)
     
     # 3c: Valid reason → success
-    r = requests.post(f"{BASE_URL}/api/planning/{PLANNING_ITEM_ID}/descope",
-        json={"descope_reason": "Resource constraints prevent completion this PI"})
+    r = requests.post(f"{BASE_URL}/api/teams/{TEAM_ID}/planning/{JIRA_RECORD_ID}/descope",
+        json={"reason": "Resource constraints prevent completion this PI"})
     log("POST /descope valid reason → is_descoped=true",
         r.status_code == 200 and r.json().get("is_descoped") == True,
         f"Got: {r.status_code} {r.json().get('is_descoped') if r.status_code==200 else r.text[:100]}",
         r)
     
     # 3d: Restore
-    r = requests.post(f"{BASE_URL}/api/planning/{PLANNING_ITEM_ID}/restore")
+    r = requests.post(f"{BASE_URL}/api/teams/{TEAM_ID}/planning/{JIRA_RECORD_ID}/restore")
     log("POST /restore → is_descoped=false",
         r.status_code == 200 and r.json().get("is_descoped") == False,
         f"Got: {r.status_code} {r.json().get('is_descoped') if r.status_code==200 else r.text[:100]}",
