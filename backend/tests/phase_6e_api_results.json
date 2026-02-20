@@ -1,5 +1,5 @@
 {
-  "date": "2026-02-20T09:46:49.126679",
+  "date": "2026-02-20T09:56:05.084336",
   "summary": {
     "passed": 35,
     "failed": 0,
@@ -144,12 +144,12 @@
     {
       "test": "POST /commit first call \u2192 success",
       "status": "PASS",
-      "notes": "Got: 200 {\"status\":\"committed\",\"message\":\"Plan submitted for PM review\",\"plan_version_id\":\"00df9fe5-71b8-41e7-908c-701c25306ec9\",\"committed_at\":\"2026-02-20T09:46:49.100947\",\"items_count\":1}"
+      "notes": "Got: 200 {\"status\":\"committed\",\"message\":\"Plan submitted for PM review\",\"plan_version_id\":\"00df9fe5-71b8-41e7-908c-701c25306ec9\",\"committed_at\":\"2026-02-20T09:56:05.036334\",\"items_count\":2}"
     },
     {
       "test": "POST /commit second call \u2192 no UNIQUE error",
       "status": "PASS",
-      "notes": "Got: 200 {\"status\":\"committed\",\"message\":\"Plan submitted for PM review\",\"plan_version_id\":\"00df9fe5-71b8-41e7-908c-701c25306ec9\",\"committed_at\":\"2026-02-20T09:46:49.106841\",\"items_count\":1}"
+      "notes": "Got: 200 {\"status\":\"committed\",\"message\":\"Plan submitted for PM review\",\"plan_version_id\":\"00df9fe5-71b8-41e7-908c-701c25306ec9\",\"committed_at\":\"2026-02-20T09:56:05.042834\",\"items_count\":2}"
     },
     {
       "test": "POST /commit returns status=committed",
@@ -169,7 +169,7 @@
     {
       "test": "POST /jira-records no version_id \u2192 HTTP 200/201",
       "status": "PASS",
-      "notes": "Got: 201 {\"id\":\"4a481e74-ad02-4c8d-93d6-f27c5508743b\",\"feature_id\":\"cfd3eb64-421a-4c9b-96b0-91414b93fe8a\",\"jira_key\":\"TEST-6E-999\",\"title\":\"Phase 6E Automated Test Record\",\"description\":null,\"pi_id\":\"4f96e0b1-5d2f-4552-b4f0-c8031e3c5d27\",\"pi\":{\"id\":\"4f96e0b1-5d2f-4552-b4f0-c8031e3c5d27\",\"name\":\"PI 2026.1\",\"y"
+      "notes": "Got: 201 {\"id\":\"61cf900a-1c32-47bf-afcd-4150db7cee82\",\"feature_id\":\"cfd3eb64-421a-4c9b-96b0-91414b93fe8a\",\"jira_key\":\"TEST-6E-999\",\"title\":\"Phase 6E Automated Test Record\",\"description\":null,\"pi_id\":\"4f96e0b1-5d2f-4552-b4f0-c8031e3c5d27\",\"pi\":{\"id\":\"4f96e0b1-5d2f-4552-b4f0-c8031e3c5d27\",\"name\":\"PI 2026.1\",\"y"
     },
     {
       "test": "JIRA created has version_id (inherited)",

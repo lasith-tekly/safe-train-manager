@@ -6,7 +6,7 @@
  */
 
 import React, { useState, useCallback, useRef } from 'react';
-import { Table, Tag, InputNumber, Button, Alert } from 'antd';
+import { Table, Tag, InputNumber, Button, Alert, Tooltip, Typography } from 'antd';
 import { UndoOutlined, StopOutlined } from '@ant-design/icons';
 import { StatusBadge } from './StatusBadge';
 import { DescopeModal } from './DescopeModal';
@@ -368,7 +368,11 @@ export const JiraRecordTable: React.FC<JiraRecordTableProps> = ({ items, disable
                 value={localRecord.dev_effort || 0}
                 style={{ width: 75, opacity: record.is_descoped ? 0.5 : 1 }}
                 onChange={(val) => handleRoleChange(record, 'dev_effort', val || 0)}
-                disabled={disabled || record.is_descoped || record.status === 'descope_proposed'}
+                disabled={
+                  // Input is disabled UNLESS this specific item was rejected by PM
+                  (disabled || record.is_descoped || record.status === 'descope_proposed') && 
+                  record.review_status !== 'rejected'
+                }
               />
             );
           }
@@ -388,7 +392,11 @@ export const JiraRecordTable: React.FC<JiraRecordTableProps> = ({ items, disable
                 value={localRecord.pd_effort || 0}
                 style={{ width: 75, opacity: record.is_descoped ? 0.5 : 1 }}
                 onChange={(val) => handleRoleChange(record, 'pd_effort', val || 0)}
-                disabled={disabled || record.is_descoped || record.status === 'descope_proposed'}
+                disabled={
+                  // Input is disabled UNLESS this specific item was rejected by PM
+                  (disabled || record.is_descoped || record.status === 'descope_proposed') && 
+                  record.review_status !== 'rejected'
+                }
               />
             );
           }
@@ -408,7 +416,11 @@ export const JiraRecordTable: React.FC<JiraRecordTableProps> = ({ items, disable
                 value={localRecord.qa_effort || 0}
                 style={{ width: 75, opacity: record.is_descoped ? 0.5 : 1 }}
                 onChange={(val) => handleRoleChange(record, 'qa_effort', val || 0)}
-                disabled={disabled || record.is_descoped || record.status === 'descope_proposed'}
+                disabled={
+                  // Input is disabled UNLESS this specific item was rejected by PM
+                  (disabled || record.is_descoped || record.status === 'descope_proposed') && 
+                  record.review_status !== 'rejected'
+                }
               />
             );
           }
@@ -418,9 +430,32 @@ export const JiraRecordTable: React.FC<JiraRecordTableProps> = ({ items, disable
     {
       title: 'Status',
       key: 'status',
-      width: 180,
+      width: 220,
       render: (_: any, record: TeamPlanningItem) => (
-        <StatusBadge status={record.status} delta={record.delta} />
+        <div>
+          <StatusBadge status={record.status} delta={record.delta} />
+          {record.review_status === 'rejected' && (
+            <div style={{ marginTop: 4 }}>
+              <Tag color="error">❌ Rejected by PM</Tag>
+              {record.rejection_reason && (
+                <Tooltip title={record.rejection_reason}>
+                  <Typography.Text 
+                    type="danger" 
+                    style={{ fontSize: 12, cursor: 'help', display: 'block', marginTop: 2 }}
+                  >
+                    ⓘ {record.rejection_reason.substring(0, 40)}
+                    {record.rejection_reason.length > 40 ? '...' : ''}
+                  </Typography.Text>
+                </Tooltip>
+              )}
+            </div>
+          )}
+          {record.review_status === 'approved' && (
+            <div style={{ marginTop: 4 }}>
+              <Tag color="success">✓ Approved</Tag>
+            </div>
+          )}
+        </div>
       ),
     },
     {

@@ -389,15 +389,21 @@ const TeamPlanningPage: React.FC = () => {
           {activeItems.length > 0 && (
             <Card style={{ marginTop: 16 }}>
               {/* Rejection Alert */}
-              {planStatus === 'rejected' && (
-                <Alert
-                  type="error"
-                  message="Plan was rejected by PM"
-                  description="Review the feedback below, make changes, and re-submit."
-                  style={{ marginBottom: 16 }}
-                  showIcon
-                />
-              )}
+              {planStatus === 'rejected' && (() => {
+                const rejectedCount = activeItems.filter(i => i.review_status === 'rejected').length;
+                return (
+                  <Alert
+                    type="error"
+                    showIcon
+                    message="PM Review: Changes Required"
+                    description={
+                      `${rejectedCount} item(s) were rejected by PM. ` +
+                      `Please revise the highlighted rows and re-commit for review.`
+                    }
+                    style={{ marginBottom: 16 }}
+                  />
+                );
+              })()}
               
               <div style={{ 
                 display: 'flex',
