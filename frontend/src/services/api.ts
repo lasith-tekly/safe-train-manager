@@ -319,8 +319,9 @@ export const createManualFeature = async (data: ManualFeatureCreate): Promise<Fe
 };
 
 // Team Members API
-export const getTeamMembers = async (teamId: string, status?: string): Promise<TeamMember[]> => {
+export const getTeamMembers = async (teamId: string, piId?: string, status?: string): Promise<TeamMember[]> => {
   const params: Record<string, string> = {};
+  if (piId) params.pi_id = piId;
   if (status) params.status = status;
   const response = await api.get<TeamMember[]>(`/teams/${teamId}/members`, { params });
   return response.data;

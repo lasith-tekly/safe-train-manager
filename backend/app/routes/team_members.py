@@ -1,5 +1,5 @@
 from typing import Optional, List
-from fastapi import APIRouter, Depends, HTTPException, status, Body
+from fastapi import APIRouter, Depends, HTTPException, status, Body, Query
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -18,10 +18,11 @@ router = APIRouter(prefix="/api/teams/{team_id}/members", tags=["team-members"])
 def list_team_members(
     team_id: str,
     status: Optional[str] = None,
+    pi_id: Optional[str] = Query(None),
     db: Session = Depends(get_db)
 ):
-    """List all members of a team."""
-    return TeamMemberService.get_by_team(db, team_id, status)
+    """List all members of a team with optional PI context for is_active computation."""
+    return TeamMemberService.get_by_team(db, team_id, status, pi_id)
 
 
 @router.post("", response_model=TeamMemberResponse, status_code=status.HTTP_201_CREATED)

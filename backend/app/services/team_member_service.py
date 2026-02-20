@@ -23,16 +23,17 @@ class TeamMemberService:
     def get_by_team(
         db: Session,
         team_id: str,
-        status: Optional[str] = None
+        status: Optional[str] = None,
+        pi_id: Optional[str] = None
     ) -> List[TeamMemberResponse]:
-        """Get all members of a team."""
+        """Get all members of a team with optional PI context for is_active computation."""
         query = db.query(TeamMember).filter(TeamMember.team_id == team_id)
         
         if status:
             query = query.filter(TeamMember.status == status)
         
         members = query.order_by(TeamMember.name).all()
-        return [TeamMemberService.build_member_response(db, m) for m in members]
+        return [TeamMemberService.build_member_response(db, m, pi_id) for m in members]
     
     @staticmethod
     def get_by_id(db: Session, member_id: str) -> Optional[TeamMember]:
@@ -194,7 +195,7 @@ class TeamMemberService:
         return TeamMemberService.build_availability_response(availability)
     
     @staticmethod
-    def build_member_response(db: Session, member: TeamMember) -> TeamMemberResponse:
+    def build_member_response(db: Session, member: TeamMember, pi_id: Optional[str] = None) -> TeamMemberResponse:
         """Build a complete member response with calculated fields."""
         # Get current year's global settings for effective productivity
         current_year = datetime.now().year
@@ -230,23 +231,50 @@ class TeamMemberService:
             ) for hat in member.component_hats
         ]
         
-        # Lookup PI names for PI-scoped membership
+        # Lookup PI names and compute is_active for PI-scoped membership
         from app.models.pi import PI
         from sqlalchemy import func, String
         
         effective_from_pi_name = None
         left_after_pi_name = None
+        is_active = True  # Default: active in all PIs
         
+        # Get all PIs sorted by start_date for boundary checking
+        all_pis_sorted = db.query(PI).order_by(PI.start_date).all()
+        pi_start_dates = {str(p.id).lower(): p.start_date for p in all_pis_sorted}
+        
+        # Get current PI start date if pi_id provided
+        current_pi_start = None
+        if pi_id:
+            current_pi_start = pi_start_dates.get(pi_id.lower())
+        
+        # Compute is_active based on PI boundaries
+        if current_pi_start is not None:
+            # Check effective_from boundary
+            if member.effective_from_pi_id:
+                from_start = pi_start_dates.get(str(member.effective_from_pi_id).lower())
+                if from_start and from_start > current_pi_start:
+                    is_active = False  # Member hasn't joined yet in this PI
+            
+            # Check left_after boundary
+            if is_active and member.left_after_pi_id:
+                left_start = pi_start_dates.get(str(member.left_after_pi_id).lower())
+                if left_start and left_start < current_pi_start:
+                    is_active = False  # Member already left before this PI
+        
+        # Lookup PI names
         if member.effective_from_pi_id:
-            from_pi = db.query(PI).filter(
-                func.lower(func.cast(PI.id, String)) == str(member.effective_from_pi_id).lower()
-            ).first()
+            from_pi = next(
+                (p for p in all_pis_sorted if str(p.id).lower() == str(member.effective_from_pi_id).lower()),
+                None
+            )
             effective_from_pi_name = from_pi.name if from_pi else None
             
         if member.left_after_pi_id:
-            left_pi = db.query(PI).filter(
-                func.lower(func.cast(PI.id, String)) == str(member.left_after_pi_id).lower()
-            ).first()
+            left_pi = next(
+                (p for p in all_pis_sorted if str(p.id).lower() == str(member.left_after_pi_id).lower()),
+                None
+            )
             left_after_pi_name = left_pi.name if left_pi else None
         
         return TeamMemberResponse(
@@ -275,7 +303,8 @@ class TeamMemberService:
             effective_from_pi_id=str(member.effective_from_pi_id) if member.effective_from_pi_id else None,
             left_after_pi_id=str(member.left_after_pi_id) if member.left_after_pi_id else None,
             effective_from_pi_name=effective_from_pi_name,
-            left_after_pi_name=left_after_pi_name
+            left_after_pi_name=left_after_pi_name,
+            is_active=is_active
         )
     
     @staticmethod

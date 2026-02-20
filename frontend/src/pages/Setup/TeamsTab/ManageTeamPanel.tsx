@@ -114,7 +114,8 @@ export const ManageTeamPanel: React.FC<ManageTeamPanelProps> = ({
     if (!team) return;
     setLoading(true);
     try {
-      const data = await getTeamMembers(team.id);
+      // Pass selectedPiId for PI-aware is_active computation
+      const data = await getTeamMembers(team.id, selectedPiId || undefined);
       setMembers(data);
     } catch (error) {
       message.error('Failed to load team members');
@@ -223,9 +224,12 @@ export const ManageTeamPanel: React.FC<ManageTeamPanelProps> = ({
 
   // Split members into active and inactive based on PI scope
   const isMemberActive = (member: TeamMember): boolean => {
-    // If left_after_pi_id is set, member has been soft-removed
-    if ((member as any).left_after_pi_id) return false;
-    return true;
+    // Use backend-computed is_active flag (PI-aware)
+    if (typeof (member as any).is_active === 'boolean') {
+      return (member as any).is_active;
+    }
+    // Fallback: no left_after = active
+    return !(member as any).left_after_pi_id;
   };
 
   const activeMembers = members.filter(isMemberActive);

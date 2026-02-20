@@ -408,6 +408,7 @@ export interface TeamMember {
   left_after_pi_id?: string | null;
   effective_from_pi_name?: string | null;
   left_after_pi_name?: string | null;
+  is_active?: boolean;  // PI-aware active status
 }
 
 export interface TeamMemberCreate {

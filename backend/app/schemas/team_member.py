@@ -150,6 +150,7 @@ class TeamMemberResponse(BaseModel):
     left_after_pi_id: Optional[str] = None
     effective_from_pi_name: Optional[str] = None
     left_after_pi_name: Optional[str] = None
+    is_active: bool = True  # PI-aware active status
 
     class Config:
         from_attributes = True
