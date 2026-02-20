@@ -60,6 +60,7 @@ class TeamMemberBase(BaseModel):
     individual_productivity: Optional[int] = Field(None, ge=0, le=100, description="NULL = use global setting")
     start_date: Optional[date] = None
     end_date: Optional[date] = None
+    effective_from_pi_id: Optional[str] = Field(None, description="PI from which member is active. NULL = active in all PIs (backwards compatible)")
 
     @field_validator('role')
     @classmethod

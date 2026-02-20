@@ -55,7 +55,8 @@ class TeamMemberService:
             individual_productivity=data.individual_productivity,
             start_date=data.start_date or datetime.utcnow(),
             end_date=data.end_date,
-            status=TeamStatus.ACTIVE
+            status=TeamStatus.ACTIVE,
+            effective_from_pi_id=data.effective_from_pi_id  # PI-scoped membership
         )
         db.add(member)
         db.commit()

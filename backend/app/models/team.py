@@ -126,6 +126,11 @@ class TeamMember(Base):
     )
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
     updated_at = Column(DateTime, nullable=True, onupdate=datetime.utcnow)
+    
+    # PI-scoped membership fields
+    # NULL = active in all PIs (backwards compatible)
+    effective_from_pi_id = Column(String(36), nullable=True)
+    left_after_pi_id = Column(String(36), nullable=True)
 
     # Relationships
     team = relationship("Team", back_populates="members")

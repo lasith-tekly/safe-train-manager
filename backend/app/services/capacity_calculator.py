@@ -13,6 +13,63 @@ class CapacityCalculator:
     DEFAULT_WORKING_DAYS = {1: 63, 2: 63, 3: 65, 4: 62}
     
     @staticmethod
+    def get_active_members_for_pi(
+        db: Session,
+        team_id: str,
+        pi_id: str
+    ) -> List[TeamMember]:
+        """
+        Returns members active for a given PI.
+        
+        A member is active in PI X when:
+        - effective_from_pi_id is NULL (original member, all PIs)
+          OR effective_pi.start_date <= X.start_date (joined before/at X)
+        AND
+        - left_after_pi_id is NULL (still active)
+          OR left_after_pi.start_date >= X.start_date (left at/after X)
+        
+        NULL on both fields = active in ALL PIs (existing behaviour).
+        """
+        from sqlalchemy import func, String, and_
+        
+        # Get current PI
+        current_pi = db.query(PI).filter(
+            func.lower(func.cast(PI.id, String)) == pi_id.lower()
+        ).first()
+        
+        if not current_pi:
+            # Fallback: return all members (safe, no data loss)
+            return db.query(TeamMember).filter(
+                func.lower(func.cast(TeamMember.team_id, String)) == team_id.lower()
+            ).all()
+
+        all_members = db.query(TeamMember).filter(
+            func.lower(func.cast(TeamMember.team_id, String)) == team_id.lower()
+        ).all()
+
+        active = []
+        for m in all_members:
+            # Check effective_from boundary
+            if m.effective_from_pi_id:
+                from_pi = db.query(PI).filter(
+                    func.lower(func.cast(PI.id, String)) == str(m.effective_from_pi_id).lower()
+                ).first()
+                if from_pi and from_pi.start_date > current_pi.start_date:
+                    continue  # Not yet joined for this PI
+
+            # Check left_after boundary
+            if m.left_after_pi_id:
+                left_pi = db.query(PI).filter(
+                    func.lower(func.cast(PI.id, String)) == str(m.left_after_pi_id).lower()
+                ).first()
+                if left_pi and left_pi.start_date < current_pi.start_date:
+                    continue  # Already left before this PI
+
+            active.append(m)
+
+        return active
+    
+    @staticmethod
     def calculate_member_quarterly_capacity(
         db: Session,
         member: TeamMember,

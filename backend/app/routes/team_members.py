@@ -1,5 +1,5 @@
 from typing import Optional, List
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Body
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -72,6 +72,62 @@ def remove_team_member(
     if not member or member.team_id != team_id:
         raise HTTPException(status_code=404, detail="Member not found")
     TeamMemberService.delete(db, member_id)
+
+
+@router.post("/{member_id}/remove-from-pi")
+def remove_member_from_pi(
+    team_id: str,
+    member_id: str,
+    pi_id: str = Body(..., embed=True),
+    db: Session = Depends(get_db)
+):
+    """
+    Soft remove: member left after the PI BEFORE the given pi_id.
+    Past PI capacity preserved. No hard delete.
+    """
+    from app.models.team import TeamMember
+    from app.models.pi import PI
+    from pydantic import BaseModel
+    
+    member = db.query(TeamMember).filter(TeamMember.id == member_id).first()
+    if not member:
+        raise HTTPException(status_code=404, detail="Member not found")
+    
+    # Validate team ownership
+    if str(member.team_id).lower() != team_id.lower():
+        raise HTTPException(status_code=403, detail="Member not in this team")
+    
+    # Get all PIs ordered by start_date
+    all_pis = db.query(PI).order_by(PI.start_date).all()
+    
+    try:
+        current_index = next(
+            i for i, p in enumerate(all_pis)
+            if str(p.id).lower() == pi_id.lower()
+        )
+    except StopIteration:
+        raise HTTPException(status_code=404, detail="PI not found")
+    
+    if current_index == 0:
+        # Removing from first PI = never active
+        # Set effective_from_pi_id to current PI and left_after to None
+        # This creates an impossible range = inactive everywhere
+        member.effective_from_pi_id = pi_id
+        member.left_after_pi_id = None
+    else:
+        # Left after the previous PI
+        previous_pi = all_pis[current_index - 1]
+        member.left_after_pi_id = str(previous_pi.id)
+    
+    db.commit()
+    db.refresh(member)
+    
+    return {
+        "id": str(member.id),
+        "name": member.name,
+        "left_after_pi_id": member.left_after_pi_id,
+        "status": "removed_from_pi"
+    }
 
 
 @router.get("/{member_id}/availability/{year}", response_model=List[MemberAvailabilityResponse])
