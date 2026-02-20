@@ -6,8 +6,8 @@
  */
 
 import React, { useState, useCallback, useRef } from 'react';
-import { Table, Tag, InputNumber, Button, Alert, Tooltip, Typography } from 'antd';
-import { UndoOutlined, StopOutlined } from '@ant-design/icons';
+import { Table, Tag, InputNumber, Button, Alert, Tooltip } from 'antd';
+import { UndoOutlined, StopOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import { StatusBadge } from './StatusBadge';
 import { DescopeModal } from './DescopeModal';
 import type { TeamPlanningItem, TeamCapacity } from '../../types/teamPlanning';
@@ -430,33 +430,56 @@ export const JiraRecordTable: React.FC<JiraRecordTableProps> = ({ items, disable
     {
       title: 'Status',
       key: 'status',
-      width: 220,
+      width: 140,
       render: (_: any, record: TeamPlanningItem) => (
-        <div>
-          <StatusBadge status={record.status} delta={record.delta} />
-          {record.review_status === 'rejected' && (
-            <div style={{ marginTop: 4 }}>
-              <Tag color="error">❌ Rejected by PM</Tag>
-              {record.rejection_reason && (
-                <Tooltip title={record.rejection_reason}>
-                  <Typography.Text 
-                    type="danger" 
-                    style={{ fontSize: 12, cursor: 'help', display: 'block', marginTop: 2 }}
-                  >
-                    ⓘ {record.rejection_reason.substring(0, 40)}
-                    {record.rejection_reason.length > 40 ? '...' : ''}
-                  </Typography.Text>
-                </Tooltip>
-              )}
-            </div>
-          )}
-          {record.review_status === 'approved' && (
-            <div style={{ marginTop: 4 }}>
-              <Tag color="success">✓ Approved</Tag>
-            </div>
-          )}
-        </div>
+        <StatusBadge status={record.status} delta={record.delta} />
       ),
+    },
+    {
+      title: 'PM Review',
+      key: 'pm_review',
+      width: 130,
+      render: (_: any, item: TeamPlanningItem) => {
+        if (!item.review_status || item.review_status === 'pending') {
+          return (
+            <Tag color="default" style={{ fontSize: 11 }}>
+              — Pending
+            </Tag>
+          );
+        }
+
+        if (item.review_status === 'approved') {
+          return (
+            <Tag color="success" icon={<CheckCircleOutlined />}>
+              Approved
+            </Tag>
+          );
+        }
+
+        if (item.review_status === 'rejected') {
+          return (
+            <Tooltip
+              title={
+                item.rejection_reason
+                  ? `Rejection reason: ${item.rejection_reason}` 
+                  : 'Rejected by PM'
+              }
+              placement="left"
+              color="red"
+            >
+              <Tag
+                color="error"
+                icon={<CloseCircleOutlined />}
+                style={{ cursor: 'help' }}
+              >
+                Rejected ⓘ
+              </Tag>
+            </Tooltip>
+          );
+        }
+
+        return null;
+      }
     },
     {
       title: 'Actions',
