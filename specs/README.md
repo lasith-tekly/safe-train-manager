@@ -152,9 +152,10 @@ All specifications are version-controlled alongside the codebase:
 
 ## Related Documents
 
-- **[../MODULES.md](../MODULES.md)** - Module registry (root level)
-- **[../IMPACT_ANALYSIS_TEMPLATE.md](../IMPACT_ANALYSIS_TEMPLATE.md)** - Impact analysis template (root level)
-- **[../.windsurf/AGENTS.md](../.windsurf/AGENTS.md)** - Agent rules and responsibilities
+- **[08_MODULE_REGISTRY.md](./08_MODULE_REGISTRY.md)** - Module registry
+- **[IMPACT_ANALYSIS_TEMPLATE.md](./IMPACT_ANALYSIS_TEMPLATE.md)** - Impact analysis template
+- **[09_WORKING_ETHICS.md](./09_WORKING_ETHICS.md)** - Agent rules and standards
+- **[../.windsurf/AGENTS.md](../.windsurf/AGENTS.md)** - Windsurf agent rules
 
 ## Questions or Clarifications
 
