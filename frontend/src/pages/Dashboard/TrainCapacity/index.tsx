@@ -134,7 +134,7 @@ export const TrainCapacityDashboard: React.FC = () => {
   const loadTeams = async () => {
     try {
       const response = await axios.get('/api/teams');
-      setTeams(response.data);
+      setTeams(response.data?.data ?? response.data ?? []);
     } catch (error) {
       console.error('Failed to load teams', error);
     }
@@ -534,7 +534,7 @@ export const TrainCapacityDashboard: React.FC = () => {
               onChange={setSelectedPI}
               style={{ width: 150 }}
               placeholder="Select PI"
-              options={pis.map(pi => ({ value: pi.id, label: pi.name }))}
+              options={(pis ?? []).map(pi => ({ value: pi.id, label: pi.name }))}
             />
           ) : (
             <Select
@@ -551,7 +551,7 @@ export const TrainCapacityDashboard: React.FC = () => {
       {/* Team Filter Pills */}
       <div style={{ marginBottom: 16, display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
         <span style={{ fontWeight: 500, marginRight: 8 }}>Filter Teams:</span>
-        {teams.map(team => (
+        {(teams ?? []).map(team => (
           <Button
             key={team.id}
             size="small"
