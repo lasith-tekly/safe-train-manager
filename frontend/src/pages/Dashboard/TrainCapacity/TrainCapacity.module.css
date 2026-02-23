@@ -32,12 +32,16 @@
 }
 
 .totalRow {
-  background-color: #fafafa;
+  background-color: #e6f7ff;
   font-weight: 600;
 }
 
 .totalRow td {
   border-top: 2px solid #1890ff !important;
+}
+
+.ipRow {
+  background-color: #f9f0ff;
 }
 
 .legend {
