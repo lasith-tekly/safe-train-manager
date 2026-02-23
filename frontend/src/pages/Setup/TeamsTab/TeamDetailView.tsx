@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Select, Tag, Table, Tabs, Collapse, Button, Skeleton, Empty, message, Tooltip } from 'antd';
+import { Card, Row, Col, Tag, Table, Tabs, Collapse, Button, Skeleton, Empty, message, Tooltip } from 'antd';
 import { TeamOutlined, SettingOutlined, CalendarOutlined, UserOutlined } from '@ant-design/icons';
-import { getTeamPICapacityDetail, getPIs } from '../../../services/api';
-import type { Team, TeamPICapacityDetail, PI } from '../../../types';
+import { getTeamPICapacityDetail } from '../../../services/api';
+import type { Team, TeamPICapacityDetail } from '../../../types';
 import styles from './TeamDetailView.module.css';
 
 interface TeamDetailViewProps {
   team: Team;
+  selectedPIId: string | undefined;
+  selectedPIName: string;
   onClose: () => void;
   onManageMembers: () => void;
   onPIAllocations: () => void;
@@ -14,48 +16,22 @@ interface TeamDetailViewProps {
 
 export const TeamDetailView: React.FC<TeamDetailViewProps> = ({
   team,
+  selectedPIId,
+  selectedPIName,
   onClose,
   onManageMembers,
   onPIAllocations,
 }) => {
   const [loading, setLoading] = useState(false);
-  const [pis, setPIs] = useState<PI[]>([]);
-  const [selectedPIId, setSelectedPIId] = useState<string | undefined>();
   const [capacityDetail, setCapacityDetail] = useState<TeamPICapacityDetail | null>(null);
   const [activeTab, setActiveTab] = useState<string>('iterations');
   const [expandedAllocation, setExpandedAllocation] = useState<string | null>(null);
 
-  const currentYear = new Date().getFullYear();
-
   useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      try {
-        const response = await getPIs(currentYear);
-        setPIs(response.data);
-        // Auto-select first PI
-        if (response.data.length > 0 && team) {
-          const firstPIId = response.data[0].id;
-          setSelectedPIId(firstPIId);
-          // Load capacity detail immediately
-          const detail = await getTeamPICapacityDetail(team.id, firstPIId);
-          setCapacityDetail(detail);
-        }
-      } catch (error) {
-        console.error('Failed to load data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    loadData();
-  }, [team.id]);
-
-  useEffect(() => {
-    if (selectedPIId && team && pis.length > 0) {
+    if (selectedPIId && team) {
       loadCapacityDetail();
     }
-  }, [selectedPIId]);
+  }, [selectedPIId, team]);
 
   const loadCapacityDetail = async () => {
     if (!selectedPIId || !team) return;
@@ -253,18 +229,18 @@ export const TeamDetailView: React.FC<TeamDetailViewProps> = ({
         <Button type="text" onClick={onClose}>✕</Button>
       </div>
 
-      {/* PI Selector - Compact */}
-      <div className={styles.piSelector}>
-        <span className={styles.piLabel}>PI:</span>
-        <Select
-          size="small"
-          style={{ width: 160 }}
-          placeholder="Select PI"
-          value={selectedPIId}
-          onChange={setSelectedPIId}
-          loading={loading}
-          options={pis.map(pi => ({ value: pi.id, label: pi.name }))}
-        />
+      {/* PI Badge - Read-only */}
+      <div style={{ 
+        display: 'flex', alignItems: 'center', gap: 6,
+        background: '#f0f4ff', border: '1px solid #c7d2fe',
+        borderRadius: 8, padding: '4px 12px', marginBottom: 16
+      }}>
+        <span style={{ fontSize: 12, color: '#6366f1', fontWeight: 600 }}>
+          PI:
+        </span>
+        <span style={{ fontSize: 13, fontWeight: 700, color: '#4338ca' }}>
+          {selectedPIName || 'No PI Selected'}
+        </span>
       </div>
 
       {!selectedPIId ? (

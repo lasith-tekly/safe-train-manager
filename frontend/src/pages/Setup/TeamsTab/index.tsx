@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Tag, message, Input, Empty, Skeleton, Typography } from 'antd';
+import { Table, Button, Tag, message, Input, Empty, Skeleton, Typography, Select } from 'antd';
 import { SearchOutlined, UserOutlined } from '@ant-design/icons';
 import { TeamFormPanel } from './TeamFormPanel';
 import { TeamMembersPanel } from './TeamMembersPanel';
@@ -8,8 +8,8 @@ import { PIAllocationsPanel } from './PIAllocationsPanel';
 import { TeamSetupWizard } from './TeamSetupWizard';
 import { ManageTeamPanel } from './ManageTeamPanel';
 import { TeamDetailView } from './TeamDetailView';
-import { getTeams, createTeam, updateTeam, updateTeamCapacity, getTeamCapacitySummary } from '../../../services/api';
-import type { TeamCapacitySummary } from '../../../types';
+import { getTeams, createTeam, updateTeam, updateTeamCapacity, getTeamCapacitySummary, getPIs } from '../../../services/api';
+import type { TeamCapacitySummary, PI } from '../../../types';
 import type { Team, TeamCreate, TeamUpdate } from '../../../types';
 import styles from './TeamsTab.module.css';
 
@@ -33,9 +33,13 @@ export const TeamsTab: React.FC = () => {
   const [selectedTeamForManage, setSelectedTeamForManage] = useState<Team | null>(null);
   const [teamCapacities, setTeamCapacities] = useState<Record<string, TeamCapacitySummary>>({});
   const [selectedTeamForView, setSelectedTeamForView] = useState<Team | null>(null);
+  const [pis, setPIs] = useState<PI[]>([]);
+  const [selectedPIId, setSelectedPIId] = useState<string | undefined>();
+  const [selectedPIName, setSelectedPIName] = useState<string>('');
 
   useEffect(() => {
     loadTeams();
+    loadPIs();
   }, []);
 
   const loadTeams = async (showLoading = true) => {
@@ -69,6 +73,22 @@ export const TeamsTab: React.FC = () => {
   
   // Refresh teams without showing loading state (for member updates)
   const refreshTeams = () => loadTeams(false);
+
+  const loadPIs = async () => {
+    try {
+      const response = await getPIs(currentYear);
+      const piList = response.data || response;
+      setPIs(piList);
+      if (piList.length > 0) {
+        // Default to first PI
+        const firstPI = piList[0];
+        setSelectedPIId(firstPI.id);
+        setSelectedPIName(firstPI.name);
+      }
+    } catch (error) {
+      console.error('Failed to load PIs');
+    }
+  };
 
   const handleSave = async (values: TeamCreate | TeamUpdate, capacityValues?: { q1: number; q2: number; q3: number; q4: number }) => {
     setSaving(true);
@@ -175,7 +195,7 @@ export const TeamsTab: React.FC = () => {
       ),
     },
     {
-      title: 'Members',
+      title: selectedPIName ? `Members (${selectedPIName})` : 'Members',
       key: 'members',
       width: '10%',
       align: 'center' as const,
@@ -184,7 +204,7 @@ export const TeamsTab: React.FC = () => {
       ),
     },
     {
-      title: 'Capacity',
+      title: selectedPIName ? `Capacity (${selectedPIName})` : 'Capacity',
       key: 'total_capacity',
       width: '15%',
       align: 'center' as const,
@@ -204,7 +224,32 @@ export const TeamsTab: React.FC = () => {
     <div className={styles.container}>
       {/* Page Header */}
       <div className={styles.pageHeader}>
-        <Typography.Title level={3} style={{ margin: 0 }}>Team Capacity Management</Typography.Title>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+          <Typography.Title level={3} style={{ margin: 0 }}>Team Capacity Management</Typography.Title>
+          
+          {/* PI Selector - page level */}
+          <div style={{ 
+            display: 'flex', alignItems: 'center', gap: 8,
+            background: '#f8faff',
+            border: '1.5px solid #6366f1',
+            borderRadius: 10,
+            padding: '6px 14px',
+          }}>
+            <span style={{ fontSize: 11, fontWeight: 600, color: '#6366f1', textTransform: 'uppercase' }}>
+              Program Increment
+            </span>
+            <Select
+              size="small"
+              style={{ minWidth: 140 }}
+              value={selectedPIId}
+              onChange={(value, option: any) => {
+                setSelectedPIId(value);
+                setSelectedPIName(option?.label ?? '');
+              }}
+              options={pis.map(pi => ({ value: pi.id, label: pi.name }))}
+            />
+          </div>
+        </div>
       </div>
 
       {filteredTeams.length === 0 && !searchText ? (
@@ -258,6 +303,8 @@ export const TeamsTab: React.FC = () => {
               <div key={selectedTeamForView.id}>
                 <TeamDetailView
                   team={selectedTeamForView}
+                  selectedPIId={selectedPIId}
+                  selectedPIName={selectedPIName}
                   onClose={() => setSelectedTeamForView(null)}
                   onManageMembers={() => {
                     setSelectedTeamForManage(selectedTeamForView);
