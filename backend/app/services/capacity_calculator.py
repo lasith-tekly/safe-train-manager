@@ -62,8 +62,8 @@ class CapacityCalculator:
                 left_pi = db.query(PI).filter(
                     func.lower(func.cast(PI.id, String)) == str(m.left_after_pi_id).lower()
                 ).first()
-                if left_pi and left_pi.start_date < current_pi.start_date:
-                    continue  # Already left before this PI
+                if left_pi and left_pi.start_date <= current_pi.start_date:
+                    continue  # Left at or before this PI (inactive from this PI onwards)
 
             active.append(m)
 

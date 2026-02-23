@@ -22,8 +22,8 @@ import {
   Space
 } from 'antd';
 import { SaveOutlined, UserOutlined, WarningOutlined } from '@ant-design/icons';
-import type { Team, PI, MemberPIAllocation, MemberPIAllocationCreate, IterationMemberLeave, MemberIterationProductivity, MemberIterationProductivityCreate } from '../../../types';
-import { getTeamPIAllocations, bulkCreatePIAllocations, getPIs, getComponentHats, getTeamIterationLeave, createIterationMemberLeave, updateIterationMemberLeave, getTeamIterationProductivity, bulkCreateIterationProductivity } from '../../../services/api';
+import type { Team, PI, MemberPIAllocation, MemberPIAllocationCreate, IterationMemberLeave, MemberIterationProductivity, MemberIterationProductivityCreate, TeamMember } from '../../../types';
+import { getTeamPIAllocations, bulkCreatePIAllocations, getPIs, getComponentHats, getTeamIterationLeave, createIterationMemberLeave, updateIterationMemberLeave, getTeamIterationProductivity, bulkCreateIterationProductivity, getTeamMembers } from '../../../services/api';
 
 const { Text, Title } = Typography;
 
@@ -64,6 +64,7 @@ export const PIAllocationsPanel: React.FC<PIAllocationsPanelProps> = ({
   const [pis, setPIs] = useState<PI[]>([]);
   const [selectedPI, setSelectedPI] = useState<string | null>(null);
   const [allocations, setAllocations] = useState<MemberPIAllocation[]>([]);
+  const [activeMembers, setActiveMembers] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   
@@ -133,10 +134,22 @@ export const PIAllocationsPanel: React.FC<PIAllocationsPanelProps> = ({
     if (!team || !selectedPI) return;
     setLoading(true);
     try {
-      const response = await getTeamPIAllocations(team.id, selectedPI);
-      setAllocations(response.data);
-      setSiteHolidaysCount(response.site_holidays_count || 0);
-      setIterationWorkingDays(response.iteration_working_days || []);
+      const [allocResponse, membersResponse] = await Promise.all([
+        getTeamPIAllocations(team.id, selectedPI),
+        getTeamMembers(team.id, selectedPI)
+      ]);
+      
+      setAllocations(allocResponse.data);
+      setSiteHolidaysCount(allocResponse.site_holidays_count || 0);
+      setIterationWorkingDays(allocResponse.iteration_working_days || []);
+      
+      // Build set of active member IDs based on backend is_active flag
+      const activeMemberIds = new Set(
+        membersResponse
+          .filter(m => (m as any).is_active !== false)
+          .map(m => m.id)
+      );
+      setActiveMembers(activeMemberIds);
     } catch (error) {
       message.error('Failed to load allocations');
     } finally {
@@ -444,11 +457,10 @@ export const PIAllocationsPanel: React.FC<PIAllocationsPanelProps> = ({
     return fieldData?.[iterationId] !== undefined ? fieldData[iterationId] : defaultValue;
   };
 
-  // Filter out inactive members (those with left_after_pi_id set)
+  // Filter out inactive members using backend-computed is_active flag
   const activeAllocations = allocations.filter(allocation => {
-    // If member has left_after_pi_id, they are inactive
-    const member = allocation as any;
-    return !member.left_after_pi_id;
+    // Use activeMembers set built from backend is_active flags
+    return activeMembers.has(allocation.member_id);
   });
 
   return (

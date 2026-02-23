@@ -79,16 +79,10 @@ export const ManageTeamPanel: React.FC<ManageTeamPanelProps> = ({
       setShowAddForm(false);
       form.resetFields();
       addForm.resetFields();
-      loadMembers();
-    }
-  }, [visible, team]);
-
-  // Load PIs when panel opens
-  useEffect(() => {
-    if (visible) {
+      // Load PIs first, which will chain to loadMembers with resolved PI
       loadPIsData();
     }
-  }, [visible]);
+  }, [visible, team]);
 
   const loadPIsData = async () => {
     setLoadingPis(true);
@@ -97,11 +91,13 @@ export const ManageTeamPanel: React.FC<ManageTeamPanelProps> = ({
       const response = await getPIs(currentYear);
       const piList = response.data || [];
       setPis(piList);
-      // Default to the first PI if not already selected
-      if (piList.length > 0 && !selectedPiId) {
+      // Default to the first PI and load members immediately with resolved PI
+      if (piList.length > 0) {
         const firstPi = piList[0];
         setSelectedPiId(firstPi.id);
         setSelectedPiName(firstPi.name);
+        // Load members with the resolved PI immediately - no race condition
+        await loadMembersForPi(firstPi.id);
       }
     } catch (error) {
       console.error('Failed to load PIs:', error);

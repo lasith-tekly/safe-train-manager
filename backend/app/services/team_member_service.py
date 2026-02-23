@@ -259,8 +259,8 @@ class TeamMemberService:
             # Check left_after boundary
             if is_active and member.left_after_pi_id:
                 left_start = pi_start_dates.get(str(member.left_after_pi_id).lower())
-                if left_start and left_start < current_pi_start:
-                    is_active = False  # Member already left before this PI
+                if left_start and left_start <= current_pi_start:
+                    is_active = False  # Member left at or before this PI (inactive from this PI onwards)
         
         # Lookup PI names
         if member.effective_from_pi_id:

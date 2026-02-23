@@ -110,11 +110,11 @@ def remove_member_from_pi(
         raise HTTPException(status_code=404, detail="PI not found")
     
     if current_index == 0:
-        # Removing from first PI = never active
-        # Set effective_from_pi_id to current PI and left_after to None
-        # This creates an impossible range = inactive everywhere
-        member.effective_from_pi_id = pi_id
-        member.left_after_pi_id = None
+        # Removing from first PI = never active in any PI
+        # Set left_after to the first PI itself
+        # With strict <= comparison, this makes member inactive in PI1 and all future PIs
+        member.left_after_pi_id = pi_id
+        member.effective_from_pi_id = None
     else:
         # Left after the previous PI
         previous_pi = all_pis[current_index - 1]
