@@ -358,14 +358,14 @@ export const TrainCapacityDashboard: React.FC = () => {
     ];
 
     return (
-      <div style={{ paddingLeft: 40, paddingRight: 16, paddingTop: 8, paddingBottom: 8, overflowX: 'auto', background: '#fafafa' }}>
+      <div style={{ overflowX: 'auto', paddingLeft: 48, paddingRight: 16, background: '#fafafa' }}>
         <Table
           dataSource={team.iterations}
           columns={columns}
           rowKey="iteration_id"
           pagination={false}
           size="small"
-          scroll={{ x: 'max-content' }}
+          scroll={{ x: 800 }}
           rowClassName={(record: IterationCapacity) => record.is_ip ? styles.ipRow : ''}
         />
       </div>
@@ -653,8 +653,7 @@ export const TrainCapacityDashboard: React.FC = () => {
               <Card>
                 <Statistic
                   title="Utilisation"
-                  value={piData.overall_utilization.toFixed(1)}
-                  suffix="%"
+                  value={`${piData.overall_utilization.toFixed(1)}%`}
                   prefix={<PercentageOutlined />}
                   valueStyle={{ color: getUtilizationColor(piData.overall_utilization) }}
                 />
