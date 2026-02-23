@@ -412,7 +412,10 @@ class IterationCapacityService:
         team_id: str,
         pi_id: str
     ) -> Optional[TeamIterationCapacityResponse]:
-        """Get team capacity for all iterations in a PI."""
+        """Get team capacity for all iterations in a PI using existing CapacityCalculator."""
+        from app.services.capacity_calculator import CapacityCalculator
+        from uuid import UUID
+        
         team = db.query(Team).filter(Team.id == team_id).first()
         if not team:
             return None
@@ -421,7 +424,10 @@ class IterationCapacityService:
         if not pi:
             return None
 
-        # Get or calculate capacities
+        # Use existing CapacityCalculator for authoritative capacity figures
+        capacity_summary = CapacityCalculator.calculate_team_capacity_summary(db, team, pi_id)
+        
+        # Get iterations for this PI
         iterations = db.query(Iteration).filter(Iteration.pi_id == pi_id).order_by(Iteration.sequence).all()
         
         # Get PI-boundary filtered member count
@@ -439,17 +445,28 @@ class IterationCapacityService:
         # Calculate FTE (sum of train allocations / 100)
         fte = sum(m.train_allocation_percent for m in active_members) / 100.0 if active_members else 0.0
 
-        iteration_capacities = []
-        total_capacity = 0.0
-        total_allocated = 0.0
+        # Extract total capacity from authoritative source
+        total_capacity = capacity_summary['total_capacity_days']
+        
+        # Extract role breakdown from authoritative source
         total_dev = 0.0
         total_pd = 0.0
         total_qa = 0.0
+        for role in capacity_summary['role_breakdown']:
+            if role['role'] == 'developer':
+                total_dev = role['effective_days']
+            elif role['role'] == 'pd':
+                total_pd = role['effective_days']
+            elif role['role'] == 'qa':
+                total_qa = role['effective_days']
         
+        # Build iteration capacities with role splits
+        iteration_capacities = []
+        total_allocated = 0.0
         global_settings = GlobalSettingsService.get_or_create(db, pi.year)
 
         for iteration in iterations:
-            # Calculate role-based capacity
+            # Calculate role-based capacity for this iteration
             role_caps = IterationCapacityService.calculate_team_iteration_capacity_by_role(
                 db, team_id, iteration, pi, global_settings
             )
@@ -488,11 +505,7 @@ class IterationCapacityService:
                 qa_capacity=role_caps['qa']
             ))
 
-            total_capacity += final_cap
             total_allocated += allocated
-            total_dev += role_caps['dev']
-            total_pd += role_caps['pd']
-            total_qa += role_caps['qa']
 
         # Calculate feature capacity and planned effort
         feature_capacity_pct = global_settings.feature_capacity_percentage / 100.0

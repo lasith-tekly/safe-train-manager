@@ -256,7 +256,7 @@ export const TrainCapacityDashboard: React.FC = () => {
         render: (count: number) => <span style={{ fontFamily: 'DM Mono, monospace' }}>{count}</span>
       },
       {
-        title: 'Total Cap (eD)',
+        title: 'Capacity (eD)',
         dataIndex: 'pi_total_capacity',
         key: 'total_capacity',
         width: 120,
@@ -264,26 +264,26 @@ export const TrainCapacityDashboard: React.FC = () => {
         render: (cap: number) => <span style={{ fontFamily: 'DM Mono, monospace', fontWeight: 500 }}>{Math.round(cap)}</span>
       },
       {
-        title: 'Feat Cap (eD)',
+        title: 'Feature Cap (eD)',
         dataIndex: 'pi_feature_capacity',
         key: 'feature_capacity',
-        width: 120,
+        width: 130,
         align: 'right' as const,
         render: (cap: number) => <span style={{ fontFamily: 'DM Mono, monospace', color: '#1890ff', fontWeight: 600 }}>{Math.round(cap)}</span>
       },
       {
-        title: 'Planned (eD)',
+        title: 'Planned Effort (eD)',
         dataIndex: 'pi_planned_effort',
         key: 'planned_effort',
-        width: 120,
+        width: 150,
         align: 'right' as const,
         render: (effort: number) => <span style={{ fontFamily: 'DM Mono, monospace' }}>{Math.round(effort)}</span>
       },
       {
-        title: 'Util %',
+        title: 'Utilisation %',
         dataIndex: 'pi_utilization',
         key: 'utilization',
-        width: 90,
+        width: 110,
         align: 'center' as const,
         render: (util: number) => (
           <span style={{ 
@@ -291,12 +291,12 @@ export const TrainCapacityDashboard: React.FC = () => {
             fontWeight: 600,
             color: getUtilizationColor(util)
           }}>
-            {util.toFixed(1)}%
+            {util.toFixed(1)}
           </span>
         )
       },
       {
-        title: 'Role Split',
+        title: 'Dev / PD / QA',
         key: 'role_split',
         width: 150,
         render: (_: unknown, record: TeamCapacity & { isTotal?: boolean }) => 
@@ -435,7 +435,7 @@ export const TrainCapacityDashboard: React.FC = () => {
                     fontWeight: 600,
                     color: getUtilizationColor(util)
                   }}>
-                    {util.toFixed(1)}%
+                    {util.toFixed(1)}
                   </span>
                 </div>
               );
@@ -454,7 +454,7 @@ export const TrainCapacityDashboard: React.FC = () => {
                   fontWeight: 600,
                   color: getUtilizationColor(util)
                 }}>
-                  {util.toFixed(1)}%
+                  {util.toFixed(1)}
                 </span>
               </div>
             );
@@ -623,7 +623,7 @@ export const TrainCapacityDashboard: React.FC = () => {
             <Col xs={12} sm={8} md={4}>
               <Card>
                 <Statistic
-                  title="Total Capacity"
+                  title="Train Capacity"
                   value={Math.round(piData.total_capacity)}
                   suffix="eD"
                   prefix={<FieldTimeOutlined />}
@@ -655,7 +655,8 @@ export const TrainCapacityDashboard: React.FC = () => {
               <Card>
                 <Statistic
                   title="Utilisation"
-                  value={`${piData.overall_utilization.toFixed(1)}%`}
+                  value={piData.overall_utilization.toFixed(1)}
+                  suffix="%"
                   prefix={<PercentageOutlined />}
                   valueStyle={{ color: getUtilizationColor(piData.overall_utilization) }}
                 />
