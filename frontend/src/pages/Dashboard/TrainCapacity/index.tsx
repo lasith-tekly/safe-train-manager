@@ -305,8 +305,7 @@ export const TrainCapacityDashboard: React.FC = () => {
         title: 'Iteration',
         dataIndex: 'iteration_name',
         key: 'iteration',
-        width: 120,
-        minWidth: 120,
+        width: 130,
         render: (name: string, record: IterationCapacity) => (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span>{name}</span>
@@ -318,8 +317,7 @@ export const TrainCapacityDashboard: React.FC = () => {
         title: 'Total (eD)',
         dataIndex: 'final_capacity',
         key: 'total',
-        width: 100,
-        minWidth: 100,
+        width: 110,
         align: 'right' as const,
         render: (cap: number) => <span style={{ fontFamily: 'DM Mono, monospace', fontWeight: 500 }}>{Math.round(cap)}</span>
       },
@@ -327,8 +325,7 @@ export const TrainCapacityDashboard: React.FC = () => {
         title: 'Dev (eD)',
         dataIndex: 'dev_capacity',
         key: 'dev',
-        width: 90,
-        minWidth: 90,
+        width: 100,
         align: 'right' as const,
         render: (cap: number) => <span style={{ fontFamily: 'DM Mono, monospace', color: '#13c2c2' }}>{Math.round(cap)}</span>
       },
@@ -336,8 +333,7 @@ export const TrainCapacityDashboard: React.FC = () => {
         title: 'PD (eD)',
         dataIndex: 'pd_capacity',
         key: 'pd',
-        width: 90,
-        minWidth: 90,
+        width: 100,
         align: 'right' as const,
         render: (cap: number) => <span style={{ fontFamily: 'DM Mono, monospace', color: '#fa8c16' }}>{Math.round(cap)}</span>
       },
@@ -345,18 +341,16 @@ export const TrainCapacityDashboard: React.FC = () => {
         title: 'QA (eD)',
         dataIndex: 'qa_capacity',
         key: 'qa',
-        width: 90,
-        minWidth: 90,
+        width: 100,
         align: 'right' as const,
         render: (cap: number) => <span style={{ fontFamily: 'DM Mono, monospace', color: '#722ed1' }}>{Math.round(cap)}</span>
       },
       {
-        title: 'Split',
+        title: 'Role Split',
         key: 'split',
-        width: 180,
-        minWidth: 160,
+        width: 200,
         render: (_: unknown, record: IterationCapacity) => (
-          <div style={{ paddingLeft: 12 }}>
+          <div style={{ minWidth: 160 }}>
             {renderRoleSplitBar(record.dev_capacity, record.pd_capacity, record.qa_capacity)}
           </div>
         )
@@ -364,7 +358,7 @@ export const TrainCapacityDashboard: React.FC = () => {
     ];
 
     return (
-      <div style={{ paddingLeft: 40, padding: '12px 48px 12px 40px', background: '#fafafa' }}>
+      <div style={{ paddingLeft: 48, paddingRight: 24, paddingTop: 8, paddingBottom: 8, background: '#fafafa' }}>
         <Table
           dataSource={team.iterations}
           columns={columns}
