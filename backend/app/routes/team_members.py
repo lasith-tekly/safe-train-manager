@@ -112,10 +112,11 @@ def remove_member_from_pi(
     
     if current_index == 0:
         # Removing from first PI = never active in any PI
-        # Set left_after to the first PI itself
-        # With strict <= comparison, this makes member inactive in PI1 and all future PIs
-        member.left_after_pi_id = pi_id
-        member.effective_from_pi_id = None
+        # Set left_after to None and effective_from to second PI (if exists)
+        # This makes member "not yet joined" in first PI
+        if len(all_pis) > 1:
+            member.effective_from_pi_id = str(all_pis[1].id)
+        member.left_after_pi_id = None
     else:
         # Left after the previous PI
         previous_pi = all_pis[current_index - 1]
