@@ -348,9 +348,9 @@ export const TrainCapacityDashboard: React.FC = () => {
       {
         title: 'Role Split',
         key: 'split',
-        width: 200,
+        width: 220,
         render: (_: unknown, record: IterationCapacity) => (
-          <div style={{ minWidth: 160 }}>
+          <div style={{ minWidth: 180, paddingLeft: 8 }}>
             {renderRoleSplitBar(record.dev_capacity, record.pd_capacity, record.qa_capacity)}
           </div>
         )
@@ -358,13 +358,14 @@ export const TrainCapacityDashboard: React.FC = () => {
     ];
 
     return (
-      <div style={{ paddingLeft: 48, paddingRight: 24, paddingTop: 8, paddingBottom: 8, background: '#fafafa' }}>
+      <div style={{ paddingLeft: 40, paddingRight: 16, paddingTop: 8, paddingBottom: 8, overflowX: 'auto', background: '#fafafa' }}>
         <Table
           dataSource={team.iterations}
           columns={columns}
           rowKey="iteration_id"
           pagination={false}
           size="small"
+          scroll={{ x: 'max-content' }}
           rowClassName={(record: IterationCapacity) => record.is_ip ? styles.ipRow : ''}
         />
       </div>
