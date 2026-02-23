@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Empty, Typography, Tabs, Button, Space, Popconfirm, message, Card, Row, Col } from 'antd';
+import { Empty, Typography, Tabs, Button, Space, Popconfirm, message, notification, Card, Row, Col } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { BudgetVersion, deleteBudgetLine, deleteBudgetCategory } from '../../../../services/budgetConfigService';
 import { BudgetLineForm } from '../forms/BudgetLineForm';
@@ -58,7 +58,29 @@ export const BudgetDetailsPanel: React.FC<BudgetDetailsPanelProps> = ({
       }
       onDataChange();
     } catch (error: any) {
-      message.error(error.response?.data?.detail || 'Failed to delete');
+      const status = error.response?.status;
+      const detail = error.response?.data?.detail;
+
+      if (status === 409 && detail?.message) {
+        // Budget line is referenced by roadmap features
+        const featureList = detail.features?.length
+          ? detail.features.join(', ')
+          : '';
+
+        notification.warning({
+          message: 'Cannot Delete Budget Line',
+          description: featureList
+            ? `${detail.message}\n\nAffected features: ${featureList}`
+            : detail.message,
+          duration: 8,
+        });
+      } else {
+        // Generic fallback
+        const errorMessage = typeof detail === 'string'
+          ? detail
+          : detail?.message || error.message || 'Failed to delete';
+        message.error(errorMessage);
+      }
     }
   };
 
