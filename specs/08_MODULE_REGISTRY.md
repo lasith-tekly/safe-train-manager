@@ -414,7 +414,8 @@ Always use _v4 versions. Legacy files exist but are NOT active:
 
 | Date | Module | Change | Risk | Commit | Impact |
 |------|--------|--------|------|--------|--------|
-| 2026-02-23 | Capacity Estimation | Fixed PI-scoped member count + removed duplicate PI displays | 🟡 Medium | TBD | Teams overview |
+| 2026-02-23 | Budget Configuration | Fixed category delete missing cascade recalculation | 🟡 Medium | TBD | Budget totals |
+| 2026-02-23 | Capacity Estimation | Fixed PI-scoped member count + removed duplicate PI displays | 🟡 Medium | 9c4e76c1 | Teams overview |
 | 2026-02-19 | Team Planning | Fixed commit_plan UPDATE logic | 🟡 Medium | 6151d92b | PO workflow |
 | 2026-02-19 | JIRA Records | Fixed version_id inheritance | 🟡 Medium | 898003a9 | Record creation |
 | 2026-02-19 | JIRA Records | Made version_id optional in schema | 🟡 Medium | 898003a9 | API contract |

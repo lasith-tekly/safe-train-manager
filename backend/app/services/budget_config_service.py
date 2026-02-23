@@ -289,6 +289,25 @@ class BudgetConfigService:
         return product_budget
 
     @staticmethod
+    def _update_budget_line_total(db: Session, budget_line_id: str) -> None:
+        """Recalculate BudgetLine allocated_amount from sum of its categories."""
+        total = db.query(func.sum(BudgetCategory.allocated_amount)).filter(
+            BudgetCategory.budget_line_id == str(budget_line_id)
+        ).scalar()
+
+        # If no categories remain, default to 0
+        total = total if total is not None else 0
+
+        budget_line = db.query(BudgetLine).filter(
+            BudgetLine.id == str(budget_line_id)
+        ).first()
+
+        if budget_line:
+            budget_line.allocated_amount = total
+            budget_line.updated_at = datetime.utcnow()
+            # No commit here — caller will commit after cascading up
+
+    @staticmethod
     def _update_product_budget_total(db: Session, product_budget_id: str) -> None:
         """Recalculate ProductBudget allocated_amount from sum of its budget lines."""
         # Query for sum, ensuring we handle the case where budget line was just deleted
@@ -505,19 +524,41 @@ class BudgetConfigService:
 
     @staticmethod
     def delete_budget_category(db: Session, category_id: UUID, user_id: UUID) -> bool:
-        """Delete budget category."""
+        """Delete budget category and recalculate parent BudgetLine and ProductBudget totals."""
         category = db.query(BudgetCategory).filter(BudgetCategory.id == str(category_id)).first()
         if not category:
             return False
         
+        # Store parent IDs before deletion
+        budget_line_id = category.budget_line_id
+        
         # TODO: Check if features are allocated to this category
         
+        # Log audit before deletion
         BudgetConfigService._log_audit(
             db, EntityType.CATEGORY, category.id,
             AuditAction.DELETE, None, str(category.allocated_amount), None, user_id
         )
         
         db.delete(category)
+        db.flush()  # Ensure delete is processed before recalculating
+        
+        # Cascade recalculation upward: Category → BudgetLine → ProductBudget
+        if budget_line_id:
+            # Step 1: Recalculate BudgetLine total from remaining categories
+            BudgetConfigService._update_budget_line_total(db, budget_line_id)
+            db.flush()
+            
+            # Step 2: Get the product_budget_id from the updated BudgetLine
+            budget_line = db.query(BudgetLine).filter(
+                BudgetLine.id == str(budget_line_id)
+            ).first()
+            if budget_line and budget_line.product_budget_id:
+                # Step 3: Recalculate ProductBudget total from remaining lines
+                BudgetConfigService._update_product_budget_total(
+                    db, budget_line.product_budget_id
+                )
+        
         db.commit()
         return True
 
