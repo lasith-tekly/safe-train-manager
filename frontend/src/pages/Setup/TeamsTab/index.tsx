@@ -35,12 +35,18 @@ export const TeamsTab: React.FC = () => {
   const [selectedTeamForView, setSelectedTeamForView] = useState<Team | null>(null);
   const [pis, setPIs] = useState<PI[]>([]);
   const [selectedPIId, setSelectedPIId] = useState<string | undefined>();
-  const [selectedPIName, setSelectedPIName] = useState<string>('');
 
   useEffect(() => {
     loadTeams();
     loadPIs();
   }, []);
+  
+  // Reload capacities when teams or PI changes
+  useEffect(() => {
+    if (teams.length > 0 && selectedPIId) {
+      loadCapacities(selectedPIId);
+    }
+  }, [teams, selectedPIId]);
 
   const loadTeams = async (showLoading = true) => {
     if (showLoading) setLoading(true);
@@ -52,12 +58,22 @@ export const TeamsTab: React.FC = () => {
       if (response.data.length > 0 && !selectedTeamForView) {
         setSelectedTeamForView(response.data[0]);
       }
-      
-      // Load capacity summaries for each team
+    } catch (error) {
+      message.error('Failed to load teams');
+    } finally {
+      if (showLoading) setLoading(false);
+    }
+  };
+  
+  const loadCapacities = async (piId: string | undefined) => {
+    if (!piId) return;
+    
+    try {
+      // Load capacity summaries for each team with PI context
       const capacities: Record<string, TeamCapacitySummary> = {};
-      for (const team of response.data) {
+      for (const team of teams) {
         try {
-          const summary = await getTeamCapacitySummary(team.id);
+          const summary = await getTeamCapacitySummary(team.id, piId);
           capacities[team.id] = summary;
         } catch {
           // Skip if capacity not available
@@ -65,9 +81,7 @@ export const TeamsTab: React.FC = () => {
       }
       setTeamCapacities(capacities);
     } catch (error) {
-      message.error('Failed to load teams');
-    } finally {
-      if (showLoading) setLoading(false);
+      console.error('Failed to load capacities');
     }
   };
   
@@ -83,7 +97,6 @@ export const TeamsTab: React.FC = () => {
         // Default to first PI
         const firstPI = piList[0];
         setSelectedPIId(firstPI.id);
-        setSelectedPIName(firstPI.name);
       }
     } catch (error) {
       console.error('Failed to load PIs');
@@ -195,16 +208,17 @@ export const TeamsTab: React.FC = () => {
       ),
     },
     {
-      title: selectedPIName ? `Members (${selectedPIName})` : 'Members',
+      title: 'Members',
       key: 'members',
       width: '10%',
       align: 'center' as const,
-      render: (_: unknown, record: Team) => (
-        <span>{record.member_count}</span>
-      ),
+      render: (_: unknown, record: Team) => {
+        const cap = teamCapacities[record.id];
+        return <span>{cap?.total_members ?? record.member_count ?? 0}</span>;
+      },
     },
     {
-      title: selectedPIName ? `Capacity (${selectedPIName})` : 'Capacity',
+      title: 'Capacity',
       key: 'total_capacity',
       width: '15%',
       align: 'center' as const,
@@ -242,9 +256,8 @@ export const TeamsTab: React.FC = () => {
               size="small"
               style={{ minWidth: 140 }}
               value={selectedPIId}
-              onChange={(value, option: any) => {
+              onChange={(value) => {
                 setSelectedPIId(value);
-                setSelectedPIName(option?.label ?? '');
               }}
               options={pis.map(pi => ({ value: pi.id, label: pi.name }))}
             />
@@ -304,7 +317,6 @@ export const TeamsTab: React.FC = () => {
                 <TeamDetailView
                   team={selectedTeamForView}
                   selectedPIId={selectedPIId}
-                  selectedPIName={selectedPIName}
                   onClose={() => setSelectedTeamForView(null)}
                   onManageMembers={() => {
                     setSelectedTeamForManage(selectedTeamForView);

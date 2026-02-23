@@ -8,7 +8,6 @@ import styles from './TeamDetailView.module.css';
 interface TeamDetailViewProps {
   team: Team;
   selectedPIId: string | undefined;
-  selectedPIName: string;
   onClose: () => void;
   onManageMembers: () => void;
   onPIAllocations: () => void;
@@ -17,7 +16,6 @@ interface TeamDetailViewProps {
 export const TeamDetailView: React.FC<TeamDetailViewProps> = ({
   team,
   selectedPIId,
-  selectedPIName,
   onClose,
   onManageMembers,
   onPIAllocations,
@@ -227,20 +225,6 @@ export const TeamDetailView: React.FC<TeamDetailViewProps> = ({
           </p>
         </div>
         <Button type="text" onClick={onClose}>✕</Button>
-      </div>
-
-      {/* PI Badge - Read-only */}
-      <div style={{ 
-        display: 'flex', alignItems: 'center', gap: 6,
-        background: '#f0f4ff', border: '1px solid #c7d2fe',
-        borderRadius: 8, padding: '4px 12px', marginBottom: 16
-      }}>
-        <span style={{ fontSize: 12, color: '#6366f1', fontWeight: 600 }}>
-          PI:
-        </span>
-        <span style={{ fontSize: 13, fontWeight: 700, color: '#4338ca' }}>
-          {selectedPIName || 'No PI Selected'}
-        </span>
       </div>
 
       {!selectedPIId ? (
