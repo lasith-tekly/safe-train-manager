@@ -24,10 +24,11 @@ def list_teams(
     status: Optional[str] = Query(None, description="Filter by status"),
     search: Optional[str] = Query(None, description="Search by name"),
     year: Optional[int] = Query(None, description="Year for capacity data"),
+    pi_id: Optional[str] = Query(None, description="PI ID for member count filtering"),
     db: Session = Depends(get_db)
 ):
     """List all teams with optional filtering."""
-    teams, total = TeamService.get_all(db, status=status, search=search, year=year)
+    teams, total = TeamService.get_all(db, status=status, search=search, year=year, pi_id=pi_id)
     return TeamListResponse(data=teams, total=total)
 
 

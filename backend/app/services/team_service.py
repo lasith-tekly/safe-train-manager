@@ -41,7 +41,8 @@ class TeamService:
         db: Session,
         status: Optional[str] = None,
         search: Optional[str] = None,
-        year: Optional[int] = None
+        year: Optional[int] = None,
+        pi_id: Optional[str] = None
     ) -> Tuple[List[TeamResponse], int]:
         """Get all teams with optional filtering."""
         query = db.query(Team)
@@ -61,7 +62,7 @@ class TeamService:
         total = query.count()
         teams = query.order_by(Team.name).all()
 
-        result = [TeamService.build_team_response(db, t, year) for t in teams]
+        result = [TeamService.build_team_response(db, t, year, pi_id) for t in teams]
         return result, total
 
     @staticmethod
@@ -267,7 +268,8 @@ class TeamService:
     def build_team_response(
         db: Session,
         team: Team,
-        year: Optional[int] = None
+        year: Optional[int] = None,
+        pi_id: Optional[str] = None
     ) -> TeamResponse:
         """Build team response with capacity."""
         current_year = year or datetime.datetime.now().year
@@ -317,6 +319,39 @@ class TeamService:
                         if member.is_product_owner and not product_owner_name:
                             product_owner_name = member.name
 
+        # Calculate member_count with PI-boundary filtering if pi_id provided
+        member_count = 0
+        if pi_id:
+            # Apply same PI-boundary logic as team_member_service.py
+            filter_pi = db.query(PI).filter(func.lower(PI.id) == func.lower(pi_id)).first()
+            if filter_pi and team.members:
+                # Get all PIs for start_date lookup
+                all_pis = db.query(PI).order_by(PI.start_date).all()
+                pi_start_dates = {str(p.id).lower(): p.start_date for p in all_pis}
+                current_pi_start = pi_start_dates.get(pi_id.lower())
+                
+                if current_pi_start:
+                    for member in team.members:
+                        is_active = True
+                        
+                        # Check effective_from boundary
+                        if member.effective_from_pi_id:
+                            from_start = pi_start_dates.get(str(member.effective_from_pi_id).lower())
+                            if from_start and from_start > current_pi_start:
+                                is_active = False
+                        
+                        # Check left_after boundary
+                        if is_active and member.left_after_pi_id:
+                            left_start = pi_start_dates.get(str(member.left_after_pi_id).lower())
+                            if left_start and left_start < current_pi_start:
+                                is_active = False
+                        
+                        if is_active:
+                            member_count += 1
+        else:
+            # No PI filter - use raw count
+            member_count = len(team.members) if team.members else 0
+
         return TeamResponse(
             id=team.id,
             name=team.name,
@@ -324,7 +359,7 @@ class TeamService:
             description=team.description,
             site_id=team.site_id,
             status=team.status.value if isinstance(team.status, TeamStatus) else team.status,
-            member_count=len(team.members) if team.members else 0,
+            member_count=member_count,
             scrum_master_name=scrum_master_name,
             product_owner_name=product_owner_name,
             products=products,
