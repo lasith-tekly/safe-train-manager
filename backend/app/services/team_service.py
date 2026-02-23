@@ -10,6 +10,7 @@ from app.models.pi import PI, Iteration
 from app.models.capacity_allocation import CapacityAllocationCategory
 from app.models.holiday import MemberLeave
 from app.models.member_iteration_productivity import MemberIterationProductivity
+from app.services.capacity_calculator import CapacityCalculator
 from app.schemas.team import (
     TeamCreate,
     TeamUpdate,
@@ -348,11 +349,10 @@ class TeamService:
         if not pi:
             raise ValueError(f"PI not found: {pi_id}")
         
-        # Get active team members
-        members = db.query(TeamMember).filter(
-            TeamMember.team_id == team_id_str,
-            TeamMember.status == TeamStatus.ACTIVE
-        ).all()
+        # Get active team members FOR THIS PI (PI-scoped filtering)
+        members = CapacityCalculator.get_active_members_for_pi(
+            db, team_id_str, pi_id_str
+        )
         
         # Get iterations for this PI
         iterations = db.query(Iteration).filter(
