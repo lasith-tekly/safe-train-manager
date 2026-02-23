@@ -209,9 +209,9 @@ export const TrainCapacityDashboard: React.FC = () => {
 
     return (
       <div style={{ display: 'flex', height: 8, borderRadius: 4, overflow: 'hidden' }}>
-        {devPct > 0 && <div style={{ width: `${devPct}%`, background: '#1677ff' }} title={`Dev: ${dev.toFixed(1)} eD`} />}
-        {pdPct > 0 && <div style={{ width: `${pdPct}%`, background: '#722ed1' }} title={`PD: ${pd.toFixed(1)} eD`} />}
-        {qaPct > 0 && <div style={{ width: `${qaPct}%`, background: '#52c41a' }} title={`QA: ${qa.toFixed(1)} eD`} />}
+        {devPct > 0 && <div style={{ width: `${devPct}%`, background: '#13c2c2' }} title={`Dev: ${dev.toFixed(1)} eD`} />}
+        {pdPct > 0 && <div style={{ width: `${pdPct}%`, background: '#fa8c16' }} title={`PD: ${pd.toFixed(1)} eD`} />}
+        {qaPct > 0 && <div style={{ width: `${qaPct}%`, background: '#722ed1' }} title={`QA: ${qa.toFixed(1)} eD`} />}
       </div>
     );
   };
@@ -333,7 +333,7 @@ export const TrainCapacityDashboard: React.FC = () => {
         key: 'dev',
         width: 100,
         align: 'right' as const,
-        render: (cap: number) => <span style={{ fontFamily: 'DM Mono, monospace', color: '#1677ff' }}>{Math.round(cap)}</span>
+        render: (cap: number) => <span style={{ fontFamily: 'DM Mono, monospace', color: '#13c2c2' }}>{Math.round(cap)}</span>
       },
       {
         title: 'PD (eD)',
@@ -341,7 +341,7 @@ export const TrainCapacityDashboard: React.FC = () => {
         key: 'pd',
         width: 100,
         align: 'right' as const,
-        render: (cap: number) => <span style={{ fontFamily: 'DM Mono, monospace', color: '#722ed1' }}>{Math.round(cap)}</span>
+        render: (cap: number) => <span style={{ fontFamily: 'DM Mono, monospace', color: '#fa8c16' }}>{Math.round(cap)}</span>
       },
       {
         title: 'QA (eD)',
@@ -349,7 +349,7 @@ export const TrainCapacityDashboard: React.FC = () => {
         key: 'qa',
         width: 100,
         align: 'right' as const,
-        render: (cap: number) => <span style={{ fontFamily: 'DM Mono, monospace', color: '#52c41a' }}>{Math.round(cap)}</span>
+        render: (cap: number) => <span style={{ fontFamily: 'DM Mono, monospace', color: '#722ed1' }}>{Math.round(cap)}</span>
       },
       {
         title: 'Split',
@@ -699,9 +699,9 @@ export const TrainCapacityDashboard: React.FC = () => {
             <Tag color="#faad14">Warning (50-79%)</Tag>
             <Tag color="#ff4d4f">Critical (&lt;50% or &gt;100%)</Tag>
             <span style={{ marginLeft: 24, fontWeight: 500 }}>Role Colors:</span>
-            <Tag color="#1677ff">Dev</Tag>
-            <Tag color="#722ed1">PD</Tag>
-            <Tag color="#52c41a">QA</Tag>
+            <Tag color="#13c2c2">Dev</Tag>
+            <Tag color="#fa8c16">PD</Tag>
+            <Tag color="#722ed1">QA</Tag>
           </div>
         </>
       ) : viewMode === 'annual' && annualData ? (
