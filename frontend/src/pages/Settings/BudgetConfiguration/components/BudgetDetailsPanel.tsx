@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Empty, Typography, Tabs, Button, Space, Popconfirm, message, notification, Card, Row, Col } from 'antd';
+import { Empty, Typography, Tabs, Button, Space, Popconfirm, message, Modal, Card, Row, Col } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { BudgetVersion, deleteBudgetLine, deleteBudgetCategory } from '../../../../services/budgetConfigService';
 import { BudgetLineForm } from '../forms/BudgetLineForm';
@@ -63,16 +63,47 @@ export const BudgetDetailsPanel: React.FC<BudgetDetailsPanelProps> = ({
 
       if (status === 409 && detail?.message) {
         // Budget line is referenced by roadmap features
-        const featureList = detail.features?.length
-          ? detail.features.join(', ')
-          : '';
-
-        notification.warning({
-          message: 'Cannot Delete Budget Line',
-          description: featureList
-            ? `${detail.message}\n\nAffected features: ${featureList}`
-            : detail.message,
-          duration: 8,
+        Modal.warning({
+          title: 'Cannot Delete Budget Line',
+          width: 480,
+          content: (
+            <div>
+              <p style={{ marginBottom: 12 }}>
+                This budget line is allocated to{' '}
+                <strong>{detail.features?.length ?? 0} feature(s)</strong> in
+                Roadmap Planning. Please remove the budget line allocation from
+                those features first.
+              </p>
+              {detail.features?.length > 0 && (
+                <>
+                  <p style={{ 
+                    marginBottom: 8, 
+                    fontWeight: 500,
+                    color: '#595959'
+                  }}>
+                    Affected features:
+                  </p>
+                  <ul style={{ 
+                    paddingLeft: 20, 
+                    margin: 0,
+                    maxHeight: 160,
+                    overflowY: 'auto'
+                  }}>
+                    {detail.features.map((f: string, i: number) => (
+                      <li key={i} style={{ 
+                        padding: '3px 0',
+                        color: '#262626'
+                      }}>
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+            </div>
+          ),
+          okText: 'Got it',
+          okButtonProps: { type: 'primary' },
         });
       } else {
         // Generic fallback
