@@ -144,11 +144,12 @@ export const TrainCapacityDashboard: React.FC = () => {
     if (!selectedPI) return;
     setLoading(true);
     try {
-      const params: any = { pi_id: selectedPI };
+      const searchParams = new URLSearchParams();
+      searchParams.append('pi_id', selectedPI);
       if (selectedTeamIds.length > 0) {
-        params.team_ids = selectedTeamIds;
+        selectedTeamIds.forEach(id => searchParams.append('team_ids', id));
       }
-      const response = await axios.get('/api/capacity/summary', { params });
+      const response = await axios.get(`/api/capacity/summary?${searchParams.toString()}`);
       setPiData(response.data);
     } catch (error) {
       console.error('Failed to load PI data', error);
@@ -161,11 +162,12 @@ export const TrainCapacityDashboard: React.FC = () => {
   const loadAnnualData = async () => {
     setLoading(true);
     try {
-      const params: any = { year: selectedYear };
+      const searchParams = new URLSearchParams();
+      searchParams.append('year', selectedYear.toString());
       if (selectedTeamIds.length > 0) {
-        params.team_ids = selectedTeamIds;
+        selectedTeamIds.forEach(id => searchParams.append('team_ids', id));
       }
-      const response = await axios.get('/api/capacity/annual-summary', { params });
+      const response = await axios.get(`/api/capacity/annual-summary?${searchParams.toString()}`);
       setAnnualData(response.data);
     } catch (error) {
       console.error('Failed to load annual data', error);
@@ -264,14 +266,6 @@ export const TrainCapacityDashboard: React.FC = () => {
         render: (cap: number) => <span style={{ fontFamily: 'DM Mono, monospace', fontWeight: 500 }}>{Math.round(cap)}</span>
       },
       {
-        title: 'Feature Cap (eD)',
-        dataIndex: 'pi_feature_capacity',
-        key: 'feature_capacity',
-        width: 130,
-        align: 'right' as const,
-        render: (cap: number) => <span style={{ fontFamily: 'DM Mono, monospace', color: '#1890ff', fontWeight: 600 }}>{Math.round(cap)}</span>
-      },
-      {
         title: 'Planned Effort (eD)',
         dataIndex: 'pi_planned_effort',
         key: 'planned_effort',
@@ -311,7 +305,8 @@ export const TrainCapacityDashboard: React.FC = () => {
         title: 'Iteration',
         dataIndex: 'iteration_name',
         key: 'iteration',
-        width: 150,
+        width: 120,
+        minWidth: 120,
         render: (name: string, record: IterationCapacity) => (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span>{name}</span>
@@ -324,6 +319,7 @@ export const TrainCapacityDashboard: React.FC = () => {
         dataIndex: 'final_capacity',
         key: 'total',
         width: 100,
+        minWidth: 100,
         align: 'right' as const,
         render: (cap: number) => <span style={{ fontFamily: 'DM Mono, monospace', fontWeight: 500 }}>{Math.round(cap)}</span>
       },
@@ -331,7 +327,8 @@ export const TrainCapacityDashboard: React.FC = () => {
         title: 'Dev (eD)',
         dataIndex: 'dev_capacity',
         key: 'dev',
-        width: 100,
+        width: 90,
+        minWidth: 90,
         align: 'right' as const,
         render: (cap: number) => <span style={{ fontFamily: 'DM Mono, monospace', color: '#13c2c2' }}>{Math.round(cap)}</span>
       },
@@ -339,7 +336,8 @@ export const TrainCapacityDashboard: React.FC = () => {
         title: 'PD (eD)',
         dataIndex: 'pd_capacity',
         key: 'pd',
-        width: 100,
+        width: 90,
+        minWidth: 90,
         align: 'right' as const,
         render: (cap: number) => <span style={{ fontFamily: 'DM Mono, monospace', color: '#fa8c16' }}>{Math.round(cap)}</span>
       },
@@ -347,21 +345,26 @@ export const TrainCapacityDashboard: React.FC = () => {
         title: 'QA (eD)',
         dataIndex: 'qa_capacity',
         key: 'qa',
-        width: 100,
+        width: 90,
+        minWidth: 90,
         align: 'right' as const,
         render: (cap: number) => <span style={{ fontFamily: 'DM Mono, monospace', color: '#722ed1' }}>{Math.round(cap)}</span>
       },
       {
         title: 'Split',
         key: 'split',
-        width: 150,
-        render: (_: unknown, record: IterationCapacity) => 
-          renderRoleSplitBar(record.dev_capacity, record.pd_capacity, record.qa_capacity)
+        width: 180,
+        minWidth: 160,
+        render: (_: unknown, record: IterationCapacity) => (
+          <div style={{ paddingLeft: 12 }}>
+            {renderRoleSplitBar(record.dev_capacity, record.pd_capacity, record.qa_capacity)}
+          </div>
+        )
       }
     ];
 
     return (
-      <div style={{ padding: '12px 48px', background: '#fafafa' }}>
+      <div style={{ paddingLeft: 40, padding: '12px 48px 12px 40px', background: '#fafafa' }}>
         <Table
           dataSource={team.iterations}
           columns={columns}
@@ -633,21 +636,21 @@ export const TrainCapacityDashboard: React.FC = () => {
             <Col xs={12} sm={8} md={4}>
               <Card>
                 <Statistic
-                  title="Feature Capacity"
-                  value={Math.round(piData.total_feature_capacity)}
+                  title="Planned Effort"
+                  value={Math.round(piData.total_planned_effort)}
                   suffix="eD"
-                  prefix={<DollarOutlined />}
-                  valueStyle={{ color: '#1890ff' }}
+                  prefix={<CheckCircleOutlined />}
                 />
               </Card>
             </Col>
             <Col xs={12} sm={8} md={4}>
               <Card>
                 <Statistic
-                  title="Planned Effort"
-                  value={Math.round(piData.total_planned_effort)}
+                  title="Feature Capacity"
+                  value={Math.round(piData.total_feature_capacity)}
                   suffix="eD"
-                  prefix={<CheckCircleOutlined />}
+                  prefix={<DollarOutlined />}
+                  valueStyle={{ color: '#1890ff' }}
                 />
               </Card>
             </Col>
