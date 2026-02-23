@@ -414,7 +414,8 @@ Always use _v4 versions. Legacy files exist but are NOT active:
 
 | Date | Module | Change | Risk | Commit | Impact |
 |------|--------|--------|------|--------|--------|
-| 2026-02-23 | Budget Configuration | Fix frontend crash on 409 budget line delete response | 🟢 Low | TBD | Budget UI |
+| 2026-02-23 | Capacity Estimation + Dashboard | Phase 1: Backend - Role splits, PI-boundary filtering, utilisation fix, annual view, team filter | 🔴 High | TBD | Train Capacity Dashboard |
+| 2026-02-23 | Budget Configuration | Fix frontend crash on 409 budget line delete response | 🟢 Low | 1b8abd29 | Budget UI |
 | 2026-02-23 | Budget Configuration | Return 409 when deleting BL referenced by roadmap features | 🟡 Medium | b1d9513d | Budget delete |
 | 2026-02-23 | Budget Configuration | Fixed category delete missing cascade recalculation | 🟡 Medium | 8a8a287b | Budget totals |
 | 2026-02-23 | Capacity Estimation | Fixed PI-scoped member count + removed duplicate PI displays | 🟡 Medium | 9c4e76c1 | Teams overview |

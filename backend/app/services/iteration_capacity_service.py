@@ -3,20 +3,24 @@ Iteration Capacity calculation service.
 """
 from datetime import date, timedelta
 from decimal import Decimal
-from typing import List, Optional
+from typing import List, Optional, Dict
 from sqlalchemy.orm import Session
-from sqlalchemy import or_
+from sqlalchemy import or_, func
 
 from app.models.pi import PI, Iteration
 from app.models.team import Team, TeamMember, TeamStatus
 from app.models.holiday import Holiday, MemberLeave
 from app.models.capacity import TeamIterationCapacity
 from app.models.global_settings import GlobalSettings
+from app.models.team_planning import TeamPlanning
 from app.services.global_settings_service import GlobalSettingsService
 from app.schemas.iteration_capacity import (
     IterationCapacityResponse,
     TeamIterationCapacityResponse,
-    CapacitySummaryResponse
+    CapacitySummaryResponse,
+    AnnualCapacitySummaryResponse,
+    AnnualPISummary,
+    AnnualTeamSummary
 )
 
 
@@ -78,6 +82,160 @@ class CalendarService:
 
 class IterationCapacityService:
     """Service for iteration capacity calculations."""
+
+    @staticmethod
+    def is_member_active_in_pi(db: Session, member: TeamMember, pi: PI) -> bool:
+        """
+        Check if a team member is active for the given PI based on PI boundaries.
+        
+        A member is active for a PI if:
+        - effective_from_pi_id is NULL OR the PI's sequence >= member's effective_from PI sequence
+        - AND left_after_pi_id is NULL OR the PI's sequence <= member's left_after PI sequence
+        """
+        # If no effective_from, member is active from the beginning
+        if not member.effective_from_pi_id:
+            effective_from_ok = True
+        else:
+            effective_from_pi = db.query(PI).filter(
+                func.lower(PI.id) == func.lower(member.effective_from_pi_id)
+            ).first()
+            if not effective_from_pi:
+                effective_from_ok = True  # If PI not found, assume active
+            else:
+                effective_from_ok = pi.sequence >= effective_from_pi.sequence
+        
+        # If no left_after, member is still active
+        if not member.left_after_pi_id:
+            left_after_ok = True
+        else:
+            left_after_pi = db.query(PI).filter(
+                func.lower(PI.id) == func.lower(member.left_after_pi_id)
+            ).first()
+            if not left_after_pi:
+                left_after_ok = True  # If PI not found, assume active
+            else:
+                left_after_ok = pi.sequence <= left_after_pi.sequence
+        
+        return effective_from_ok and left_after_ok
+
+    @staticmethod
+    def calculate_team_iteration_capacity_by_role(
+        db: Session,
+        team_id: str,
+        iteration: Iteration,
+        pi: PI,
+        global_settings: GlobalSettings
+    ) -> Dict[str, float]:
+        """
+        Calculate team capacity for a single iteration, split by role.
+        
+        Returns:
+            Dict with keys: 'total', 'dev', 'pd', 'qa'
+        """
+        from app.models.team import Team
+        from app.models.organization import Site
+        
+        team = db.query(Team).filter(Team.id == team_id).first()
+        if not team:
+            return {'total': 0.0, 'dev': 0.0, 'pd': 0.0, 'qa': 0.0}
+        
+        # Get team's site country_id for filtering holidays
+        team_country_id = None
+        if team.site_id:
+            site = db.query(Site).filter(Site.id == team.site_id).first()
+            if site:
+                team_country_id = site.country_id
+        
+        # Get active team members (status ACTIVE)
+        members = db.query(TeamMember).filter(
+            TeamMember.team_id == team_id,
+            TeamMember.status == TeamStatus.ACTIVE
+        ).all()
+        
+        # Filter members by PI boundaries
+        active_members = [
+            m for m in members 
+            if IterationCapacityService.is_member_active_in_pi(db, m, pi)
+        ]
+        
+        if not active_members:
+            return {'total': 0.0, 'dev': 0.0, 'pd': 0.0, 'qa': 0.0}
+        
+        # Get holidays in iteration period
+        holiday_query = db.query(Holiday).filter(
+            Holiday.date >= iteration.start_date,
+            Holiday.date <= iteration.end_date
+        )
+        
+        if team_country_id:
+            holiday_query = holiday_query.filter(
+                or_(
+                    Holiday.team_id == team_id,
+                    Holiday.country_id == team_country_id
+                )
+            )
+        else:
+            holiday_query = holiday_query.filter(Holiday.team_id == team_id)
+        
+        holidays = holiday_query.all()
+        holiday_dates = list(set([h.date for h in holidays]))
+        half_day_holidays = list(set([h.date for h in holidays if h.is_half_day]))
+        
+        # Calculate base working days
+        base_working_days = CalendarService.count_working_days(
+            iteration.start_date,
+            iteration.end_date,
+            holiday_dates
+        )
+        base_working_days += len(half_day_holidays) * 0.5
+        
+        # Calculate capacity by role
+        role_capacities = {'Developer': 0.0, 'PD': 0.0, 'QA': 0.0}
+        
+        for member in active_members:
+            # Get member leaves
+            leaves = db.query(MemberLeave).filter(
+                MemberLeave.member_id == member.id,
+                MemberLeave.start_date <= iteration.end_date,
+                MemberLeave.end_date >= iteration.start_date
+            ).all()
+            
+            # Calculate leave days
+            leave_days = 0.0
+            for leave in leaves:
+                leave_start = max(leave.start_date, iteration.start_date)
+                leave_end = min(leave.end_date, iteration.end_date)
+                days = CalendarService.count_working_days(leave_start, leave_end, holiday_dates)
+                if leave.is_half_day:
+                    days *= 0.5
+                leave_days += days
+            
+            # Calculate member capacity (same formula as existing)
+            train_allocation = member.train_allocation_percent / 100
+            allocated_days = base_working_days * train_allocation
+            available_days = max(0, allocated_days - leave_days)
+            
+            train_productivity = global_settings.global_productivity_percentage / 100
+            individual_productivity = (
+                member.individual_productivity / 100
+                if member.individual_productivity is not None 
+                else 1.0
+            )
+            
+            member_capacity = available_days * train_productivity * individual_productivity
+            
+            # Add to role bucket
+            role = member.role if member.role in ['Developer', 'PD', 'QA'] else 'Developer'
+            role_capacities[role] += member_capacity
+        
+        total = sum(role_capacities.values())
+        
+        return {
+            'total': round(total, 2),
+            'dev': round(role_capacities['Developer'], 2),
+            'pd': round(role_capacities['PD'], 2),
+            'qa': round(role_capacities['QA'], 2)
+        }
 
     @staticmethod
     def calculate_team_iteration_capacity(
@@ -266,16 +424,36 @@ class IterationCapacityService:
         # Get or calculate capacities
         iterations = db.query(Iteration).filter(Iteration.pi_id == pi_id).order_by(Iteration.sequence).all()
         
-        member_count = db.query(TeamMember).filter(
+        # Get PI-boundary filtered member count
+        all_members = db.query(TeamMember).filter(
             TeamMember.team_id == team_id,
             TeamMember.status == TeamStatus.ACTIVE
-        ).count()
+        ).all()
+        
+        active_members = [
+            m for m in all_members
+            if IterationCapacityService.is_member_active_in_pi(db, m, pi)
+        ]
+        member_count = len(active_members)
+        
+        # Calculate FTE (sum of train allocations / 100)
+        fte = sum(m.train_allocation_percent for m in active_members) / 100.0 if active_members else 0.0
 
         iteration_capacities = []
         total_capacity = 0.0
         total_allocated = 0.0
+        total_dev = 0.0
+        total_pd = 0.0
+        total_qa = 0.0
+        
+        global_settings = GlobalSettingsService.get_or_create(db, pi.year)
 
         for iteration in iterations:
+            # Calculate role-based capacity
+            role_caps = IterationCapacityService.calculate_team_iteration_capacity_by_role(
+                db, team_id, iteration, pi, global_settings
+            )
+            
             cap = db.query(TeamIterationCapacity).filter(
                 TeamIterationCapacity.team_id == team_id,
                 TeamIterationCapacity.iteration_id == iteration.id
@@ -285,11 +463,7 @@ class IterationCapacityService:
                 final_cap = cap.final_capacity
                 allocated = float(cap.allocated)
             else:
-                # Calculate on the fly if not stored
-                global_settings = GlobalSettingsService.get_or_create(db, pi.year)
-                final_cap = IterationCapacityService.calculate_team_iteration_capacity(
-                    db, team_id, iteration, global_settings
-                )
+                final_cap = role_caps['total']
                 allocated = 0.0
 
             available = final_cap - allocated
@@ -308,53 +482,82 @@ class IterationCapacityService:
                 final_capacity=final_cap,
                 allocated=allocated,
                 available=available,
-                utilization=round(utilization, 1)
+                utilization=round(utilization, 1),
+                dev_capacity=role_caps['dev'],
+                pd_capacity=role_caps['pd'],
+                qa_capacity=role_caps['qa']
             ))
 
             total_capacity += final_cap
             total_allocated += allocated
+            total_dev += role_caps['dev']
+            total_pd += role_caps['pd']
+            total_qa += role_caps['qa']
 
-        pi_utilization = (total_allocated / total_capacity * 100) if total_capacity > 0 else 0
+        # Calculate feature capacity and planned effort
+        feature_capacity_pct = global_settings.feature_capacity_percentage / 100.0
+        pi_feature_capacity = total_capacity * feature_capacity_pct
+        
+        # Get planned effort from team_planning
+        planned_effort = db.query(
+            func.sum(
+                TeamPlanning.dev_effort + 
+                TeamPlanning.pd_effort + 
+                TeamPlanning.qa_effort
+            )
+        ).filter(
+            func.lower(TeamPlanning.team_id) == func.lower(team_id),
+            func.lower(TeamPlanning.pi_id) == func.lower(pi_id),
+            TeamPlanning.is_descoped == False
+        ).scalar() or 0.0
+        
+        # Calculate utilisation: planned effort / feature capacity
+        pi_utilization = (float(planned_effort) / pi_feature_capacity * 100) if pi_feature_capacity > 0 else 0.0
 
         return TeamIterationCapacityResponse(
             team_id=team.id,
             team_name=team.name,
             team_code=team.short_code,
             member_count=member_count,
+            fte=round(fte, 1),
             iterations=iteration_capacities,
             pi_total_capacity=round(total_capacity, 2),
+            pi_feature_capacity=round(pi_feature_capacity, 2),
+            pi_planned_effort=round(float(planned_effort), 2),
             pi_total_allocated=round(total_allocated, 2),
-            pi_utilization=round(pi_utilization, 1)
+            pi_utilization=round(pi_utilization, 1),
+            dev_capacity=round(total_dev, 2),
+            pd_capacity=round(total_pd, 2),
+            qa_capacity=round(total_qa, 2)
         )
 
     @staticmethod
     def get_capacity_summary(
         db: Session,
-        year: int,
-        pi_id: Optional[str] = None
+        pi_id: str,
+        team_ids: Optional[List[str]] = None
     ) -> Optional[CapacitySummaryResponse]:
-        """Get capacity summary for all teams."""
+        """Get capacity summary for all teams or filtered teams."""
         # Get PI
-        if pi_id:
-            pi = db.query(PI).filter(PI.id == pi_id).first()
-        else:
-            # Get first active PI for the year
-            pi = db.query(PI).filter(
-                PI.year == year,
-                PI.status == 'active'
-            ).first()
-            if not pi:
-                # Get first PI for the year
-                pi = db.query(PI).filter(PI.year == year).order_by(PI.sequence).first()
-
+        pi = db.query(PI).filter(PI.id == pi_id).first()
         if not pi:
             return None
 
-        # Get all active teams
-        teams = db.query(Team).filter(Team.status == TeamStatus.ACTIVE).all()
+        # Get teams - filter by team_ids if provided
+        teams_query = db.query(Team).filter(Team.status == TeamStatus.ACTIVE)
+        
+        if team_ids and len(team_ids) > 0:
+            # Filter to specific teams using case-insensitive comparison
+            teams_query = teams_query.filter(
+                func.lower(Team.id).in_([func.lower(tid) for tid in team_ids])
+            )
+        
+        teams = teams_query.all()
 
         team_capacities = []
         total_capacity = 0.0
+        total_feature_capacity = 0.0
+        total_planned_effort = 0.0
         total_allocated = 0.0
 
         for team in teams:
@@ -362,17 +565,148 @@ class IterationCapacityService:
             if team_cap:
                 team_capacities.append(team_cap)
                 total_capacity += team_cap.pi_total_capacity
+                total_feature_capacity += team_cap.pi_feature_capacity
+                total_planned_effort += team_cap.pi_planned_effort
                 total_allocated += team_cap.pi_total_allocated
 
-        overall_utilization = (total_allocated / total_capacity * 100) if total_capacity > 0 else 0
+        # Calculate overall utilisation: total planned / total feature capacity
+        overall_utilization = (total_planned_effort / total_feature_capacity * 100) if total_feature_capacity > 0 else 0.0
 
         return CapacitySummaryResponse(
             pi_id=pi.id,
             pi_name=pi.name,
             teams=team_capacities,
             total_capacity=round(total_capacity, 2),
+            total_feature_capacity=round(total_feature_capacity, 2),
+            total_planned_effort=round(total_planned_effort, 2),
             total_allocated=round(total_allocated, 2),
             overall_utilization=round(overall_utilization, 1)
+        )
+
+    @staticmethod
+    def get_annual_capacity_summary(
+        db: Session,
+        year: int,
+        team_ids: Optional[List[str]] = None
+    ) -> Optional[AnnualCapacitySummaryResponse]:
+        """Get capacity summary for all PIs in a year."""
+        # Get all PIs for the year
+        pis = db.query(PI).filter(PI.year == year).order_by(PI.sequence).all()
+        
+        if not pis:
+            return None
+        
+        pi_summaries = []
+        
+        for pi in pis:
+            # Get teams - filter by team_ids if provided
+            teams_query = db.query(Team).filter(Team.status == TeamStatus.ACTIVE)
+            
+            if team_ids and len(team_ids) > 0:
+                teams_query = teams_query.filter(
+                    func.lower(Team.id).in_([func.lower(tid) for tid in team_ids])
+                )
+            
+            teams = teams_query.all()
+            
+            team_summaries = []
+            total_capacity = 0.0
+            total_feature_capacity = 0.0
+            total_planned_effort = 0.0
+            
+            global_settings = GlobalSettingsService.get_or_create(db, year)
+            feature_capacity_pct = global_settings.feature_capacity_percentage / 100.0
+            
+            for team in teams:
+                # Get PI-boundary filtered members
+                all_members = db.query(TeamMember).filter(
+                    TeamMember.team_id == team.id,
+                    TeamMember.status == TeamStatus.ACTIVE
+                ).all()
+                
+                active_members = [
+                    m for m in all_members
+                    if IterationCapacityService.is_member_active_in_pi(db, m, pi)
+                ]
+                
+                if not active_members:
+                    continue
+                
+                member_count = len(active_members)
+                fte = sum(m.train_allocation_percent for m in active_members) / 100.0
+                
+                # Calculate capacity for all iterations in this PI
+                iterations = db.query(Iteration).filter(Iteration.pi_id == pi.id).all()
+                
+                team_total_capacity = 0.0
+                team_dev = 0.0
+                team_pd = 0.0
+                team_qa = 0.0
+                
+                for iteration in iterations:
+                    role_caps = IterationCapacityService.calculate_team_iteration_capacity_by_role(
+                        db, team.id, iteration, pi, global_settings
+                    )
+                    team_total_capacity += role_caps['total']
+                    team_dev += role_caps['dev']
+                    team_pd += role_caps['pd']
+                    team_qa += role_caps['qa']
+                
+                team_feature_capacity = team_total_capacity * feature_capacity_pct
+                
+                # Get planned effort
+                planned_effort = db.query(
+                    func.sum(
+                        TeamPlanning.dev_effort + 
+                        TeamPlanning.pd_effort + 
+                        TeamPlanning.qa_effort
+                    )
+                ).filter(
+                    func.lower(TeamPlanning.team_id) == func.lower(team.id),
+                    func.lower(TeamPlanning.pi_id) == func.lower(pi.id),
+                    TeamPlanning.is_descoped == False
+                ).scalar() or 0.0
+                
+                utilisation_pct = (float(planned_effort) / team_feature_capacity * 100) if team_feature_capacity > 0 else 0.0
+                
+                team_summaries.append(AnnualTeamSummary(
+                    team_id=team.id,
+                    team_name=team.name,
+                    team_code=team.short_code,
+                    fte=round(fte, 1),
+                    member_count=member_count,
+                    total_capacity=round(team_total_capacity, 2),
+                    feature_capacity=round(team_feature_capacity, 2),
+                    planned_effort=round(float(planned_effort), 2),
+                    utilisation_pct=round(utilisation_pct, 1),
+                    dev_capacity=round(team_dev, 2),
+                    pd_capacity=round(team_pd, 2),
+                    qa_capacity=round(team_qa, 2)
+                ))
+                
+                total_capacity += team_total_capacity
+                total_feature_capacity += team_feature_capacity
+                total_planned_effort += float(planned_effort)
+            
+            total_utilisation = (total_planned_effort / total_feature_capacity * 100) if total_feature_capacity > 0 else 0.0
+            
+            pi_summaries.append(AnnualPISummary(
+                pi_id=pi.id,
+                pi_name=pi.name,
+                start_date=pi.start_date.isoformat(),
+                end_date=pi.end_date.isoformat(),
+                teams=team_summaries,
+                totals={
+                    'total_capacity': round(total_capacity, 2),
+                    'feature_capacity': round(total_feature_capacity, 2),
+                    'planned_effort': round(total_planned_effort, 2),
+                    'utilisation_pct': round(total_utilisation, 1)
+                }
+            ))
+        
+        return AnnualCapacitySummaryResponse(
+            year=year,
+            pis=pi_summaries
         )
 
     @staticmethod

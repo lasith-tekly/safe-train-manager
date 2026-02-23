@@ -1,7 +1,7 @@
 """
 Iteration Capacity API routes.
 """
-from typing import Optional
+from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 
@@ -12,7 +12,8 @@ from app.schemas.iteration_capacity import (
     TeamIterationCapacityResponse,
     CapacitySummaryResponse,
     CapacityOverrideRequest,
-    IterationCapacityResponse
+    IterationCapacityResponse,
+    AnnualCapacitySummaryResponse
 )
 from app.services.iteration_capacity_service import IterationCapacityService
 
@@ -21,16 +22,16 @@ router = APIRouter(prefix="/api/capacity", tags=["capacity"])
 
 @router.get("/summary", response_model=CapacitySummaryResponse)
 def get_capacity_summary(
-    year: int = Query(..., ge=2020, le=2100),
-    pi_id: Optional[str] = Query(None),
+    pi_id: str = Query(...),
+    team_ids: Optional[List[str]] = Query(None),
     db: Session = Depends(get_db)
 ):
-    """Get capacity summary for all teams."""
-    summary = IterationCapacityService.get_capacity_summary(db, year, pi_id)
+    """Get capacity summary for all teams or filtered teams."""
+    summary = IterationCapacityService.get_capacity_summary(db, pi_id, team_ids)
     if not summary:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="No PI found for the specified year"
+            detail="No PI found for the specified ID"
         )
     return summary
 
@@ -127,3 +128,19 @@ def reset_capacity_override(
             detail="Capacity record not found"
         )
     return None
+
+
+@router.get("/annual-summary", response_model=AnnualCapacitySummaryResponse)
+def get_annual_capacity_summary(
+    year: int = Query(..., ge=2020, le=2100),
+    team_ids: Optional[List[str]] = Query(None),
+    db: Session = Depends(get_db)
+):
+    """Get annual capacity summary for all PIs in a year."""
+    summary = IterationCapacityService.get_annual_capacity_summary(db, year, team_ids)
+    if not summary:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No PIs found for the specified year"
+        )
+    return summary
