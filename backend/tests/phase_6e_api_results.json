@@ -1,9 +1,9 @@
 {
-  "date": "2026-02-20T15:05:39.241163",
+  "date": "2026-02-23T07:13:38.073421",
   "summary": {
-    "passed": 31,
-    "failed": 2,
-    "total": 33
+    "passed": 35,
+    "failed": 0,
+    "total": 35
   },
   "results": [
     {
@@ -143,23 +143,33 @@
     },
     {
       "test": "POST /commit first call \u2192 success",
-      "status": "FAIL",
-      "notes": "Got: 400 {\"detail\":\"1 item(s) still need role breakdown: AOP-121234245\"}"
+      "status": "PASS",
+      "notes": "Got: 200 {\"status\":\"committed\",\"message\":\"Plan submitted for PM review\",\"plan_version_id\":\"66515dbf-912c-47c0-9e16-90517b293b1a\",\"committed_at\":\"2026-02-23T07:13:38.048320\",\"items_count\":1}"
     },
     {
       "test": "POST /commit second call \u2192 no UNIQUE error",
-      "status": "FAIL",
-      "notes": "Got: 400 {\"detail\":\"1 item(s) still need role breakdown: AOP-121234245\"}"
+      "status": "PASS",
+      "notes": "Got: 200 {\"status\":\"committed\",\"message\":\"Plan submitted for PM review\",\"plan_version_id\":\"66515dbf-912c-47c0-9e16-90517b293b1a\",\"committed_at\":\"2026-02-23T07:13:38.054365\",\"items_count\":1}"
+    },
+    {
+      "test": "POST /commit returns status=committed",
+      "status": "PASS",
+      "notes": "Got: committed"
     },
     {
       "test": "GET /teams/{team_id}/planning/review \u2192 HTTP 200 or 404",
       "status": "PASS",
-      "notes": "Got: 404"
+      "notes": "Got: 200"
+    },
+    {
+      "test": "GET /teams/{team_id}/planning/review \u2192 returns data",
+      "status": "PASS",
+      "notes": "Has items: True"
     },
     {
       "test": "POST /jira-records no version_id \u2192 HTTP 200/201",
       "status": "PASS",
-      "notes": "Got: 201 {\"id\":\"2d8fc5f5-94e5-4c97-b690-be7980146260\",\"feature_id\":\"cfd3eb64-421a-4c9b-96b0-91414b93fe8a\",\"jira_key\":\"TEST-6E-999\",\"title\":\"Phase 6E Automated Test Record\",\"description\":null,\"pi_id\":\"4f96e0b1-5d2f-4552-b4f0-c8031e3c5d27\",\"pi\":{\"id\":\"4f96e0b1-5d2f-4552-b4f0-c8031e3c5d27\",\"name\":\"PI 2026.1\",\"y"
+      "notes": "Got: 201 {\"id\":\"8df0e404-0f6c-4919-8f91-52582b146c49\",\"feature_id\":\"cfd3eb64-421a-4c9b-96b0-91414b93fe8a\",\"jira_key\":\"TEST-6E-999\",\"title\":\"Phase 6E Automated Test Record\",\"description\":null,\"pi_id\":\"4f96e0b1-5d2f-4552-b4f0-c8031e3c5d27\",\"pi\":{\"id\":\"4f96e0b1-5d2f-4552-b4f0-c8031e3c5d27\",\"name\":\"PI 2026.1\",\"y"
     },
     {
       "test": "JIRA created has version_id (inherited)",
@@ -172,15 +182,6 @@
       "notes": ""
     }
   ],
-  "bugs": [
-    {
-      "test": "POST /commit first call \u2192 success",
-      "notes": "Got: 400 {\"detail\":\"1 item(s) still need role breakdown: AOP-121234245\"}"
-    },
-    {
-      "test": "POST /commit second call \u2192 no UNIQUE error",
-      "notes": "Got: 400 {\"detail\":\"1 item(s) still need role breakdown: AOP-121234245\"}"
-    }
-  ],
-  "decision": "FAIL - 2 issues found"
+  "bugs": [],
+  "decision": "PASS - Ready for Phase 7"
 }
