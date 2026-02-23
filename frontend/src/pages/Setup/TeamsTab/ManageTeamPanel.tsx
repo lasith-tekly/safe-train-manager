@@ -28,7 +28,8 @@ import {
   EditOutlined,
   CloseOutlined,
   UserOutlined,
-  UserDeleteOutlined
+  UserDeleteOutlined,
+  UserAddOutlined
 } from '@ant-design/icons';
 import type { Team, TeamMember, TeamMemberCreate, TeamMemberUpdate, MemberRole } from '../../../types';
 import { getTeamMembers, createTeamMember, updateTeamMember, deleteTeamMember, getPIs } from '../../../services/api';
@@ -220,6 +221,23 @@ export const ManageTeamPanel: React.FC<ManageTeamPanelProps> = ({
       onUpdate?.();
     } catch (error) {
       message.error('Failed to remove member');
+    }
+  };
+
+  const handleReOnboard = async (memberId: string) => {
+    if (!team || !selectedPiId) return;
+    try {
+      await axios.post(
+        `/api/teams/${team.id}/members/${memberId}/re-onboard`,
+        { pi_id: selectedPiId }
+      );
+      message.success(
+        `Member re-onboarded from ${selectedPiName} onwards`
+      );
+      await loadMembersForPi(selectedPiId);
+      onUpdate?.();
+    } catch (error) {
+      message.error('Failed to re-onboard member');
     }
   };
 
@@ -541,6 +559,39 @@ export const ManageTeamPanel: React.FC<ManageTeamPanelProps> = ({
                 dataIndex: 'train_allocation_percent',
                 width: 100,
                 render: (val: number) => `${val}%` 
+              },
+              {
+                title: 'Actions',
+                key: 'actions',
+                width: 140,
+                render: (_: unknown, record: TeamMember) => (
+                  <Popconfirm
+                    title={`Re-onboard ${record.name}?`}
+                    description={
+                      <div style={{ maxWidth: 240, fontSize: 12 }}>
+                        {(record as any).effective_from_pi_id
+                          ? <>They will rejoin from <strong>{selectedPiName}</strong> onwards.</>
+                          : <>They will be restored as an <strong>active member in all PIs</strong>.</>
+                        }
+                      </div>
+                    }
+                    onConfirm={() => handleReOnboard(record.id)}
+                    okText="Re-onboard"
+                    cancelText="Cancel"
+                    okButtonProps={{ style: { background: '#52c41a', borderColor: '#52c41a' } }}
+                  >
+                    <Button
+                      size="small"
+                      style={{
+                        color: '#52c41a',
+                        borderColor: '#52c41a'
+                      }}
+                      icon={<UserAddOutlined />}
+                    >
+                      Re-onboard →
+                    </Button>
+                  </Popconfirm>
+                )
               }
             ]}
           />

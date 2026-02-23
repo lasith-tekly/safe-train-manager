@@ -1,6 +1,7 @@
 from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, status, Body, Query
 from sqlalchemy.orm import Session
+from sqlalchemy import func, String
 
 from app.database import get_db
 from app.schemas.team_member import (
@@ -128,6 +129,66 @@ def remove_member_from_pi(
         "name": member.name,
         "left_after_pi_id": member.left_after_pi_id,
         "status": "removed_from_pi"
+    }
+
+
+@router.post("/{member_id}/re-onboard")
+def re_onboard_member(
+    team_id: str,
+    member_id: str,
+    pi_id: str = Body(..., embed=True),
+    db: Session = Depends(get_db)
+):
+    """
+    Re-onboard a previously removed member from the given PI onwards.
+    Clears left_after_pi_id and sets effective_from_pi_id = pi_id.
+    
+    Special case: if member originally had no PI scope (was a global member),
+    clear BOTH fields to restore full global membership.
+    """
+    from app.models.team import TeamMember
+    from app.models.pi import PI
+
+    member = db.query(TeamMember).filter(
+        TeamMember.id == member_id
+    ).first()
+    if not member:
+        raise HTTPException(status_code=404, detail="Member not found")
+
+    if str(member.team_id).lower() != team_id.lower():
+        raise HTTPException(status_code=403, detail="Member not in this team")
+
+    # Validate PI exists
+    pi = db.query(PI).filter(
+        func.lower(func.cast(PI.id, String)) == pi_id.lower()
+    ).first()
+    if not pi:
+        raise HTTPException(status_code=404, detail="PI not found")
+
+    # Determine if member was originally a global member
+    # (effective_from_pi_id was NULL before they were removed)
+    # We can infer this: if effective_from_pi_id is currently NULL,
+    # they were a global member who got soft-removed (only left_after was set)
+    was_global_member = member.effective_from_pi_id is None
+
+    if was_global_member:
+        # Restore to fully global - active in all PIs
+        member.effective_from_pi_id = None
+        member.left_after_pi_id = None
+    else:
+        # PI-scoped member rejoining - active from selected PI onwards
+        member.effective_from_pi_id = str(pi_id)
+        member.left_after_pi_id = None
+
+    db.commit()
+    db.refresh(member)
+
+    return {
+        "id": str(member.id),
+        "name": member.name,
+        "effective_from_pi_id": member.effective_from_pi_id,
+        "left_after_pi_id": member.left_after_pi_id,
+        "status": "re_onboarded"
     }
 
 
