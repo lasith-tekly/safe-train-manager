@@ -59,19 +59,21 @@ export const IterationCapacityView: React.FC<IterationCapacityViewProps> = ({
   }, [team.id, year]);
 
   useEffect(() => {
+    if (selectedPI) {
+      loadMembersForPI(selectedPI);
+    }
+  }, [selectedPI]);
+
+  useEffect(() => {
     if (selectedPI && members.length > 0) {
       calculateCapacities();
     }
-  }, [selectedPI, members]);
+  }, [members]);
 
   const loadData = async () => {
     setLoading(true);
     try {
-      const [membersData, pisData] = await Promise.all([
-        getTeamMembers(team.id),
-        getPIs(year)
-      ]);
-      setMembers(membersData);
+      const pisData = await getPIs(year);
       setPIs(pisData.data);
       
       // Auto-select first PI
@@ -82,6 +84,15 @@ export const IterationCapacityView: React.FC<IterationCapacityViewProps> = ({
       message.error('Failed to load data');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadMembersForPI = async (piId: string) => {
+    try {
+      const membersData = await getTeamMembers(team.id, piId);
+      setMembers(membersData);
+    } catch (error) {
+      message.error('Failed to load members');
     }
   };
 
@@ -105,7 +116,7 @@ export const IterationCapacityView: React.FC<IterationCapacityViewProps> = ({
       }
 
       const memberCapacities: MemberIterationCapacity[] = members
-        .filter(m => m.status === 'active')
+        .filter(m => (m as any).is_active !== false)
         .map(member => {
           const memberLeave = leaveData
             .filter(l => l.member_id === member.id)
