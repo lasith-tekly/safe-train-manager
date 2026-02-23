@@ -49,7 +49,7 @@ export const TeamCapacityDashboardPage: React.FC = () => {
   const loadTeams = async () => {
     setLoading(true);
     try {
-      const response = await getTeams('active', undefined, selectedYear);
+      const response = await getTeams(undefined, undefined, selectedYear);
       setTeams(response.data);
     } catch (error) {
       message.error('Failed to load teams');
@@ -104,7 +104,14 @@ export const TeamCapacityDashboardPage: React.FC = () => {
       width: 200,
       render: (name: string, record: Team) => (
         <div>
-          <Text strong>{name}</Text>
+          <Text strong>
+            {name}
+            {record.status?.toLowerCase() === 'inactive' && (
+              <Tag color="default" style={{ marginLeft: 6, fontSize: 10 }}>
+                Inactive
+              </Tag>
+            )}
+          </Text>
           <br />
           <Text type="secondary" style={{ fontSize: 12 }}>
             {record.short_code} · {record.member_count || 0} members
@@ -232,6 +239,11 @@ export const TeamCapacityDashboardPage: React.FC = () => {
           rowKey="id"
           pagination={false}
           scroll={{ x: 1000 }}
+          onRow={(record) => ({
+            style: {
+              opacity: record.status?.toLowerCase() === 'inactive' ? 0.5 : 1
+            }
+          })}
         />
       </Card>
 

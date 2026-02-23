@@ -41,7 +41,7 @@ export const TeamsTab: React.FC = () => {
   const loadTeams = async (showLoading = true) => {
     if (showLoading) setLoading(true);
     try {
-      const response = await getTeams('active', undefined, currentYear);
+      const response = await getTeams(undefined, undefined, currentYear);
       setTeams(response.data);
       
       // Auto-select first team for two-column view
@@ -130,7 +130,14 @@ export const TeamsTab: React.FC = () => {
       width: '25%',
       render: (_: unknown, record: Team) => (
         <div>
-          <div className={styles.teamName}>{record.name}</div>
+          <div className={styles.teamName}>
+            {record.name}
+            {record.status?.toLowerCase() === 'inactive' && (
+              <Tag color="default" style={{ marginLeft: 8, fontSize: 11 }}>
+                Inactive
+              </Tag>
+            )}
+          </div>
           <div className={styles.teamCode}>{record.short_code}</div>
         </div>
       ),
@@ -232,7 +239,14 @@ export const TeamsTab: React.FC = () => {
               }
               onRow={(record) => ({
                 onClick: () => {
-                  setSelectedTeamForView(record);
+                  // Only allow selection of active teams
+                  if (record.status?.toLowerCase() !== 'inactive') {
+                    setSelectedTeamForView(record);
+                  }
+                },
+                style: {
+                  opacity: record.status?.toLowerCase() === 'inactive' ? 0.5 : 1,
+                  cursor: record.status?.toLowerCase() === 'inactive' ? 'not-allowed' : 'pointer'
                 }
               })}
             />
