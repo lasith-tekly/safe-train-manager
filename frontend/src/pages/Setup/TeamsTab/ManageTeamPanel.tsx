@@ -241,18 +241,28 @@ export const ManageTeamPanel: React.FC<ManageTeamPanelProps> = ({
     }
   };
 
-  // Split members into active and inactive based on PI scope
-  const isMemberActive = (member: TeamMember): boolean => {
-    // Use backend-computed is_active flag (PI-aware)
-    if (typeof (member as any).is_active === 'boolean') {
-      return (member as any).is_active;
-    }
-    // Fallback: no left_after = active
-    return !(member as any).left_after_pi_id;
-  };
+  // Split members into three categories:
+  // 1. Active members (show in main table)
+  const activeMembers = members.filter(m => 
+    (m as any).is_active !== false
+  );
 
-  const activeMembers = members.filter(isMemberActive);
-  const inactiveMembers = members.filter(m => !isMemberActive(m));
+  // 2. Members who left (show in greyed inactive section - audit trail)
+  const leftMembers = members.filter(m => 
+    (m as any).is_active === false && 
+    (m as any).left_after_pi_id !== null &&
+    (m as any).left_after_pi_id !== undefined
+  );
+
+  // 3. Members not yet joined (completely hidden from this PI view)
+  // These have effective_from_pi_id set to a FUTURE PI
+  // Backend returns is_active: false for them
+  // We don't show them at all in past PIs
+  const notYetJoined = members.filter(m =>
+    (m as any).is_active === false &&
+    !(m as any).left_after_pi_id
+  );
+  // notYetJoined → not rendered anywhere in this PI view
 
   const getRoleCounts = () => {
     const counts: Record<string, number> = {};
@@ -516,17 +526,17 @@ export const ManageTeamPanel: React.FC<ManageTeamPanelProps> = ({
         />
       )}
 
-      {/* Inactive Members Section */}
-      {inactiveMembers.length > 0 && (
+      {/* Left Members Section - Audit Trail */}
+      {leftMembers.length > 0 && (
         <>
           <Divider style={{ margin: '24px 0 12px' }}>
             <Text type="secondary" style={{ fontSize: 12 }}>
-              Inactive Members — removed from {selectedPiName} onwards
+              Left Members — removed from {selectedPiName} onwards
             </Text>
           </Divider>
 
           <Table
-            dataSource={inactiveMembers}
+            dataSource={leftMembers}
             rowKey="id"
             size="small"
             pagination={false}
