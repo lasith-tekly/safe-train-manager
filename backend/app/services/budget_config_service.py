@@ -417,19 +417,57 @@ class BudgetConfigService:
         return budget_line
 
     @staticmethod
-    def delete_budget_line(db: Session, budget_line_id: UUID, user_id: UUID) -> bool:
-        """Delete budget line (cascades to categories)."""
-        budget_line = db.query(BudgetLine).filter(BudgetLine.id == str(budget_line_id)).first()
-        if not budget_line:
-            return False
+    def delete_budget_line(db: Session, budget_line_id: UUID, user_id: UUID) -> dict:
+        """Delete budget line (cascades to categories).
         
+        Returns:
+            dict with keys: success (bool), error_code (str|None), 
+                            message (str|None), features (list|None)
+        """
+        budget_line = db.query(BudgetLine).filter(BudgetLine.id == str(budget_line_id)).first()
+        
+        if not budget_line:
+            return {"success": False, "error_code": "NOT_FOUND", 
+                    "message": "Budget line not found", "features": None}
+
+        # ── Pre-delete reference check ──────────────────────────────────────
+        # Import here to avoid circular imports
+        from app.models.feature_budget_allocation import FeatureBudgetLineAllocation
+        from app.models.roadmap_v4 import RoadmapFeature
+
+        references = (
+            db.query(
+                FeatureBudgetLineAllocation.id,
+                RoadmapFeature.name.label("feature_name")
+            )
+            .join(
+                RoadmapFeature,
+                func.lower(FeatureBudgetLineAllocation.feature_id) == func.lower(RoadmapFeature.id)
+            )
+            .filter(
+                func.lower(FeatureBudgetLineAllocation.budget_line_id) == func.lower(str(budget_line_id))
+            )
+            .all()
+        )
+
+        if references:
+            feature_names = [r.feature_name for r in references]
+            return {
+                "success": False,
+                "error_code": "HAS_REFERENCES",
+                "message": (
+                    f"Cannot delete budget line '{budget_line.name}' — "
+                    f"it is allocated to {len(references)} feature(s) in Roadmap Planning. "
+                    f"Please remove the budget line allocation from those features first."
+                ),
+                "features": feature_names
+            }
+        # ────────────────────────────────────────────────────────────────────
+
         # Store product_budget_id before deletion
         product_budget_id = budget_line.product_budget_id
         
-        # TODO: Check if features are allocated to this budget line
-        # if has_allocated_features(budget_line_id):
-        #     raise ValueError("Cannot delete budget line with allocated features")
-        
+        # Log audit
         BudgetConfigService._log_audit(
             db, EntityType.BUDGET_LINE, budget_line.id,
             AuditAction.DELETE, None, str(budget_line.allocated_amount), None, user_id
@@ -443,7 +481,7 @@ class BudgetConfigService:
             BudgetConfigService._update_product_budget_total(db, product_budget_id)
         
         db.commit()
-        return True
+        return {"success": True, "error_code": None, "message": None, "features": None}
 
     @staticmethod
     def delete_product_budget(db: Session, product_budget_id: UUID) -> bool:

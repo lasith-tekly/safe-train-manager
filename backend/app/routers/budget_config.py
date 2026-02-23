@@ -241,10 +241,29 @@ def delete_budget_line(
     budget_line_id: UUID,
     db: Session = Depends(get_db)
 ):
-    """Delete budget line."""
-    success = BudgetConfigService.delete_budget_line(db, budget_line_id, TEMP_USER_ID)
-    if not success:
-        raise HTTPException(status_code=404, detail="Budget line not found")
+    """Delete budget line.
+    
+    Returns 409 if the budget line is referenced by Roadmap features.
+    """
+    result = BudgetConfigService.delete_budget_line(
+        db, budget_line_id, TEMP_USER_ID
+    )
+    
+    if not result["success"]:
+        if result["error_code"] == "NOT_FOUND":
+            raise HTTPException(
+                status_code=404, 
+                detail="Budget line not found"
+            )
+        if result["error_code"] == "HAS_REFERENCES":
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "message": result["message"],
+                    "features": result["features"]
+                }
+            )
+    
     return None
 
 
