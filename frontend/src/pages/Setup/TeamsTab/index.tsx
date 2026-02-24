@@ -41,6 +41,13 @@ export const TeamsTab: React.FC = () => {
     loadPIs();
   }, []);
   
+  // Reload teams and capacities when PI changes
+  useEffect(() => {
+    if (selectedPIId) {
+      loadTeams(true);
+    }
+  }, [selectedPIId]);
+  
   // Reload capacities when teams or PI changes
   useEffect(() => {
     if (teams.length > 0 && selectedPIId) {
@@ -51,7 +58,7 @@ export const TeamsTab: React.FC = () => {
   const loadTeams = async (showLoading = true) => {
     if (showLoading) setLoading(true);
     try {
-      const response = await getTeams(undefined, undefined, currentYear);
+      const response = await getTeams(undefined, undefined, currentYear, selectedPIId);
       setTeams(response.data);
       
       // Auto-select first team for two-column view

@@ -181,12 +181,14 @@ export const deleteBudgetVersion = async (id: string): Promise<void> => {
 export const getTeams = async (
   status?: string,
   search?: string,
-  year?: number
+  year?: number,
+  pi_id?: string
 ): Promise<TeamListResponse> => {
   const params: Record<string, string | number> = {};
   if (status) params.status = status;
   if (search) params.search = search;
   if (year) params.year = year;
+  if (pi_id) params.pi_id = pi_id;
   
   const response = await api.get<TeamListResponse>('/teams', { params });
   return response.data;
