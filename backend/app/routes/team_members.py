@@ -111,26 +111,28 @@ def remove_member_from_pi(
         raise HTTPException(status_code=404, detail="PI not found")
     
     if current_index == 0:
-        # Removing from first PI = never active in any PI
-        # Set left_after to None and effective_from to second PI (if exists)
-        # This makes member "not yet joined" in first PI
-        if len(all_pis) > 1:
-            member.effective_from_pi_id = str(all_pis[1].id)
-        member.left_after_pi_id = None
+        # Removing from first PI = member was never active in this team
+        # DELETE the record entirely
+        db.delete(member)
+        db.commit()
+        return {
+            "id": str(member.id),
+            "name": member.name,
+            "status": "deleted"
+        }
     else:
-        # Left after the previous PI
+        # Remove from PI X onwards = last active PI was X-1
         previous_pi = all_pis[current_index - 1]
         member.left_after_pi_id = str(previous_pi.id)
-    
-    db.commit()
-    db.refresh(member)
-    
-    return {
-        "id": str(member.id),
-        "name": member.name,
-        "left_after_pi_id": member.left_after_pi_id,
-        "status": "removed_from_pi"
-    }
+        db.commit()
+        db.refresh(member)
+        
+        return {
+            "id": str(member.id),
+            "name": member.name,
+            "left_after_pi_id": member.left_after_pi_id,
+            "status": "removed_from_pi"
+        }
 
 
 @router.post("/{member_id}/re-onboard")
