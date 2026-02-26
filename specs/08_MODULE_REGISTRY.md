@@ -12,6 +12,7 @@ Always use _v4 versions. Legacy files exist but are NOT active:
 | `jira_records.py` | `jira_v4.py` |
 | `features.py` | `features_v4.py` |
 | `feature_service.py` | `feature_service_v4.py` |
+| `backend/app/routes/budget_config.py` | `backend/app/routers/budget_config.py` |
 
 ## 🔒 LOCKED Modules (Phases 2-6 Complete)
 
@@ -21,8 +22,8 @@ Always use _v4 versions. Legacy files exist but are NOT active:
 **Risk Level:** 🔴 High
 
 **Backend Files:**
-- `backend/app/routes/budget_config.py`
-- `backend/app/routers/budget_config.py`
+- `backend/app/routers/budget_config.py` ← PRIMARY (use this)
+- `backend/app/routes/budget_config.py` ← LEGACY (not primary)
 - `backend/app/routers/budget_dashboard.py`
 - `backend/app/services/budget_service.py`
 - `backend/app/models/budget_new.py`
@@ -211,6 +212,32 @@ Always use _v4 versions. Legacy files exist but are NOT active:
 
 ---
 
+### Phase 7A: Train Capacity Dashboard
+**Status:** 🔒 LOCKED  
+**Locked Date:** 2026-02-24  
+**Risk Level:** 🟡 Medium
+
+**Backend Files:**
+- `backend/app/routes/capacity.py` (extended)
+- `backend/app/services/capacity_service.py` (extended)
+
+**Frontend Files:**
+- `frontend/src/pages/TrainCapacity/index.tsx`
+- `frontend/src/pages/TeamCapacity/index.tsx`
+
+**Features:**
+- PI/Annual capacity views
+- Dev/PD/QA role split breakdown
+- Multi-team filter
+- Utilisation % calculation
+- PI-boundary aware member counts
+
+**Dependencies:**
+- Reads from: Capacity Estimation (Phase 3), Teams, PI Calendar
+- No new DB tables
+
+---
+
 ### Phase 6D: PM Review & Approval
 **Status:** 🔒 LOCKED  
 **Locked Date:** 2026-02-19  
@@ -288,6 +315,28 @@ Always use _v4 versions. Legacy files exist but are NOT active:
 **Planned Tables:**
 - `report_snapshots`
 - `analytics_cache`
+
+---
+
+## Git Branching Strategy
+
+**Rules:**
+- `main` = stable, production-ready ONLY. Never commit directly.
+- `developer` = all active development
+- Merge `developer` → `main` only when complete feature tested and verified
+
+**Merge Criteria (ALL must be true):**
+- ✅ Feature fully implemented
+- ✅ All regression tests passed
+- ✅ Screenshots confirmed correct
+- ✅ No known open bugs
+- ✅ Specs updated
+
+**Windsurf Agent Rule (add to EVERY prompt):**
+- Commit to 'developer' branch only
+- Do NOT commit to main
+- Do NOT create new branches
+- NEVER commit backend/safe_train.db
 
 ---
 
@@ -419,6 +468,14 @@ Always use _v4 versions. Legacy files exist but are NOT active:
 | 2026-02-23 | Budget Configuration | Fix frontend crash on 409 budget line delete response | 🟢 Low | 1b8abd29 | Budget UI |
 | 2026-02-23 | Budget Configuration | Return 409 when deleting BL referenced by roadmap features | 🟡 Medium | b1d9513d | Budget delete |
 | 2026-02-23 | Budget Configuration | Fixed category delete missing cascade recalculation | 🟡 Medium | 8a8a287b | Budget totals |
+| 2026-02-26 | PMReview | Fix PMReviewPanel drawer width to 50% | 🟢 Low | d0605de0 | UI consistency |
+| 2026-02-26 | TeamPlanning | Fix plan status after PM rejection | 🟡 Medium | c273c355 | Plan status |
+| 2026-02-26 | TeamPlanning | Fix PM review panel after PO re-submission | 🟡 Medium | 2e9bda89 | PM workflow |
+| 2026-02-26 | BudgetValidation | Fix planned_keur=0 for NULL version_id features | 🟢 Low | 4286f573 | Budget bars roadmap |
+| 2026-02-26 | Budget | Fix ProductBudgetResponse types int→float | 🟡 Medium | 0872ead4 | Schema fix |
+| 2026-02-26 | Budget | Fix consumed_amount calculation from features | 🟡 Medium | 0872ead4 | Budget bars |
+| 2026-02-26 | Budget | Fix budget/products active version fallback | 🟢 Low | — | Feature form budget lines |
+| 2026-02-24 | Train Capacity | Train Capacity Dashboard implemented | 🟡 Medium | — | New dashboard |
 | 2026-02-23 | Capacity Estimation | Fixed PI-scoped member count + removed duplicate PI displays | 🟡 Medium | 9c4e76c1 | Teams overview |
 | 2026-02-19 | Team Planning | Fixed commit_plan UPDATE logic | 🟡 Medium | 6151d92b | PO workflow |
 | 2026-02-19 | JIRA Records | Fixed version_id inheritance | 🟡 Medium | 898003a9 | Record creation |
@@ -434,10 +491,11 @@ Always use _v4 versions. Legacy files exist but are NOT active:
 | 2026-01-29 | Roadmap V4 migration | roadmap_features, jira_records | ✅ Yes |
 | 2026-02-05 | Team planning tables | team_planning, po_plan_versions | ✅ Yes |
 | 2026-02-12 | PM review columns | team_planning, po_plan_versions | ✅ Yes |
+| 2026-02-26 | DB Reset | Full DB reset — tables recreated from SQLAlchemy models directly (Alembic chain was broken) | All 42 tables |
 
 ---
 
-**Document Version:** 1.0  
-**Last Updated:** 2026-02-19  
+**Document Version:** 2.0  
+**Last Updated:** 2026-02-26  
 **Maintained By:** @TechLead  
 **Review Frequency:** After each phase completion

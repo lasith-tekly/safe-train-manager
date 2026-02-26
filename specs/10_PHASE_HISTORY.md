@@ -471,6 +471,36 @@ This document tracks the development history of Amadeus Elevate, documenting eac
 
 ---
 
+## Phase 7A: Train Capacity Dashboard (Completed)
+
+**Timeline:** Q1 2026  
+**Status:** ✅ Completed  
+**Locked Date:** 2026-02-24
+
+### Objectives
+- Provide train-level capacity overview across all teams
+- Show role-split capacity (Dev/PD/QA)
+- Support PI and Annual views
+
+### Deliverables
+- **Train Capacity Page**: Multi-team capacity dashboard
+- **PI View**: Capacity per PI per team
+- **Annual View**: Full year capacity summary
+- **Role Breakdown**: Dev/PD/QA split per team
+- **Utilisation Bars**: Visual utilisation indicators
+
+### Key Decisions
+- No new DB tables — reads from existing capacity tables
+- PI-boundary aware member counting
+- Extends existing capacity_service.py
+
+### Business Rules Implemented
+- Member counts respect effective_from_pi_id and left_after_pi_id
+- Utilisation = allocated eD / available capacity
+- Role split follows member role assignments
+
+---
+
 ## Phase 7: Change Propagation (Planned)
 
 **Timeline:** Q2 2026  
@@ -534,6 +564,7 @@ This document tracks the development history of Amadeus Elevate, documenting eac
 | 2026-02-05 | Team Planning | Add team planning tables | team_planning, po_plan_versions |
 | 2026-02-12 | PM Review | Add PM review columns | team_planning, po_plan_versions |
 | 2026-02-19 | Version ID Fix | Make version_id nullable in features | roadmap_features |
+| 2026-02-26 | DB Reset | Full DB reset — tables recreated from SQLAlchemy models directly (Alembic chain was broken) | All 42 tables |
 
 ### Data Migrations
 
@@ -606,6 +637,19 @@ This document tracks the development history of Amadeus Elevate, documenting eac
 - **Lesson**: Plan-level approval too coarse-grained
 - **Action**: Implemented item-level approve/reject
 
+### Phase 6D / Budget (2026-02-26 Session)
+- **Lesson**: consumed_amount was hardcoded to 0 (TODO comment never implemented)
+- **Action**: Implemented _calculate_consumed_amount() helper using feature_budget_line_allocations
+
+- **Lesson**: deviation_service.py filtered features by version_id, missing NULL version_id features
+- **Action**: Added OR filter to include product-level features with NULL version_id
+
+- **Lesson**: PM Review panel showed stale decisions after PO re-submission
+- **Action**: Reset decisions on re-commit, show fresh approve/reject buttons
+
+- **Lesson**: Database tracked by git caused data corruption on merge
+- **Action**: git rm --cached safe_train.db, established developer branch workflow
+
 ### General
 - **Lesson**: Database migrations must be tested thoroughly
 - **Action**: Always test forward and rollback migrations
@@ -634,7 +678,7 @@ This document tracks the development history of Amadeus Elevate, documenting eac
 
 ---
 
-**Document Version:** 1.0  
-**Last Updated:** 2026-02-19  
+**Document Version:** 2.0  
+**Last Updated:** 2026-02-26  
 **Maintained By:** @TechLead  
 **Review Frequency:** After each phase completion
