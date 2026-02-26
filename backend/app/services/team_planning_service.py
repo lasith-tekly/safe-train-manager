@@ -663,6 +663,19 @@ class TeamPlanningService:
 
         print(f"DEBUG: Found existing plan {po_plan.id}, status={po_plan.status} - UPDATING")
         
+        # Reset all item review decisions so PM sees fresh Approve/Reject buttons
+        self.db.query(TeamPlanning).filter(
+            and_(
+                TeamPlanning.team_id == team_id,
+                TeamPlanning.pi_id == pi_id
+            )
+        ).update({
+            "review_status": None,
+            "rejection_reason": None,
+            "reviewed_at": None,
+            "reviewed_by": None
+        }, synchronize_session=False)
+
         # UPDATE status only
         po_plan.status = 'committed'
         po_plan.committed_at = datetime.utcnow()
