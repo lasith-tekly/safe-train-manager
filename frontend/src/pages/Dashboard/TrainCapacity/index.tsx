@@ -226,7 +226,7 @@ export const TrainCapacityDashboard: React.FC = () => {
               title={`${label}: ${value.toFixed(1)} eD`}
             >
               <span style={{ fontSize: 10, color: '#fff', fontFamily: 'DM Mono, monospace', padding: '0 4px' }}>
-                {pct > 20 ? `${label} ${value.toFixed(1)}` : ''}
+                {pct > 8 ? `${label} ${value.toFixed(1)}` : ''}
               </span>
             </div>
           );
