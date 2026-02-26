@@ -206,17 +206,31 @@ export const TrainCapacityDashboard: React.FC = () => {
 
   const renderRoleSplitBar = (dev: number, pd: number, qa: number) => {
     const total = dev + pd + qa;
-    if (total === 0) return <div style={{ height: 8, background: '#f0f0f0', borderRadius: 4 }} />;
-    
-    const devPct = (dev / total) * 100;
-    const pdPct = (pd / total) * 100;
-    const qaPct = (qa / total) * 100;
+    if (total === 0) return <div style={{ height: 20, background: '#f0f0f0', borderRadius: 4 }} />;
+
+    const segments = [
+      { value: dev, color: '#13c2c2', label: 'Dev' },
+      { value: pd,  color: '#fa8c16', label: 'PD'  },
+      { value: qa,  color: '#722ed1', label: 'QA'  },
+    ];
 
     return (
-      <div style={{ display: 'flex', height: 8, borderRadius: 4, overflow: 'hidden' }}>
-        {devPct > 0 && <div style={{ width: `${devPct}%`, background: '#13c2c2' }} title={`Dev: ${dev.toFixed(1)} eD`} />}
-        {pdPct > 0 && <div style={{ width: `${pdPct}%`, background: '#fa8c16' }} title={`PD: ${pd.toFixed(1)} eD`} />}
-        {qaPct > 0 && <div style={{ width: `${qaPct}%`, background: '#722ed1' }} title={`QA: ${qa.toFixed(1)} eD`} />}
+      <div style={{ display: 'flex', height: 20, borderRadius: 4, overflow: 'hidden', minWidth: 100 }}>
+        {segments.map(({ value, color, label }) => {
+          if (value <= 0) return null;
+          const pct = (value / total) * 100;
+          return (
+            <div
+              key={label}
+              style={{ width: `${pct}%`, background: color, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', whiteSpace: 'nowrap' }}
+              title={`${label}: ${value.toFixed(1)} eD`}
+            >
+              <span style={{ fontSize: 10, color: '#fff', fontFamily: 'DM Mono, monospace', padding: '0 4px' }}>
+                {pct > 15 ? `${label} ${value.toFixed(1)}` : ''}
+              </span>
+            </div>
+          );
+        })}
       </div>
     );
   };
@@ -347,6 +361,21 @@ export const TrainCapacityDashboard: React.FC = () => {
         width: 110,
         align: 'right' as const,
         render: (cap: number) => <span style={{ fontFamily: 'DM Mono, monospace', color: '#722ed1' }}>{Math.round(cap)}</span>
+      },
+      {
+        title: 'Role Split',
+        key: 'iter_split',
+        render: (_: unknown, record: IterationCapacity) => {
+          const total = record.dev_capacity + record.pd_capacity + record.qa_capacity;
+          if (total === 0) return <div style={{ height: 6, background: '#f0f0f0', borderRadius: 3, minWidth: 80 }} />;
+          return (
+            <div style={{ display: 'flex', height: 6, borderRadius: 3, overflow: 'hidden', minWidth: 80 }}>
+              {record.dev_capacity > 0 && <div style={{ width: `${(record.dev_capacity / total) * 100}%`, background: '#13c2c2' }} title={`Dev: ${record.dev_capacity.toFixed(1)} eD`} />}
+              {record.pd_capacity > 0 && <div style={{ width: `${(record.pd_capacity / total) * 100}%`, background: '#fa8c16' }} title={`PD: ${record.pd_capacity.toFixed(1)} eD`} />}
+              {record.qa_capacity > 0 && <div style={{ width: `${(record.qa_capacity / total) * 100}%`, background: '#722ed1' }} title={`QA: ${record.qa_capacity.toFixed(1)} eD`} />}
+            </div>
+          );
+        }
       }
     ];
 
