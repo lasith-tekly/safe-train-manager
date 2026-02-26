@@ -5,7 +5,7 @@ Service for calculating deviations between strategic and execution plans.
 """
 from typing import Dict, List, Optional
 from sqlalchemy.orm import Session
-from sqlalchemy import func, and_
+from sqlalchemy import func, and_, or_
 from decimal import Decimal
 
 from app.models.roadmap_v4 import RoadmapFeature, FeatureQuarterlyAllocation, JiraRecord
@@ -305,9 +305,15 @@ class DeviationService:
                     budget_lines=[]
                 )
             
-            # Get all features for this version
+            # Get all features for this version, including product-level features with no version
             features = self.db.query(RoadmapFeature).filter(
-                RoadmapFeature.version_id == version_id
+                or_(
+                    RoadmapFeature.version_id == version_id,
+                    and_(
+                        RoadmapFeature.version_id == None,
+                        RoadmapFeature.product_id == product_id
+                    )
+                )
             ).all()
             
             # Calculate totals
