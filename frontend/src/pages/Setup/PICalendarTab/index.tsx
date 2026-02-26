@@ -521,7 +521,7 @@ export const PICalendarTab: React.FC = () => {
       title: 'PI Name',
       dataIndex: 'name',
       key: 'name',
-      width: 150,
+      width: 180,
       render: (name: string, record: PI) => (
         <div>
           <strong>{name}</strong>
@@ -546,20 +546,20 @@ export const PICalendarTab: React.FC = () => {
       title: 'Start Date',
       dataIndex: 'start_date',
       key: 'start_date',
-      width: 120,
+      width: 130,
       render: (date: string) => dayjs(date).format('MMM D, YYYY')
     },
     {
       title: 'End Date',
       dataIndex: 'end_date',
       key: 'end_date',
-      width: 120,
+      width: 130,
       render: (date: string) => dayjs(date).format('MMM D, YYYY')
     },
     {
       title: 'Duration',
       key: 'duration',
-      width: 140,
+      width: 150,
       render: (_: unknown, record: PI) => {
         const piWorkingDays = countWorkingDays(
           dayjs(record.start_date),
@@ -577,7 +577,7 @@ export const PICalendarTab: React.FC = () => {
     {
       title: 'Iterations',
       key: 'iterations',
-      width: 350,
+      width: 400,
       render: (_: unknown, record: PI) => (
         <div className={styles.iterationChips}>
           {record.iterations.map((iter) => {
@@ -612,7 +612,7 @@ export const PICalendarTab: React.FC = () => {
     {
       title: 'Actions',
       key: 'actions',
-      width: 120,
+      width: 100,
       render: (_: unknown, record: PI) => (
         <Space>
           <Tooltip title="Edit iterations">
@@ -731,6 +731,7 @@ export const PICalendarTab: React.FC = () => {
           <Table
             dataSource={pis}
             columns={columns}
+            scroll={{ x: 'max-content' }}
             rowKey="id"
             pagination={false}
             size="middle"
