@@ -135,6 +135,13 @@ const TeamPlanningPage: React.FC = () => {
     }
   }, [planningData?.summary]);
 
+  // Sync planStatus from server data on load/refresh
+  useEffect(() => {
+    if (planningData?.version?.status) {
+      setPlanStatus(planningData.version.status);
+    }
+  }, [planningData?.version?.status]);
+
   // Show error message if fetch fails
   useEffect(() => {
     if (error) {
@@ -565,8 +572,8 @@ const TeamPlanningPage: React.FC = () => {
         onClose={() => setReviewPanelOpen(false)}
         teamId={selectedTeamId}
         piId={selectedPiId}
-        onReviewComplete={() => {
-          setPlanStatus('approved');
+        onReviewComplete={(status) => {
+          setPlanStatus(status);
           refetch();
         }}
       />

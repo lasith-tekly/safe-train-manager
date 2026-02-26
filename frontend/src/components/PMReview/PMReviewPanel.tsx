@@ -16,7 +16,7 @@ interface PMReviewPanelProps {
   onClose: () => void;
   teamId: string;
   piId: string;
-  onReviewComplete: () => void;
+  onReviewComplete: (status: 'approved' | 'rejected') => void;
 }
 
 interface ReviewItem {
@@ -130,12 +130,13 @@ const PMReviewPanel: React.FC<PMReviewPanelProps> = ({
         { pi_id: piId }
       );
       console.log('Review complete:', response.data);
+      const finalStatus: 'approved' | 'rejected' = response.data.status === 'approved' ? 'approved' : 'rejected';
       message.success(
-        response.data.status === 'approved' 
+        finalStatus === 'approved' 
           ? 'Plan approved! ✓' 
           : 'Review submitted - PO will be notified of rejections'
       );
-      onReviewComplete();
+      onReviewComplete(finalStatus);
       onClose();
     } catch (error: any) {
       console.error('Complete review error:', error?.response?.data);
