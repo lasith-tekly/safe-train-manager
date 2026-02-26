@@ -112,6 +112,10 @@
   padding-left: 48px !important;
 }
 
+.menu :global(.ant-menu-sub .ant-menu-sub .ant-menu-item) {
+  padding-left: 72px !important;
+}
+
 .menu :global(.ant-menu-submenu-arrow) {
   color: rgba(255, 255, 255, 0.65) !important;
 }
