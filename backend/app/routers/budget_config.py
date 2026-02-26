@@ -117,6 +117,14 @@ def get_product_budgets(
     db: Session = Depends(get_db)
 ):
     """Get product budgets for active version or specified version."""
+    # If no version_id provided, use active version automatically
+    if version_id is None:
+        from app.models.budget_new import BudgetVersion
+        active_version = db.query(BudgetVersion).filter(
+            BudgetVersion.is_active == True
+        ).first()
+        if active_version:
+            version_id = active_version.id
     product_budgets = BudgetConfigService.get_product_budgets(db, fiscal_year_id, version_id)
     
     # Enrich with consumed amounts
