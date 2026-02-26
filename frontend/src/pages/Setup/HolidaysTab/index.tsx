@@ -158,8 +158,12 @@ export const HolidaysTab: React.FC = () => {
       form.resetFields();
       loadData();
     } catch (error: unknown) {
-      const err = error as { response?: { data?: { detail?: string } } };
-      message.error(err.response?.data?.detail || 'Failed to save holiday');
+      const err = error as { response?: { data?: { detail?: string | Array<{msg: string}> } } };
+      const detail = err.response?.data?.detail;
+      const errorMsg = Array.isArray(detail)
+        ? detail.map(d => d.msg).join(', ')
+        : detail || 'Failed to save holiday';
+      message.error(errorMsg);
     } finally {
       setSaving(false);
     }
@@ -196,8 +200,12 @@ export const HolidaysTab: React.FC = () => {
         loadData();
       }
     } catch (error: unknown) {
-      const err = error as { response?: { data?: { detail?: string } } };
-      message.error(err.response?.data?.detail || 'Failed to import holidays');
+      const err = error as { response?: { data?: { detail?: string | Array<{msg: string}> } } };
+      const detail = err.response?.data?.detail;
+      const errorMsg = Array.isArray(detail)
+        ? detail.map(d => d.msg).join(', ')
+        : detail || 'Failed to import holidays';
+      message.error(errorMsg);
     } finally {
       setSaving(false);
     }
@@ -208,8 +216,13 @@ export const HolidaysTab: React.FC = () => {
       await deleteHoliday(holiday.id);
       message.success('Holiday deleted');
       loadData();
-    } catch (error) {
-      message.error('Failed to delete holiday');
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { detail?: string | Array<{msg: string}> } } };
+      const detail = err.response?.data?.detail;
+      const errorMsg = Array.isArray(detail)
+        ? detail.map(d => d.msg).join(', ')
+        : detail || 'Failed to delete holiday';
+      message.error(errorMsg);
     }
   };
 

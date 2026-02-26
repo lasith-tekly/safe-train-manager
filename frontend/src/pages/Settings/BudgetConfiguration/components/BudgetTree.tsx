@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Tree, Spin, message, Empty, Button, Popconfirm } from 'antd';
+import { Tree, Spin, message, Empty, Button, Popconfirm, Row, Col, Statistic, Progress } from 'antd';
 import { LinkOutlined, PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import { getProductBudgets, getProductBudgetDetail, ProductBudget, deleteProductBudget } from '../../../../services/budgetConfigService';
 import { AddProductBudgetModal } from '../modals/AddProductBudgetModal';
@@ -233,8 +233,57 @@ export const BudgetTree: React.FC<BudgetTreeProps> = ({
     );
   }
 
+  const totalAllocated = treeData.reduce((sum, node) => sum + (node.data?.allocated_amount ?? 0), 0);
+  const totalUsed = treeData.reduce((sum, node) => sum + (node.data?.consumed_amount ?? 0), 0);
+  const totalRemaining = totalAllocated - totalUsed;
+  const overallUtilisation = totalAllocated > 0 ? (totalUsed / totalAllocated) * 100 : 0;
+  const utilisationColor = overallUtilisation > 90 ? '#f5222d' : overallUtilisation > 70 ? '#faad14' : '#52c41a';
+
   return (
     <div>
+      {/* Train-level budget summary */}
+      <div style={{ padding: '12px 16px', borderBottom: '1px solid #f0f0f0', background: '#fafafa' }}>
+        <Row gutter={12}>
+          <Col span={6}>
+            <Statistic
+              title="Allocated"
+              value={totalAllocated.toFixed(1)}
+              suffix="k€"
+              valueStyle={{ fontSize: 14, color: '#1890ff' }}
+            />
+          </Col>
+          <Col span={6}>
+            <Statistic
+              title="Used"
+              value={totalUsed.toFixed(1)}
+              suffix="k€"
+              valueStyle={{ fontSize: 14, color: utilisationColor }}
+            />
+          </Col>
+          <Col span={6}>
+            <Statistic
+              title="Remaining"
+              value={totalRemaining.toFixed(1)}
+              suffix="k€"
+              valueStyle={{ fontSize: 14, color: totalRemaining < 0 ? '#f5222d' : '#52c41a' }}
+            />
+          </Col>
+          <Col span={6}>
+            <div style={{ fontSize: 12, color: '#888', marginBottom: 4 }}>Utilisation</div>
+            <div style={{ fontWeight: 600, fontSize: 14, color: utilisationColor }}>
+              {overallUtilisation.toFixed(1)}%
+            </div>
+            <Progress
+              percent={Math.min(overallUtilisation, 100)}
+              showInfo={false}
+              strokeColor={utilisationColor}
+              size="small"
+              style={{ margin: 0 }}
+            />
+          </Col>
+        </Row>
+      </div>
+
       <div style={{ padding: '16px', borderBottom: '1px solid #f0f0f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ fontWeight: 500 }}>Budget Hierarchy</span>
         <Button

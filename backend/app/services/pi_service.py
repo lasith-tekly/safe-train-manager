@@ -214,8 +214,9 @@ class PIService:
             
             # Generate iterations
             iter_start = current_start
-            for iter_seq in range(1, data.iterations_per_pi + 1):
-                is_ip = data.include_ip and iter_seq == data.iterations_per_pi
+            total_iters = data.iterations_per_pi + (1 if data.include_ip else 0)
+            for iter_seq in range(1, total_iters + 1):
+                is_ip = data.include_ip and iter_seq == total_iters
                 
                 # Calculate iteration end based on working days
                 iter_end = get_iteration_end_date(iter_start, data.iteration_weeks, working_days)

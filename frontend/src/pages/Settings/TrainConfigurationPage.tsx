@@ -92,6 +92,15 @@ export const TrainConfigurationPage: React.FC = () => {
     }
   };
 
+  const loadAllocationsOnly = async () => {
+    try {
+      const allocationsData = await getCapacityAllocations(selectedYear);
+      setAllocations(allocationsData);
+    } catch (error) {
+      message.error('Failed to reload categories');
+    }
+  };
+
   // Capacity Allocation handlers
   const handleAddAllocation = () => {
     setEditingAllocation(null);
@@ -120,7 +129,7 @@ export const TrainConfigurationPage: React.FC = () => {
       setAllocationLoading(true);
       await deleteCapacityAllocation(id, true);
       message.success('Category deleted');
-      loadSettings();
+      loadAllocationsOnly();
     } catch {
       message.error('Failed to delete category');
     } finally {
@@ -157,7 +166,7 @@ export const TrainConfigurationPage: React.FC = () => {
       }
       
       setShowAllocationModal(false);
-      loadSettings();
+      loadAllocationsOnly();
     } catch {
       message.error('Failed to save category');
     } finally {
