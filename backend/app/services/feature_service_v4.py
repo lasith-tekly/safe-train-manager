@@ -13,6 +13,7 @@ from app.models.roadmap_v4 import (
     RoadmapFeature, FeatureTeam, FeatureQuarterlyAllocation,
     JiraRecord, JiraQuarterlyAllocation
 )
+from app.models.roadmap_version import RoadmapVersion
 from app.models.feature_budget_allocation import FeatureBudgetLineAllocation
 from app.models.team import Team
 from app.schemas.roadmap_v4 import (
@@ -265,10 +266,22 @@ class FeatureServiceV4:
         # Inherit version_id from feature if not provided in request
         version_id = request.version_id if request.version_id else feature.version_id
         
-        print(f"DEBUG: Creating JIRA record - feature={feature_id}, version_id={version_id}")
+        # Fallback: find any PUBLISHED or DRAFT version for the feature's product
+        if not version_id and feature.product_id:
+            fallback_version = (
+                self.db.query(RoadmapVersion)
+                .filter(RoadmapVersion.product_id == feature.product_id)
+                .order_by(
+                    (RoadmapVersion.status == 'PUBLISHED').desc(),
+                    RoadmapVersion.created_at.desc()
+                )
+                .first()
+            )
+            if fallback_version:
+                version_id = fallback_version.id
         
         if not version_id:
-            raise ValueError(f"Feature {feature_id} has no version_id - cannot create JIRA record")
+            raise ValueError(f"No roadmap version found for feature {feature_id} - please create a version first")
         
         # Get title from new field or fall back to old field
         title = request.title if request.title else (request.summary if request.summary else '')
