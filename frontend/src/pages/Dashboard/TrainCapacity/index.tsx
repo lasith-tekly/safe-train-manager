@@ -7,7 +7,7 @@ import styles from './TrainCapacity.module.css';
 
 const currentYear = new Date().getFullYear();
 
-type ViewMode = 'pi' | 'annual';
+type ViewMode = 'pi' | 'annual' | 'team';
 
 interface IterationCapacity {
   iteration_id: string;
@@ -105,6 +105,7 @@ export const TrainCapacityDashboard: React.FC = () => {
   const [piData, setPiData] = useState<CapacitySummary | null>(null);
   const [annualData, setAnnualData] = useState<AnnualCapacitySummary | null>(null);
   const [expandedRows, setExpandedRows] = useState<string[]>([]);
+  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
 
   useEffect(() => {
     loadPIs();
@@ -112,7 +113,7 @@ export const TrainCapacityDashboard: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (viewMode === 'pi' && selectedPI) {
+    if ((viewMode === 'pi' || viewMode === 'team') && selectedPI) {
       loadPIData();
     } else if (viewMode === 'annual') {
       loadAnnualData();
@@ -134,7 +135,9 @@ export const TrainCapacityDashboard: React.FC = () => {
   const loadTeams = async () => {
     try {
       const response = await axios.get('/api/teams');
-      setTeams(response.data?.data ?? response.data ?? []);
+      const loaded = response.data?.data ?? response.data ?? [];
+      setTeams(loaded);
+      if (loaded.length > 0) setSelectedTeamId(loaded[0].id);
     } catch (error) {
       console.error('Failed to load teams', error);
     }
@@ -487,7 +490,126 @@ export const TrainCapacityDashboard: React.FC = () => {
     );
   }
 
-  const currentData = viewMode === 'pi' ? piData : annualData;
+  const renderTeamView = () => {
+    if (!piData || !selectedTeamId) return <Empty description="No data available" />;
+    const team = piData.teams.find(t => t.team_id === selectedTeamId);
+    if (!team) return <Empty description="Team not found in this PI" />;
+    const currentPI = pis.find(p => p.id === selectedPI);
+    return (
+      <>
+        {/* Team + PI Banner */}
+        <Card size="small" style={{ marginBottom: 16, background: '#f0f4ff', border: '1px solid #d6e4ff' }}>
+          <Row justify="space-between" align="middle">
+            <Col>
+              <Tag color="blue" style={{ fontSize: 13, padding: '4px 12px' }}>{team.team_name}</Tag>
+              {currentPI && (
+                <span style={{ marginLeft: 12, color: '#666' }}>
+                  {currentPI.name} · {currentPI.start_date} to {currentPI.end_date}
+                </span>
+              )}
+            </Col>
+            <Col>
+              <span style={{ color: '#666', marginRight: 16 }}>FTE: <strong>{team.fte.toFixed(1)}</strong></span>
+              <span style={{ color: '#666' }}>{team.member_count} members</span>
+            </Col>
+          </Row>
+        </Card>
+
+        {/* Summary stats row */}
+        <Row gutter={[16, 16]} style={{ marginBottom: 20 }}>
+          <Col xs={12} sm={6} md={4}>
+            <Card size="small">
+              <Statistic title="PI Capacity" value={Math.round(team.pi_total_capacity)} suffix="eD" prefix={<FieldTimeOutlined />} />
+            </Card>
+          </Col>
+          <Col xs={12} sm={6} md={4}>
+            <Card size="small">
+              <Statistic title="Feature Capacity" value={Math.round(team.pi_feature_capacity)} suffix="eD" prefix={<DollarOutlined />} valueStyle={{ color: '#1890ff' }} />
+            </Card>
+          </Col>
+          <Col xs={12} sm={6} md={4}>
+            <Card size="small">
+              <Statistic title="Planned Effort" value={Math.round(team.pi_planned_effort)} suffix="eD" prefix={<CheckCircleOutlined />} />
+            </Card>
+          </Col>
+          <Col xs={12} sm={6} md={4}>
+            <Card size="small">
+              <Statistic
+                title="PI Utilisation"
+                value={`${team.pi_utilization.toFixed(1)}%`}
+                valueStyle={{ color: getUtilizationColor(team.pi_utilization) }}
+              />
+            </Card>
+          </Col>
+        </Row>
+
+        {/* Iteration cards */}
+        <Row gutter={[16, 16]}>
+          {team.iterations.map(iter => (
+            <Col xs={24} sm={12} md={8} lg={6} key={iter.iteration_id}>
+              <Card
+                size="small"
+                style={{
+                  border: `1px solid ${getUtilizationColor(iter.utilization)}40`,
+                  background: getUtilizationBgColor(iter.utilization)
+                }}
+                title={
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontWeight: 600 }}>{iter.iteration_name}</span>
+                    {iter.is_ip && <Tag color="purple" style={{ margin: 0 }}>IP</Tag>}
+                  </div>
+                }
+                extra={
+                  <span style={{
+                    fontFamily: 'DM Mono, monospace',
+                    fontWeight: 700,
+                    color: getUtilizationColor(iter.utilization)
+                  }}>
+                    {iter.utilization.toFixed(1)}%
+                  </span>
+                }
+              >
+                <div style={{ marginBottom: 12 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                    <span style={{ color: '#666', fontSize: 12 }}>Capacity</span>
+                    <span style={{ fontFamily: 'DM Mono, monospace', fontWeight: 600 }}>{Math.round(iter.final_capacity)} eD</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                    <span style={{ color: '#666', fontSize: 12 }}>Dev / PD / QA</span>
+                    <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 12 }}>
+                      <span style={{ color: '#13c2c2' }}>{Math.round(iter.dev_capacity)}</span>
+                      <span style={{ color: '#999' }}> / </span>
+                      <span style={{ color: '#fa8c16' }}>{Math.round(iter.pd_capacity)}</span>
+                      <span style={{ color: '#999' }}> / </span>
+                      <span style={{ color: '#722ed1' }}>{Math.round(iter.qa_capacity)}</span>
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: '#999', marginBottom: 4 }}>Role Split</div>
+                  {renderRoleSplitBar(iter.dev_capacity, iter.pd_capacity, iter.qa_capacity)}
+                </div>
+              </Card>
+            </Col>
+          ))}
+        </Row>
+
+        {/* Legend */}
+        <div style={{ marginTop: 20, display: 'flex', gap: 12, alignItems: 'center' }}>
+          <span style={{ fontWeight: 500 }}>Utilisation:</span>
+          <Tag color="#52c41a">Healthy (≥80%)</Tag>
+          <Tag color="#faad14">Warning (50-79%)</Tag>
+          <Tag color="#ff4d4f">Critical (&lt;50% or &gt;100%)</Tag>
+          <span style={{ marginLeft: 16, fontWeight: 500 }}>Roles:</span>
+          <Tag color="#13c2c2">Dev</Tag>
+          <Tag color="#fa8c16">PD</Tag>
+          <Tag color="#722ed1">QA</Tag>
+        </div>
+      </>
+    );
+  };
+
+  const currentData = viewMode === 'pi' ? piData : viewMode === 'annual' ? annualData : piData;
   const currentPI = pis.find(p => p.id === selectedPI);
 
   return (
@@ -506,6 +628,13 @@ export const TrainCapacityDashboard: React.FC = () => {
               PI View
             </Button>
             <Button
+              type={viewMode === 'team' ? 'primary' : 'text'}
+              size="small"
+              onClick={() => setViewMode('team')}
+            >
+              Team View
+            </Button>
+            <Button
               type={viewMode === 'annual' ? 'primary' : 'text'}
               size="small"
               onClick={() => setViewMode('annual')}
@@ -514,8 +643,16 @@ export const TrainCapacityDashboard: React.FC = () => {
             </Button>
           </div>
           
-          {/* PI or Year Selector */}
-          {viewMode === 'pi' ? (
+          {/* PI, Team, or Year Selector */}
+          {viewMode === 'annual' ? (
+            <Select
+              value={selectedYear}
+              onChange={setSelectedYear}
+              style={{ width: 150 }}
+              placeholder="Select Year"
+              options={[2025, 2026, 2027].map(y => ({ value: y, label: `${y}` }))}
+            />
+          ) : (
             <Select
               value={selectedPI}
               onChange={setSelectedPI}
@@ -523,13 +660,14 @@ export const TrainCapacityDashboard: React.FC = () => {
               placeholder="Select PI"
               options={(pis ?? []).map(pi => ({ value: pi.id, label: pi.name }))}
             />
-          ) : (
+          )}
+          {viewMode === 'team' && (
             <Select
-              value={selectedYear}
-              onChange={setSelectedYear}
-              style={{ width: 150 }}
-              placeholder="Select Year"
-              options={[2025, 2026, 2027].map(y => ({ value: y, label: `${y}` }))}
+              value={selectedTeamId}
+              onChange={setSelectedTeamId}
+              style={{ width: 160 }}
+              placeholder="Select Team"
+              options={(teams ?? []).map(t => ({ value: t.id, label: t.name }))}
             />
           )}
         </div>
@@ -563,6 +701,8 @@ export const TrainCapacityDashboard: React.FC = () => {
 
       {!currentData ? (
         <Empty description="No data available" />
+      ) : viewMode === 'team' ? (
+        renderTeamView()
       ) : viewMode === 'pi' && piData ? (
         <>
           {/* PI Banner */}
