@@ -147,13 +147,44 @@ export const TrainCapacityDashboard: React.FC = () => {
     if (!selectedPI) return;
     setLoading(true);
     try {
-      const searchParams = new URLSearchParams();
-      searchParams.append('pi_id', selectedPI);
-      if (selectedTeamIds.length > 0) {
-        selectedTeamIds.forEach(id => searchParams.append('team_ids', id));
+      const targetTeams = selectedTeamIds.length > 0
+        ? teams.filter(t => selectedTeamIds.includes(t.id))
+        : teams;
+
+      if (targetTeams.length === 0) {
+        setPiData(null);
+        return;
       }
-      const response = await axios.get(`/api/capacity/summary?${searchParams.toString()}`);
-      setPiData(response.data);
+
+      const results = await Promise.all(
+        targetTeams.map(t =>
+          axios.get(`/api/capacity/teams/${t.id}/iterations?pi_id=${selectedPI}`)
+            .then(r => r.data)
+            .catch(() => null)
+        )
+      );
+
+      const teamCapacities: TeamCapacity[] = results.filter(Boolean);
+
+      const totalCapacity = teamCapacities.reduce((s, t) => s + t.pi_total_capacity, 0);
+      const totalFeatureCapacity = teamCapacities.reduce((s, t) => s + t.pi_feature_capacity, 0);
+      const totalPlannedEffort = teamCapacities.reduce((s, t) => s + t.pi_planned_effort, 0);
+      const totalAllocated = teamCapacities.reduce((s, t) => s + t.pi_total_allocated, 0);
+      const overallUtilization = totalFeatureCapacity > 0
+        ? (totalPlannedEffort / totalFeatureCapacity) * 100
+        : 0;
+
+      const currentPI = pis.find(p => p.id === selectedPI);
+      setPiData({
+        pi_id: selectedPI,
+        pi_name: currentPI?.name ?? '',
+        teams: teamCapacities,
+        total_capacity: totalCapacity,
+        total_feature_capacity: totalFeatureCapacity,
+        total_planned_effort: totalPlannedEffort,
+        total_allocated: totalAllocated,
+        overall_utilization: overallUtilization,
+      });
     } catch (error) {
       console.error('Failed to load PI data', error);
       message.error('Failed to load capacity data');

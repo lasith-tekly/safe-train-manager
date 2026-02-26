@@ -10,7 +10,6 @@ from app.models.team import Team
 from app.models.pi import Iteration
 from app.schemas.iteration_capacity import (
     TeamIterationCapacityResponse,
-    CapacitySummaryResponse,
     CapacityOverrideRequest,
     IterationCapacityResponse,
     AnnualCapacitySummaryResponse
@@ -19,21 +18,6 @@ from app.services.iteration_capacity_service import IterationCapacityService
 
 router = APIRouter(prefix="/api/capacity", tags=["capacity"])
 
-
-@router.get("/summary", response_model=CapacitySummaryResponse)
-def get_capacity_summary(
-    pi_id: str = Query(...),
-    team_ids: Optional[List[str]] = Query(None),
-    db: Session = Depends(get_db)
-):
-    """Get capacity summary for all teams or filtered teams."""
-    summary = IterationCapacityService.get_capacity_summary(db, pi_id, team_ids)
-    if not summary:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="No PI found for the specified ID"
-        )
-    return summary
 
 
 @router.get("/teams/{team_id}/iterations", response_model=TeamIterationCapacityResponse)

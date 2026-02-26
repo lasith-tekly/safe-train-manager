@@ -17,7 +17,6 @@ from app.services.global_settings_service import GlobalSettingsService
 from app.schemas.iteration_capacity import (
     IterationCapacityResponse,
     TeamIterationCapacityResponse,
-    CapacitySummaryResponse,
     AnnualCapacitySummaryResponse,
     AnnualPISummary,
     AnnualTeamSummary
@@ -549,58 +548,6 @@ class IterationCapacityService:
             dev_capacity=round(total_dev, 2),
             pd_capacity=round(total_pd, 2),
             qa_capacity=round(total_qa, 2)
-        )
-
-    @staticmethod
-    def get_capacity_summary(
-        db: Session,
-        pi_id: str,
-        team_ids: Optional[List[str]] = None
-    ) -> Optional[CapacitySummaryResponse]:
-        """Get capacity summary for all teams or filtered teams."""
-        # Get PI
-        pi = db.query(PI).filter(PI.id == pi_id).first()
-        if not pi:
-            return None
-
-        # Get teams - filter by team_ids if provided
-        teams_query = db.query(Team).filter(Team.status == TeamStatus.ACTIVE)
-        
-        if team_ids and len(team_ids) > 0:
-            # Filter to specific teams using case-insensitive comparison
-            teams_query = teams_query.filter(
-                func.lower(Team.id).in_([func.lower(tid) for tid in team_ids])
-            )
-        
-        teams = teams_query.all()
-
-        team_capacities = []
-        total_capacity = 0.0
-        total_feature_capacity = 0.0
-        total_planned_effort = 0.0
-        total_allocated = 0.0
-
-        for team in teams:
-            team_cap = IterationCapacityService.get_team_iteration_capacity(db, team.id, pi.id)
-            if team_cap:
-                team_capacities.append(team_cap)
-                total_capacity += team_cap.pi_total_capacity
-                total_feature_capacity += team_cap.pi_feature_capacity
-                total_planned_effort += team_cap.pi_planned_effort
-                total_allocated += team_cap.pi_total_allocated
-
-        # Calculate overall utilisation: total planned / total feature capacity
-        overall_utilization = (total_planned_effort / total_feature_capacity * 100) if total_feature_capacity > 0 else 0.0
-
-        return CapacitySummaryResponse(
-            pi_id=pi.id,
-            pi_name=pi.name,
-            teams=team_capacities,
-            total_capacity=round(total_capacity, 2),
-            total_feature_capacity=round(total_feature_capacity, 2),
-            total_planned_effort=round(total_planned_effort, 2),
-            total_allocated=round(total_allocated, 2),
-            overall_utilization=round(overall_utilization, 1)
         )
 
     @staticmethod
