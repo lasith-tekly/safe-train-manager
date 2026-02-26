@@ -317,35 +317,36 @@ export const TrainCapacityDashboard: React.FC = () => {
         )
       },
       {
-        title: 'Capacity (eD)',
+        title: 'Total (eD)',
         dataIndex: 'final_capacity',
         key: 'total',
-        width: 130,
+        width: 120,
         align: 'right' as const,
         render: (cap: number) => <span style={{ fontFamily: 'DM Mono, monospace', fontWeight: 500 }}>{Math.round(cap)}</span>
       },
       {
-        title: 'Dev / PD / QA',
-        key: 'role_values',
-        width: 180,
-        render: (_: unknown, record: IterationCapacity) => (
-          <span style={{ fontFamily: 'DM Mono, monospace' }}>
-            <span style={{ color: '#13c2c2' }}>{Math.round(record.dev_capacity)}</span>
-            <span style={{ color: '#999' }}> / </span>
-            <span style={{ color: '#fa8c16' }}>{Math.round(record.pd_capacity)}</span>
-            <span style={{ color: '#999' }}> / </span>
-            <span style={{ color: '#722ed1' }}>{Math.round(record.qa_capacity)}</span>
-          </span>
-        )
+        title: 'Dev (eD)',
+        dataIndex: 'dev_capacity',
+        key: 'dev',
+        width: 100,
+        align: 'right' as const,
+        render: (cap: number) => <span style={{ fontFamily: 'DM Mono, monospace', color: '#13c2c2' }}>{Math.round(cap)}</span>
       },
       {
-        title: 'Role Split',
-        key: 'split',
-        render: (_: unknown, record: IterationCapacity) => (
-          <div style={{ flex: 1, minWidth: 120, paddingLeft: 8, paddingRight: 8 }}>
-            {renderRoleSplitBar(record.dev_capacity, record.pd_capacity, record.qa_capacity)}
-          </div>
-        )
+        title: 'PD (eD)',
+        dataIndex: 'pd_capacity',
+        key: 'pd',
+        width: 100,
+        align: 'right' as const,
+        render: (cap: number) => <span style={{ fontFamily: 'DM Mono, monospace', color: '#fa8c16' }}>{Math.round(cap)}</span>
+      },
+      {
+        title: 'QA (eD)',
+        dataIndex: 'qa_capacity',
+        key: 'qa',
+        width: 100,
+        align: 'right' as const,
+        render: (cap: number) => <span style={{ fontFamily: 'DM Mono, monospace', color: '#722ed1' }}>{Math.round(cap)}</span>
       }
     ];
 
