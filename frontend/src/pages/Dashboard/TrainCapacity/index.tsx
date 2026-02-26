@@ -215,7 +215,7 @@ export const TrainCapacityDashboard: React.FC = () => {
     ];
 
     return (
-      <div style={{ display: 'flex', height: 20, borderRadius: 4, overflow: 'hidden', minWidth: 100 }}>
+      <div style={{ display: 'flex', height: 20, borderRadius: 4, overflow: 'hidden', minWidth: 300 }}>
         {segments.map(({ value, color, label }) => {
           if (value <= 0) return null;
           const pct = (value / total) * 100;
