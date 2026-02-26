@@ -335,7 +335,10 @@ export const TrainConfigurationPage: React.FC = () => {
                   min={0}
                   max={500}
                   formatter={(value) => `${value} KEUR`}
-                  parser={(value) => Number(value?.replace(' KEUR', '') || 85)}
+                  parser={(value) => {
+                    const cleaned = value?.replace(' KEUR', '').trim();
+                    return cleaned === '' || cleaned === undefined ? 0 : Number(cleaned);
+                  }}
                   style={{ width: '100%' }}
                 />
               </Form.Item>
