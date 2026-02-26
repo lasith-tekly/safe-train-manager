@@ -226,7 +226,7 @@ export const TrainCapacityDashboard: React.FC = () => {
               title={`${label}: ${value.toFixed(1)} eD`}
             >
               <span style={{ fontSize: 10, color: '#fff', fontFamily: 'DM Mono, monospace', padding: '0 4px' }}>
-                {pct > 15 ? `${label} ${value.toFixed(1)}` : ''}
+                {pct > 20 ? `${label} ${value.toFixed(1)}` : ''}
               </span>
             </div>
           );
@@ -361,21 +361,6 @@ export const TrainCapacityDashboard: React.FC = () => {
         width: 110,
         align: 'right' as const,
         render: (cap: number) => <span style={{ fontFamily: 'DM Mono, monospace', color: '#722ed1' }}>{Math.round(cap)}</span>
-      },
-      {
-        title: 'Role Split',
-        key: 'iter_split',
-        render: (_: unknown, record: IterationCapacity) => {
-          const total = record.dev_capacity + record.pd_capacity + record.qa_capacity;
-          if (total === 0) return <div style={{ height: 6, background: '#f0f0f0', borderRadius: 3, minWidth: 80 }} />;
-          return (
-            <div style={{ display: 'flex', height: 6, borderRadius: 3, overflow: 'hidden', minWidth: 80 }}>
-              {record.dev_capacity > 0 && <div style={{ width: `${(record.dev_capacity / total) * 100}%`, background: '#13c2c2' }} title={`Dev: ${record.dev_capacity.toFixed(1)} eD`} />}
-              {record.pd_capacity > 0 && <div style={{ width: `${(record.pd_capacity / total) * 100}%`, background: '#fa8c16' }} title={`PD: ${record.pd_capacity.toFixed(1)} eD`} />}
-              {record.qa_capacity > 0 && <div style={{ width: `${(record.qa_capacity / total) * 100}%`, background: '#722ed1' }} title={`QA: ${record.qa_capacity.toFixed(1)} eD`} />}
-            </div>
-          );
-        }
       }
     ];
 
