@@ -4,7 +4,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import type { MenuProps } from 'antd';
 import {
   DashboardOutlined,
-  AppstoreOutlined,
   CalendarOutlined,
   // BarChartOutlined,  // Unused - Reports menu item hidden
   SettingOutlined,
@@ -21,6 +20,7 @@ import {
   ProductOutlined,
   FundOutlined,
   ProjectOutlined,
+  UnorderedListOutlined,
 } from '@ant-design/icons';
 import styles from './SideNavLayout.module.css';
 
@@ -55,8 +55,7 @@ const menuItems: MenuItem[] = [
     getItem('Budget Dashboard', '/budget-dashboard', <DollarOutlined />),
   ]),
   getItem('Products', '/products', <ProductOutlined />, [
-    getItem('Product List', '/products/list'),
-    getItem('Features', '/products/features', <AppstoreOutlined />),
+    getItem('Product List', '/products/list', <UnorderedListOutlined />),
     getItem('Roadmap Planning', '/roadmap', <ProjectOutlined />),
     getItem('Team Planning', '/team-planning', <ScheduleOutlined />),
   ]),
