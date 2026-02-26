@@ -1,14 +1,14 @@
 """
 Holiday and MemberLeave Pydantic schemas.
 """
-from datetime import date, datetime
+from datetime import date as DateType, datetime
 from typing import Optional, List
 from pydantic import BaseModel, Field, field_validator
 
 
 class HolidayBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
-    date: date
+    date: DateType
     is_half_day: bool = False
     is_recurring: bool = False
     team_id: Optional[str] = None
@@ -22,7 +22,7 @@ class HolidayCreate(HolidayBase):
 
 class HolidayUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=100)
-    date: Optional[date] = None
+    date: Optional[DateType] = None
     is_half_day: Optional[bool] = None
     is_recurring: Optional[bool] = None
 
@@ -49,8 +49,8 @@ class HolidayImportRequest(BaseModel):
 
 
 class MemberLeaveBase(BaseModel):
-    start_date: date
-    end_date: date
+    start_date: DateType
+    end_date: DateType
     leave_type: str = "vacation"
     is_half_day: bool = False
     notes: Optional[str] = None
@@ -75,8 +75,8 @@ class MemberLeaveCreate(MemberLeaveBase):
 
 
 class MemberLeaveUpdate(BaseModel):
-    start_date: Optional[date] = None
-    end_date: Optional[date] = None
+    start_date: Optional[DateType] = None
+    end_date: Optional[DateType] = None
     leave_type: Optional[str] = None
     is_half_day: Optional[bool] = None
     notes: Optional[str] = None
