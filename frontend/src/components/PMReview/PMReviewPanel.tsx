@@ -253,7 +253,7 @@ const PMReviewPanel: React.FC<PMReviewPanelProps> = ({
             <Tag color="orange">Pending Review</Tag>
           </Space>
         }
-        width={900}
+        width="50%"
         open={open}
         onClose={onClose}
         footer={
