@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Row, Col, Select, Skeleton, Empty, Table, Statistic, Tag, message, Button } from 'antd';
-import { TeamOutlined, UserOutlined, FieldTimeOutlined, PercentageOutlined, RightOutlined, DownOutlined, DollarOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { TeamOutlined, UserOutlined, FieldTimeOutlined, RightOutlined, DownOutlined, DollarOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import type { PI } from '../../../types';
 import styles from './TrainCapacity.module.css';
@@ -306,6 +306,7 @@ export const TrainCapacityDashboard: React.FC = () => {
         dataIndex: 'iteration_name',
         key: 'iteration',
         width: 130,
+        minWidth: 120,
         render: (name: string, record: IterationCapacity) => (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span>{name}</span>
@@ -349,8 +350,9 @@ export const TrainCapacityDashboard: React.FC = () => {
         title: 'Role Split',
         key: 'split',
         width: 220,
+        minWidth: 200,
         render: (_: unknown, record: IterationCapacity) => (
-          <div style={{ minWidth: 180, paddingLeft: 8 }}>
+          <div style={{ minWidth: 200, paddingLeft: 8 }}>
             {renderRoleSplitBar(record.dev_capacity, record.pd_capacity, record.qa_capacity)}
           </div>
         )
@@ -364,7 +366,7 @@ export const TrainCapacityDashboard: React.FC = () => {
           columns={columns}
           rowKey="iteration_id"
           pagination={false}
-          size="small"
+          size="middle"
           scroll={{ x: 800 }}
           rowClassName={(record: IterationCapacity) => record.is_ip ? styles.ipRow : ''}
         />
@@ -654,7 +656,6 @@ export const TrainCapacityDashboard: React.FC = () => {
                 <Statistic
                   title="Utilisation"
                   value={`${piData.overall_utilization.toFixed(1)}%`}
-                  prefix={<PercentageOutlined />}
                   valueStyle={{ color: getUtilizationColor(piData.overall_utilization) }}
                 />
               </Card>
