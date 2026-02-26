@@ -325,31 +325,28 @@ export const TrainCapacityDashboard: React.FC = () => {
         render: (cap: number) => <span style={{ fontFamily: 'DM Mono, monospace', fontWeight: 500 }}>{Math.round(cap)}</span>
       },
       {
-        title: 'Dev / PD / QA',
-        key: 'role_split',
-        width: 250,
-        render: (_: unknown, record: IterationCapacity) => (
-          <div style={{ minWidth: 200 }}>
-            <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 12, marginBottom: 4 }}>
-              <span style={{ color: '#13c2c2' }}>{Math.round(record.dev_capacity)}</span>
-              <span style={{ color: '#999' }}> / </span>
-              <span style={{ color: '#fa8c16' }}>{Math.round(record.pd_capacity)}</span>
-              <span style={{ color: '#999' }}> / </span>
-              <span style={{ color: '#722ed1' }}>{Math.round(record.qa_capacity)}</span>
-            </div>
-            {(() => {
-              const total = record.dev_capacity + record.pd_capacity + record.qa_capacity;
-              if (total === 0) return <div style={{ height: 6, background: '#f0f0f0', borderRadius: 3 }} />;
-              return (
-                <div style={{ display: 'flex', height: 6, borderRadius: 3, overflow: 'hidden' }}>
-                  {record.dev_capacity > 0 && <div style={{ width: `${(record.dev_capacity / total) * 100}%`, background: '#13c2c2' }} />}
-                  {record.pd_capacity > 0 && <div style={{ width: `${(record.pd_capacity / total) * 100}%`, background: '#fa8c16' }} />}
-                  {record.qa_capacity > 0 && <div style={{ width: `${(record.qa_capacity / total) * 100}%`, background: '#722ed1' }} />}
-                </div>
-              );
-            })()}
-          </div>
-        )
+        title: 'Dev (eD)',
+        dataIndex: 'dev_capacity',
+        key: 'dev',
+        width: 110,
+        align: 'right' as const,
+        render: (cap: number) => <span style={{ fontFamily: 'DM Mono, monospace', color: '#13c2c2' }}>{Math.round(cap)}</span>
+      },
+      {
+        title: 'PD (eD)',
+        dataIndex: 'pd_capacity',
+        key: 'pd',
+        width: 110,
+        align: 'right' as const,
+        render: (cap: number) => <span style={{ fontFamily: 'DM Mono, monospace', color: '#fa8c16' }}>{Math.round(cap)}</span>
+      },
+      {
+        title: 'QA (eD)',
+        dataIndex: 'qa_capacity',
+        key: 'qa',
+        width: 110,
+        align: 'right' as const,
+        render: (cap: number) => <span style={{ fontFamily: 'DM Mono, monospace', color: '#722ed1' }}>{Math.round(cap)}</span>
       }
     ];
 
