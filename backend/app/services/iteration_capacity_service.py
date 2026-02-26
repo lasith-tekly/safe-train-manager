@@ -128,113 +128,120 @@ class IterationCapacityService:
     ) -> Dict[str, float]:
         """
         Calculate team capacity for a single iteration, split by role.
-        
+        Uses the same formula as TeamService.get_pi_capacity_detail for consistency.
+
         Returns:
             Dict with keys: 'total', 'dev', 'pd', 'qa'
         """
-        from app.models.team import Team
-        from app.models.organization import Site
-        
-        team = db.query(Team).filter(Team.id == team_id).first()
-        if not team:
-            return {'total': 0.0, 'dev': 0.0, 'pd': 0.0, 'qa': 0.0}
-        
-        # Get team's site country_id for filtering holidays
-        team_country_id = None
-        if team.site_id:
-            site = db.query(Site).filter(Site.id == team.site_id).first()
-            if site:
-                team_country_id = site.country_id
-        
-        # Get active team members (status ACTIVE)
+        from app.models.team import MemberRole, MemberPIAllocation
+        from app.models.member_iteration_productivity import MemberIterationProductivity
+
+        # Get active team members for this PI
         members = db.query(TeamMember).filter(
             TeamMember.team_id == team_id,
             TeamMember.status == TeamStatus.ACTIVE
         ).all()
-        
-        # Filter members by PI boundaries
         active_members = [
-            m for m in members 
+            m for m in members
             if IterationCapacityService.is_member_active_in_pi(db, m, pi)
         ]
-        
+
         if not active_members:
             return {'total': 0.0, 'dev': 0.0, 'pd': 0.0, 'qa': 0.0}
-        
-        # Get holidays in iteration period
-        holiday_query = db.query(Holiday).filter(
-            Holiday.date >= iteration.start_date,
-            Holiday.date <= iteration.end_date
+
+        # Holiday dates for this iteration (using CalendarService helper)
+        team_country_id = CalendarService.get_team_country_id(db, team_id)
+        holiday_dates = CalendarService.get_holidays_for_iteration(
+            db, team_id, team_country_id,
+            iteration.start_date, iteration.end_date
         )
-        
-        if team_country_id:
-            holiday_query = holiday_query.filter(
-                or_(
-                    Holiday.team_id == team_id,
-                    Holiday.country_id == team_country_id
-                )
-            )
-        else:
-            holiday_query = holiday_query.filter(Holiday.team_id == team_id)
-        
-        holidays = holiday_query.all()
-        holiday_dates = list(set([h.date for h in holidays]))
-        half_day_holidays = list(set([h.date for h in holidays if h.is_half_day]))
-        
-        # Calculate base working days
-        base_working_days = CalendarService.count_working_days(
-            iteration.start_date,
-            iteration.end_date,
-            holiday_dates
+
+        # Working days for this iteration (holidays already excluded)
+        iter_working_days = CalendarService.count_working_days(
+            iteration.start_date, iteration.end_date, holiday_dates
         )
-        base_working_days += len(half_day_holidays) * 0.5
-        
-        # Calculate capacity by role
-        role_capacities = {'Developer': 0.0, 'PD': 0.0, 'QA': 0.0}
-        
+
+        base_productivity = global_settings.global_productivity_percentage / 100.0
+        pi_planning_days = global_settings.pi_planning_days
+        apply_productivity_to_ip = global_settings.apply_productivity_to_ip
+
+        role_caps = {'dev': 0.0, 'pd': 0.0, 'qa': 0.0}
+
         for member in active_members:
-            # Get member leaves
-            leaves = db.query(MemberLeave).filter(
-                MemberLeave.member_id == member.id,
-                MemberLeave.start_date <= iteration.end_date,
-                MemberLeave.end_date >= iteration.start_date
-            ).all()
-            
-            # Calculate leave days
-            leave_days = 0.0
-            for leave in leaves:
-                leave_start = max(leave.start_date, iteration.start_date)
-                leave_end = min(leave.end_date, iteration.end_date)
-                days = CalendarService.count_working_days(leave_start, leave_end, holiday_dates)
-                if leave.is_half_day:
-                    days *= 0.5
-                leave_days += days
-            
-            # Calculate member capacity (same formula as existing)
-            train_allocation = member.train_allocation_percent / 100
-            allocated_days = base_working_days * train_allocation
-            available_days = max(0, allocated_days - leave_days)
-            
-            train_productivity = global_settings.global_productivity_percentage / 100
-            individual_productivity = (
-                member.individual_productivity / 100
-                if member.individual_productivity is not None 
-                else 1.0
+            # PI-specific allocation overrides
+            pi_allocation = db.query(MemberPIAllocation).filter(
+                MemberPIAllocation.member_id == member.id,
+                MemberPIAllocation.pi_id == str(pi.id)
+            ).first()
+
+            train_alloc_pct = (
+                pi_allocation.train_allocation_percent
+                if pi_allocation else member.train_allocation_percent
             )
-            
-            member_capacity = available_days * train_productivity * individual_productivity
-            
-            # Add to role bucket
-            role = member.role if member.role in ['Developer', 'PD', 'QA'] else 'Developer'
-            role_capacities[role] += member_capacity
-        
-        total = sum(role_capacities.values())
-        
+            agile_role_pct = (
+                pi_allocation.agile_role_allocation_percent / 100.0
+                if pi_allocation else 0.0
+            )
+            available_capacity_pct = 1.0 - agile_role_pct
+            ip_week_deduction = (
+                pi_allocation.ip_week_deduction
+                if pi_allocation and pi_allocation.ip_week_deduction else 0
+            )
+
+            # Iteration-level productivity override
+            iter_prod_record = db.query(MemberIterationProductivity).filter(
+                MemberIterationProductivity.member_id == member.id,
+                MemberIterationProductivity.iteration_id == iteration.id
+            ).first()
+            iter_productivity = (
+                iter_prod_record.productivity_percent / 100.0
+                if iter_prod_record else base_productivity
+            )
+
+            # Leave days for this iteration (deduplicated by iteration_id + days + type)
+            raw_leaves = db.query(MemberLeave).filter(
+                MemberLeave.member_id == member.id,
+                MemberLeave.iteration_id == iteration.id
+            ).all()
+            seen = {}
+            for lv in raw_leaves:
+                key = (lv.iteration_id, lv.leave_days, lv.leave_type)
+                if key not in seen:
+                    seen[key] = lv
+            iter_leave_days = sum(lv.leave_days or 0 for lv in seen.values())
+
+            # Step 1: Train allocation
+            allocated_days = iter_working_days * (train_alloc_pct / 100.0)
+            # Step 2: Deduct leave
+            net_days = max(0.0, allocated_days - iter_leave_days)
+
+            # Step 3: Apply productivity (respecting IP setting)
+            if iteration.is_ip_iteration:
+                effective_deduction = ip_week_deduction if ip_week_deduction else pi_planning_days
+                if apply_productivity_to_ip:
+                    member_days = net_days * available_capacity_pct * iter_productivity
+                    planning_deduction = effective_deduction * available_capacity_pct * iter_productivity
+                else:
+                    member_days = net_days * available_capacity_pct
+                    planning_deduction = effective_deduction * available_capacity_pct
+                member_days = max(0.0, member_days - planning_deduction)
+            else:
+                member_days = net_days * available_capacity_pct * iter_productivity
+
+            # Map role using MemberRole enum (values are lowercase: 'developer', 'pd', 'qa')
+            if member.role == MemberRole.QA:
+                role_caps['qa'] += member_days
+            elif member.role == MemberRole.PD:
+                role_caps['pd'] += member_days
+            else:
+                role_caps['dev'] += member_days
+
+        total = role_caps['dev'] + role_caps['pd'] + role_caps['qa']
         return {
             'total': round(total, 2),
-            'dev': round(role_capacities['Developer'], 2),
-            'pd': round(role_capacities['PD'], 2),
-            'qa': round(role_capacities['QA'], 2)
+            'dev': round(role_caps['dev'], 2),
+            'pd': round(role_caps['pd'], 2),
+            'qa': round(role_caps['qa'], 2)
         }
 
     @staticmethod
