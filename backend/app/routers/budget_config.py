@@ -10,6 +10,8 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.services.budget_config_service import BudgetConfigService
+from app.models.feature_budget_allocation import FeatureBudgetLineAllocation
+from app.models.roadmap_v4 import RoadmapFeature
 from app.schemas.budget_config import (
     FiscalYearCreate, FiscalYearUpdate, FiscalYearResponse, FiscalYearListResponse,
     BudgetVersionCreate, BudgetVersionResponse, BudgetVersionDetailResponse, BudgetVersionListResponse,
@@ -26,6 +28,22 @@ router = APIRouter(prefix="/api/budget", tags=["Budget Configuration"])
 
 # Temporary user ID for development
 TEMP_USER_ID = UUID("00000000-0000-0000-0000-000000000001")
+
+
+def _calculate_consumed_amount(db: Session, product_budget) -> float:
+    """Calculate consumed amount from feature allocations for a product budget."""
+    consumed = 0.0
+    for bl in product_budget.budget_lines:
+        allocations = db.query(FeatureBudgetLineAllocation).filter(
+            FeatureBudgetLineAllocation.budget_line_id == bl.id
+        ).all()
+        for alloc in allocations:
+            feature = db.query(RoadmapFeature).filter(
+                RoadmapFeature.id == alloc.feature_id
+            ).first()
+            if feature and feature.total_cost_keur:
+                consumed += float(feature.total_cost_keur) * (float(alloc.allocation_percentage) / 100.0)
+    return consumed
 
 
 # ============= Fiscal Year Endpoints =============
@@ -127,11 +145,10 @@ def get_product_budgets(
             version_id = active_version.id
     product_budgets = BudgetConfigService.get_product_budgets(db, fiscal_year_id, version_id)
     
-    # Enrich with consumed amounts
-    # TODO: Calculate from features
+    # Enrich with consumed amounts from feature allocations
     response_data = []
     for pb in product_budgets:
-        consumed = 0
+        consumed = _calculate_consumed_amount(db, pb)
         response_data.append(ProductBudgetResponse(
             id=pb.id,
             budget_version_id=pb.budget_version_id,
@@ -156,7 +173,7 @@ def create_or_update_product_budget(
     """Create or update product budget."""
     product_budget = BudgetConfigService.create_or_update_product_budget(db, data)
     
-    consumed = 0  # TODO: Calculate from features
+    consumed = _calculate_consumed_amount(db, product_budget)
     return ProductBudgetResponse(
         id=product_budget.id,
         budget_version_id=product_budget.budget_version_id,
@@ -181,8 +198,7 @@ def get_product_budget_detail(
     if not product_budget:
         raise HTTPException(status_code=404, detail="Product budget not found")
     
-    # TODO: Calculate consumed amounts
-    consumed = 0
+    consumed = _calculate_consumed_amount(db, product_budget)
     
     return ProductBudgetDetailResponse(
         id=product_budget.id,

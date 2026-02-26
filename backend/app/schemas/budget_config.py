@@ -101,9 +101,9 @@ class ProductBudgetResponse(BaseModel):
     id: UUID
     budget_version_id: UUID
     product: ProductInfo
-    allocated_amount: int
-    consumed_amount: int = 0
-    remaining_amount: int = 0
+    allocated_amount: float
+    consumed_amount: float = 0.0
+    remaining_amount: float = 0.0
     utilization_percentage: float = 0.0
     budget_lines_count: int = 0
     created_at: datetime
