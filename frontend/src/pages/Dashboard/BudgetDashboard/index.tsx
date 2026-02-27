@@ -58,9 +58,12 @@ export const BudgetDashboard: React.FC = () => {
     try {
       const years = await getFiscalYears();
       setFiscalYears(years);
-      const currentYear = years.find((y: any) => y.is_current);
-      if (currentYear) {
-        setSelectedFiscalYear(currentYear.id);
+      const calendarYear = new Date().getFullYear();
+      const current = years.find((y: any) => y.is_current)
+        ?? years.find((y: any) => y.year === calendarYear)
+        ?? years[0];
+      if (current) {
+        setSelectedFiscalYear(current.id);
       }
     } catch (error) {
       message.error('Failed to load fiscal years');
