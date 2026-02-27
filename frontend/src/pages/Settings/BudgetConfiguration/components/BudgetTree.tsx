@@ -328,7 +328,10 @@ export const BudgetTree: React.FC<BudgetTreeProps> = ({
                 key={line.id}
                 style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid #bae0ff' }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <div
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', flex: 1 }}
+                  onClick={() => onNodeSelect({ type: 'train_line', ...line })}
+                >
                   <span style={{ fontWeight: 500 }}>{line.code} — {line.name}</span>
                   <Tag color="default" style={{ fontSize: 11 }}>Non-roadmap</Tag>
                 </div>
@@ -338,7 +341,7 @@ export const BudgetTree: React.FC<BudgetTreeProps> = ({
                     type="text"
                     size="small"
                     icon={<EditOutlined />}
-                    onClick={() => { setEditingTrainLine(line); setTrainDrawerOpen(true); }}
+                    onClick={(e) => { e.stopPropagation(); setEditingTrainLine(line); setTrainDrawerOpen(true); }}
                   />
                   <Popconfirm
                     title="Delete train budget line"
@@ -348,7 +351,7 @@ export const BudgetTree: React.FC<BudgetTreeProps> = ({
                     cancelText="Cancel"
                     okButtonProps={{ danger: true }}
                   >
-                    <Button type="text" size="small" danger icon={<DeleteOutlined />} />
+                    <Button type="text" size="small" danger icon={<DeleteOutlined />} onClick={(e) => e.stopPropagation()} />
                   </Popconfirm>
                 </div>
               </div>

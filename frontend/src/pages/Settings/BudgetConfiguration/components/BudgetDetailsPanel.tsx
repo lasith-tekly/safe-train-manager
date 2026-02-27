@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Empty, Typography, Tabs, Button, Space, Popconfirm, message, Modal, Card, Row, Col } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import { BudgetVersion, deleteBudgetLine, deleteBudgetCategory } from '../../../../services/budgetConfigService';
+import { BudgetVersion, deleteBudgetLine, deleteBudgetCategory, deleteTrainBudgetLine } from '../../../../services/budgetConfigService';
 import { BudgetLineForm } from '../forms/BudgetLineForm';
 import { BudgetCategoryForm } from '../forms/BudgetCategoryForm';
 import { StatCard } from './StatCard';
@@ -52,6 +52,9 @@ export const BudgetDetailsPanel: React.FC<BudgetDetailsPanelProps> = ({
       if (selectedNode.type === 'budget_line') {
         await deleteBudgetLine(selectedNode.id);
         message.success('Budget line deleted');
+      } else if (selectedNode.type === 'train_line') {
+        await deleteTrainBudgetLine(selectedNode.id);
+        message.success('Train budget line deleted');
       } else if (selectedNode.type === 'category') {
         await deleteBudgetCategory(selectedNode.id);
         message.success('Category deleted');
@@ -196,10 +199,10 @@ export const BudgetDetailsPanel: React.FC<BudgetDetailsPanelProps> = ({
     </div>
   );
 
-  const renderBudgetLineDetails = () => (
+  const renderBudgetLineDetails = (mode: 'product' | 'train' = 'product') => (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <Title level={4}>Budget Line: {selectedNode.code} - {selectedNode.name}</Title>
+        <Title level={4}>{mode === 'train' ? 'Train Budget Line' : 'Budget Line'}: {selectedNode.code} - {selectedNode.name}</Title>
         <Space>
           <Button
             icon={<EditOutlined />}
@@ -239,6 +242,7 @@ export const BudgetDetailsPanel: React.FC<BudgetDetailsPanelProps> = ({
               <BudgetLineForm
                 budgetLine={selectedNode}
                 versionId={selectedVersion.id}
+                mode={mode}
                 onSuccess={handleSuccess}
                 onCancel={() => setEditMode(false)}
               />
@@ -381,7 +385,9 @@ export const BudgetDetailsPanel: React.FC<BudgetDetailsPanelProps> = ({
     case 'product':
       return <div style={{ padding: '24px' }}>{renderProductDetails()}</div>;
     case 'budget_line':
-      return <div style={{ padding: '24px' }}>{renderBudgetLineDetails()}</div>;
+      return <div style={{ padding: '24px' }}>{renderBudgetLineDetails('product')}</div>;
+    case 'train_line':
+      return <div style={{ padding: '24px' }}>{renderBudgetLineDetails('train')}</div>;
     case 'category':
       return <div style={{ padding: '24px' }}>{renderCategoryDetails()}</div>;
     default:

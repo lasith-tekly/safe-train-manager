@@ -101,6 +101,29 @@ def create_budget_version(
     return version
 
 
+@router.get("/versions/{version_id}/train-lines", response_model=TrainBudgetLineListResponse)
+def get_train_budget_lines(
+    version_id: UUID,
+    db: Session = Depends(get_db)
+):
+    """Get all train-level budget lines for a version (product_budget_id IS NULL)."""
+    lines = BudgetConfigService.get_train_budget_lines(db, version_id)
+    return TrainBudgetLineListResponse(data=lines)
+
+
+@router.post("/versions/{version_id}/train-lines", response_model=BudgetLineResponse, status_code=201)
+def create_train_budget_line(
+    version_id: UUID,
+    data: TrainBudgetLineCreate,
+    db: Session = Depends(get_db)
+):
+    """Create a train-level budget line. Always non-roadmap, always transversal."""
+    budget_line = BudgetConfigService.create_train_budget_line(
+        db, version_id, data.code, data.name, data.allocated_amount, TEMP_USER_ID
+    )
+    return budget_line
+
+
 @router.get("/versions/{version_id}", response_model=BudgetVersionDetailResponse)
 def get_budget_version_detail(
     version_id: UUID,
@@ -216,30 +239,7 @@ def get_product_budget_detail(
     )
 
 
-# ============= Train-Level Budget Line Endpoints =============
-
-@router.get("/versions/{version_id}/train-lines", response_model=TrainBudgetLineListResponse)
-def get_train_budget_lines(
-    version_id: UUID,
-    db: Session = Depends(get_db)
-):
-    """Get all train-level budget lines for a version (product_budget_id IS NULL)."""
-    lines = BudgetConfigService.get_train_budget_lines(db, version_id)
-    return TrainBudgetLineListResponse(data=lines)
-
-
-@router.post("/versions/{version_id}/train-lines", response_model=BudgetLineResponse, status_code=201)
-def create_train_budget_line(
-    version_id: UUID,
-    data: TrainBudgetLineCreate,
-    db: Session = Depends(get_db)
-):
-    """Create a train-level budget line. Always non-roadmap, always transversal."""
-    budget_line = BudgetConfigService.create_train_budget_line(
-        db, version_id, data.code, data.name, data.allocated_amount, TEMP_USER_ID
-    )
-    return budget_line
-
+# ============= Train-Level Budget Line Endpoints (PUT/DELETE only — GET/POST moved above version detail) =============
 
 @router.put("/train-lines/{budget_line_id}", response_model=BudgetLineResponse)
 def update_train_budget_line(
