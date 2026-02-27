@@ -130,6 +130,7 @@ class BudgetLineBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
     allocated_amount: int = Field(..., ge=0)
     is_transversal: bool = False
+    is_roadmap_eligible: bool = True
 
 
 class BudgetLineCreate(BudgetLineBase):
@@ -160,6 +161,8 @@ class BudgetLineCreate(BudgetLineBase):
 class BudgetLineUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=100)
     allocated_amount: Optional[int] = Field(None, ge=0)
+    is_transversal: Optional[bool] = None
+    is_roadmap_eligible: Optional[bool] = None
 
 
 class BudgetLineAllocationResponse(BaseModel):
@@ -181,6 +184,7 @@ class BudgetLineResponse(BaseModel):
     consumed_amount: int = 0
     remaining_amount: int = 0
     is_transversal: bool
+    is_roadmap_eligible: bool = True
     created_at: datetime
     updated_at: Optional[datetime]
     categories: List["BudgetCategoryResponse"] = []

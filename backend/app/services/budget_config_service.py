@@ -351,6 +351,7 @@ class BudgetConfigService:
             name=data.name,
             allocated_amount=data.allocated_amount,
             is_transversal=data.is_transversal,
+            is_roadmap_eligible=data.is_roadmap_eligible,
             created_by=str(user_id)
         )
         db.add(budget_line)
@@ -383,11 +384,13 @@ class BudgetConfigService:
 
     @staticmethod
     def update_budget_line(
-        db: Session, 
-        budget_line_id: UUID, 
-        name: Optional[str], 
+        db: Session,
+        budget_line_id: UUID,
+        name: Optional[str],
         allocated_amount: Optional[int],
-        user_id: UUID
+        user_id: UUID,
+        is_transversal: Optional[bool] = None,
+        is_roadmap_eligible: Optional[bool] = None,
     ) -> Optional[BudgetLine]:
         """Update budget line."""
         budget_line = db.query(BudgetLine).filter(BudgetLine.id == str(budget_line_id)).first()
@@ -409,6 +412,12 @@ class BudgetConfigService:
                 db, EntityType.BUDGET_LINE, budget_line.id,
                 AuditAction.UPDATE, "allocated_amount", str(old_amount), str(allocated_amount), user_id
             )
+        
+        if is_transversal is not None:
+            budget_line.is_transversal = is_transversal
+        
+        if is_roadmap_eligible is not None:
+            budget_line.is_roadmap_eligible = is_roadmap_eligible
         
         budget_line.updated_at = datetime.utcnow()
         budget_line.updated_by = str(user_id)

@@ -211,12 +211,12 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
 
   const getBudgetLinesByProduct = (productId: string) => {
     const budgetProduct = budgetProducts.find(bp => bp.product.id === productId);
-    const productBudgetLines = budgetProduct?.budget_lines || [];
+    const productBudgetLines = (budgetProduct?.budget_lines || []).filter((bl: any) => bl.is_roadmap_eligible !== false);
     
     const transversalBudgetLines: any[] = [];
     budgetProducts.forEach(bp => {
-      bp.budget_lines.forEach(bl => {
-        if (bl.is_transversal && !productBudgetLines.find(pbl => pbl.id === bl.id)) {
+      bp.budget_lines.forEach((bl: any) => {
+        if (bl.is_transversal && bl.is_roadmap_eligible !== false && !productBudgetLines.find((pbl: any) => pbl.id === bl.id)) {
           transversalBudgetLines.push(bl);
         }
       });

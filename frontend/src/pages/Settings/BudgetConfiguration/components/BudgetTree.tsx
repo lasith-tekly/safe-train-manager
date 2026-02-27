@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Tree, Spin, message, Empty, Button, Popconfirm, Row, Col, Statistic, Progress } from 'antd';
+import { Tree, Spin, message, Empty, Button, Popconfirm, Row, Col, Statistic, Progress, Tag } from 'antd';
 import { LinkOutlined, PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import { getProductBudgets, getProductBudgetDetail, ProductBudget, deleteProductBudget } from '../../../../services/budgetConfigService';
 import { AddProductBudgetModal } from '../modals/AddProductBudgetModal';
@@ -124,9 +124,14 @@ export const BudgetTree: React.FC<BudgetTreeProps> = ({
   const renderBudgetLineNode = (line: any) => {
     return (
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-        <div>
-          {line.is_transversal && <LinkOutlined style={{ marginRight: 4, color: '#1890ff' }} />}
-          <span>{line.code} - {line.name}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          {line.is_transversal && <LinkOutlined style={{ color: '#1890ff' }} />}
+          <span style={{ color: line.is_roadmap_eligible === false ? '#999' : undefined, fontStyle: line.is_roadmap_eligible === false ? 'italic' : undefined }}>
+            {line.code} - {line.name}
+          </span>
+          {line.is_roadmap_eligible === false && (
+            <Tag color="default" style={{ fontSize: 11, marginLeft: 4 }}>Non-roadmap</Tag>
+          )}
         </div>
         <div style={{ fontSize: '12px', color: '#666' }}>
           {line.allocated_amount} KEUR | {line.consumed_amount} used

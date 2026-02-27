@@ -99,6 +99,7 @@ export interface BudgetLine {
   consumed_amount: number;
   remaining_amount: number;
   is_transversal: boolean;
+  is_roadmap_eligible: boolean;
   created_at: string;
   updated_at?: string;
   categories: BudgetCategory[];
@@ -113,6 +114,7 @@ export interface BudgetLineCreate {
   name: string;
   allocated_amount: number;
   is_transversal: boolean;
+  is_roadmap_eligible?: boolean;
   product_allocations?: {
     product_budget_id: string;
     allocation_type: 'PERCENTAGE' | 'ABSOLUTE';
@@ -213,7 +215,7 @@ export const createBudgetLine = async (data: BudgetLineCreate): Promise<BudgetLi
 
 export const updateBudgetLine = async (
   id: string,
-  data: { name?: string; allocated_amount?: number }
+  data: { name?: string; allocated_amount?: number; is_transversal?: boolean; is_roadmap_eligible?: boolean }
 ): Promise<BudgetLine> => {
   const response = await api.put(`/budget/lines/${id}`, data);
   return response.data;

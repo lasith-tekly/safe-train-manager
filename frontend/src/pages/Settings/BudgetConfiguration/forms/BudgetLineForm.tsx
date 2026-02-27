@@ -58,10 +58,13 @@ export const BudgetLineForm: React.FC<BudgetLineFormProps> = ({
         name: budgetLine.name,
         allocated_amount: budgetLine.allocated_amount,
         is_transversal: budgetLine.is_transversal,
+        is_roadmap_eligible: budgetLine.is_roadmap_eligible ?? true,
         product_id: budgetLine.product_id,
       });
       setIsTransversal(budgetLine.is_transversal);
       setProductAllocations(budgetLine.product_allocations || []);
+    } else {
+      form.setFieldsValue({ is_roadmap_eligible: true });
     }
   }, [budgetLine]);
 
@@ -75,6 +78,8 @@ export const BudgetLineForm: React.FC<BudgetLineFormProps> = ({
         await updateBudgetLine(budgetLine.id, {
           name: values.name,
           allocated_amount: values.allocated_amount,
+          is_transversal: values.is_transversal,
+          is_roadmap_eligible: values.is_roadmap_eligible,
         });
         message.success('Budget line updated');
       } else {
@@ -86,6 +91,7 @@ export const BudgetLineForm: React.FC<BudgetLineFormProps> = ({
           name: values.name,
           allocated_amount: values.allocated_amount,
           is_transversal: isTransversal,
+          is_roadmap_eligible: values.is_roadmap_eligible ?? true,
           product_allocations: isTransversal ? productAllocations : undefined,
         };
 
@@ -193,13 +199,21 @@ export const BudgetLineForm: React.FC<BudgetLineFormProps> = ({
           />
         </Form.Item>
 
-        {!isEditMode && (
-          <Form.Item name="is_transversal" valuePropName="checked">
-            <Checkbox onChange={(e) => handleTransversalChange(e.target.checked)}>
-              Transversal Budget Line (shared across products)
-            </Checkbox>
-          </Form.Item>
-        )}
+        <Form.Item name="is_transversal" valuePropName="checked">
+          <Checkbox onChange={(e) => handleTransversalChange(e.target.checked)}>
+            Transversal Budget Line (shared across products)
+          </Checkbox>
+        </Form.Item>
+
+        <Form.Item
+          name="is_roadmap_eligible"
+          valuePropName="checked"
+          help="Uncheck for operating budgets and costs not tracked in roadmap planning"
+        >
+          <Checkbox>
+            Include in Roadmap Planning
+          </Checkbox>
+        </Form.Item>
 
         {isTransversal && !isEditMode && (
           <div style={{ marginBottom: 24 }}>

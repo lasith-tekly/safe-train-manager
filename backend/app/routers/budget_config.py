@@ -253,7 +253,9 @@ def update_budget_line(
 ):
     """Update budget line."""
     budget_line = BudgetConfigService.update_budget_line(
-        db, budget_line_id, data.name, data.allocated_amount, TEMP_USER_ID
+        db, budget_line_id, data.name, data.allocated_amount, TEMP_USER_ID,
+        is_transversal=data.is_transversal,
+        is_roadmap_eligible=data.is_roadmap_eligible,
     )
     if not budget_line:
         raise HTTPException(status_code=404, detail="Budget line not found")

@@ -123,6 +123,7 @@ class BudgetLine(Base):
     name = Column(String(100), nullable=False)
     allocated_amount = Column(Integer, nullable=False, default=0)
     is_transversal = Column(Boolean, default=False, index=True)
+    is_roadmap_eligible = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
     updated_at = Column(DateTime, nullable=True, onupdate=datetime.utcnow)
     created_by = Column(String(36), nullable=False)
