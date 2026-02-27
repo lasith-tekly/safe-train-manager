@@ -404,12 +404,13 @@ class BudgetConfigService:
             created_by=str(user_id),
         )
         db.add(budget_line)
+        db.commit()
+        db.refresh(budget_line)
         BudgetConfigService._log_audit(
             db, EntityType.BUDGET_LINE, budget_line.id,
             AuditAction.CREATE, None, None, str(allocated_amount), user_id
         )
         db.commit()
-        db.refresh(budget_line)
         return budget_line
 
     @staticmethod
