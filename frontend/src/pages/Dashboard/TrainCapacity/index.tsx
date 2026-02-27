@@ -108,48 +108,48 @@ export const TrainCapacityDashboard: React.FC = () => {
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
 
   useEffect(() => {
-    loadPIs();
-    loadTeams();
+    initialLoad();
   }, []);
 
   useEffect(() => {
     if ((viewMode === 'pi' || viewMode === 'team') && selectedPI) {
-      loadPIData();
+      loadPIData(selectedPI, teams, selectedTeamIds);
     } else if (viewMode === 'annual') {
       loadAnnualData();
     }
-  }, [selectedPI, selectedYear, selectedTeamIds, viewMode, teams]);
+  }, [selectedPI, selectedYear, selectedTeamIds, viewMode]);
 
-  const loadPIs = async () => {
+  const initialLoad = async () => {
     try {
-      const response = await axios.get(`/api/pis?year=${currentYear}`);
-      setPIs(response.data.data);
-      if (response.data.data.length > 0) {
-        setSelectedPI(response.data.data[0].id);
+      const [pisRes, teamsRes] = await Promise.all([
+        axios.get(`/api/pis?year=${currentYear}`),
+        axios.get('/api/teams'),
+      ]);
+
+      const loadedPIs: PI[] = pisRes.data.data ?? [];
+      const loadedTeams: Team[] = teamsRes.data?.data ?? teamsRes.data ?? [];
+
+      setPIs(loadedPIs);
+      setTeams(loadedTeams);
+      if (loadedTeams.length > 0) setSelectedTeamId(loadedTeams[0].id);
+
+      const firstPI = loadedPIs[0]?.id ?? null;
+      if (firstPI) {
+        setSelectedPI(firstPI);
+        await loadPIData(firstPI, loadedTeams, [], loadedPIs[0]?.name ?? '');
       }
     } catch (error) {
-      message.error('Failed to load PIs');
+      message.error('Failed to load capacity data');
     }
   };
 
-  const loadTeams = async () => {
-    try {
-      const response = await axios.get('/api/teams');
-      const loaded = response.data?.data ?? response.data ?? [];
-      setTeams(loaded);
-      if (loaded.length > 0) setSelectedTeamId(loaded[0].id);
-    } catch (error) {
-      console.error('Failed to load teams', error);
-    }
-  };
-
-  const loadPIData = async () => {
-    if (!selectedPI) return;
+  const loadPIData = async (piId: string, allTeams: Team[], filterIds: string[], piName?: string) => {
+    if (!piId) return;
     setLoading(true);
     try {
-      const targetTeams = selectedTeamIds.length > 0
-        ? teams.filter(t => selectedTeamIds.includes(t.id))
-        : teams;
+      const targetTeams = filterIds.length > 0
+        ? allTeams.filter(t => filterIds.includes(t.id))
+        : allTeams;
 
       if (targetTeams.length === 0) {
         setPiData(null);
@@ -158,7 +158,7 @@ export const TrainCapacityDashboard: React.FC = () => {
 
       const results = await Promise.all(
         targetTeams.map(t =>
-          axios.get(`/api/capacity/teams/${t.id}/iterations?pi_id=${selectedPI}`)
+          axios.get(`/api/capacity/teams/${t.id}/iterations?pi_id=${piId}`)
             .then(r => r.data)
             .catch(() => null)
         )
@@ -174,10 +174,10 @@ export const TrainCapacityDashboard: React.FC = () => {
         ? (totalPlannedEffort / totalFeatureCapacity) * 100
         : 0;
 
-      const currentPI = pis.find(p => p.id === selectedPI);
+      const currentPI = pis.find((p: PI) => p.id === piId);
       setPiData({
-        pi_id: selectedPI,
-        pi_name: currentPI?.name ?? '',
+        pi_id: piId,
+        pi_name: piName ?? currentPI?.name ?? '',
         teams: teamCapacities,
         total_capacity: totalCapacity,
         total_feature_capacity: totalFeatureCapacity,
