@@ -148,6 +148,10 @@ class BudgetLine(Base):
         CheckConstraint('allocated_amount >= 0', name='check_budget_line_amount_positive'),
     )
 
+    @property
+    def is_train_level(self) -> bool:
+        return self.product_budget_id is None
+
     def __repr__(self):
         return f"<BudgetLine {self.code} - {self.name}: {self.allocated_amount} KEUR>"
 

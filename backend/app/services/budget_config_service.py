@@ -383,6 +383,44 @@ class BudgetConfigService:
         return budget_line
 
     @staticmethod
+    def create_train_budget_line(
+        db: Session,
+        version_id: UUID,
+        code: str,
+        name: str,
+        allocated_amount: int,
+        user_id: UUID,
+    ) -> BudgetLine:
+        """Create a train-level budget line (no product, never roadmap eligible)."""
+        budget_line = BudgetLine(
+            budget_version_id=str(version_id),
+            product_id=None,
+            product_budget_id=None,
+            code=code.upper(),
+            name=name,
+            allocated_amount=allocated_amount,
+            is_transversal=True,
+            is_roadmap_eligible=False,
+            created_by=str(user_id),
+        )
+        db.add(budget_line)
+        BudgetConfigService._log_audit(
+            db, EntityType.BUDGET_LINE, budget_line.id,
+            AuditAction.CREATE, None, None, str(allocated_amount), user_id
+        )
+        db.commit()
+        db.refresh(budget_line)
+        return budget_line
+
+    @staticmethod
+    def get_train_budget_lines(db: Session, version_id: UUID) -> List[BudgetLine]:
+        """Return all train-level budget lines for a version (product_budget_id IS NULL)."""
+        return db.query(BudgetLine).filter(
+            BudgetLine.budget_version_id == str(version_id),
+            BudgetLine.product_budget_id == None  # noqa: E711
+        ).order_by(BudgetLine.code).all()
+
+    @staticmethod
     def update_budget_line(
         db: Session,
         budget_line_id: UUID,

@@ -153,9 +153,16 @@ class BudgetLineCreate(BudgetLineBase):
     @classmethod
     def validate_product_id(cls, v, info):
         is_transversal = info.data.get('is_transversal', False)
-        if not is_transversal and not v:
+        is_train_level = info.data.get('is_train_level', False)
+        if not is_transversal and not is_train_level and not v:
             raise ValueError('product_id is required for non-transversal budget lines')
         return v
+
+
+class TrainBudgetLineCreate(BaseModel):
+    code: str = Field(..., min_length=2, max_length=10)
+    name: str = Field(..., min_length=1, max_length=100)
+    allocated_amount: int = Field(..., ge=0)
 
 
 class BudgetLineUpdate(BaseModel):
@@ -185,6 +192,7 @@ class BudgetLineResponse(BaseModel):
     remaining_amount: int = 0
     is_transversal: bool
     is_roadmap_eligible: bool = True
+    is_train_level: bool = False
     created_at: datetime
     updated_at: Optional[datetime]
     categories: List["BudgetCategoryResponse"] = []
@@ -320,6 +328,10 @@ class BudgetVersionListResponse(BaseModel):
 
 class ProductBudgetListResponse(BaseModel):
     data: List[ProductBudgetResponse]
+
+
+class TrainBudgetLineListResponse(BaseModel):
+    data: List[BudgetLineResponse]
 
 
 # Update forward references

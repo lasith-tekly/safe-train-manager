@@ -106,6 +106,12 @@ export interface BudgetLine {
   product_allocations: BudgetLineAllocation[];
 }
 
+export interface TrainBudgetLineCreate {
+  code: string;
+  name: string;
+  allocated_amount: number;
+}
+
 export interface BudgetLineCreate {
   budget_version_id: string;
   product_id?: string;
@@ -223,6 +229,32 @@ export const updateBudgetLine = async (
 
 export const deleteBudgetLine = async (id: string): Promise<void> => {
   await api.delete(`/budget/lines/${id}`);
+};
+
+// Train-Level Budget Line API
+export const getTrainBudgetLines = async (versionId: string): Promise<BudgetLine[]> => {
+  const response = await api.get(`/budget/versions/${versionId}/train-lines`);
+  return response.data.data;
+};
+
+export const createTrainBudgetLine = async (
+  versionId: string,
+  data: TrainBudgetLineCreate
+): Promise<BudgetLine> => {
+  const response = await api.post(`/budget/versions/${versionId}/train-lines`, data);
+  return response.data;
+};
+
+export const updateTrainBudgetLine = async (
+  id: string,
+  data: { name?: string; allocated_amount?: number }
+): Promise<BudgetLine> => {
+  const response = await api.put(`/budget/train-lines/${id}`, data);
+  return response.data;
+};
+
+export const deleteTrainBudgetLine = async (id: string): Promise<void> => {
+  await api.delete(`/budget/train-lines/${id}`);
 };
 
 // Budget Category API

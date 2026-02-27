@@ -17,6 +17,7 @@ from app.schemas.budget_config import (
     BudgetVersionCreate, BudgetVersionResponse, BudgetVersionDetailResponse, BudgetVersionListResponse,
     ProductBudgetCreate, ProductBudgetUpdate, ProductBudgetResponse, ProductBudgetDetailResponse, ProductBudgetListResponse,
     BudgetLineCreate, BudgetLineUpdate, BudgetLineResponse,
+    TrainBudgetLineCreate, TrainBudgetLineListResponse,
     BudgetCategoryCreate, BudgetCategoryUpdate, BudgetCategoryResponse,
     BudgetSummaryResponse, BudgetAuditLogListResponse
 )
@@ -213,6 +214,66 @@ def get_product_budget_detail(
         created_at=product_budget.created_at,
         updated_at=product_budget.updated_at
     )
+
+
+# ============= Train-Level Budget Line Endpoints =============
+
+@router.get("/versions/{version_id}/train-lines", response_model=TrainBudgetLineListResponse)
+def get_train_budget_lines(
+    version_id: UUID,
+    db: Session = Depends(get_db)
+):
+    """Get all train-level budget lines for a version (product_budget_id IS NULL)."""
+    lines = BudgetConfigService.get_train_budget_lines(db, version_id)
+    return TrainBudgetLineListResponse(data=lines)
+
+
+@router.post("/versions/{version_id}/train-lines", response_model=BudgetLineResponse, status_code=201)
+def create_train_budget_line(
+    version_id: UUID,
+    data: TrainBudgetLineCreate,
+    db: Session = Depends(get_db)
+):
+    """Create a train-level budget line. Always non-roadmap, always transversal."""
+    budget_line = BudgetConfigService.create_train_budget_line(
+        db, version_id, data.code, data.name, data.allocated_amount, TEMP_USER_ID
+    )
+    return budget_line
+
+
+@router.put("/train-lines/{budget_line_id}", response_model=BudgetLineResponse)
+def update_train_budget_line(
+    budget_line_id: UUID,
+    data: BudgetLineUpdate,
+    db: Session = Depends(get_db)
+):
+    """Update a train-level budget line. is_roadmap_eligible is forced False."""
+    budget_line = BudgetConfigService.update_budget_line(
+        db, budget_line_id, data.name, data.allocated_amount, TEMP_USER_ID,
+        is_transversal=None,
+        is_roadmap_eligible=False,
+    )
+    if not budget_line:
+        raise HTTPException(status_code=404, detail="Train budget line not found")
+    return budget_line
+
+
+@router.delete("/train-lines/{budget_line_id}", status_code=204)
+def delete_train_budget_line(
+    budget_line_id: UUID,
+    db: Session = Depends(get_db)
+):
+    """Delete a train-level budget line."""
+    result = BudgetConfigService.delete_budget_line(db, budget_line_id, TEMP_USER_ID)
+    if not result["success"]:
+        if result["error_code"] == "NOT_FOUND":
+            raise HTTPException(status_code=404, detail="Train budget line not found")
+        if result["error_code"] == "HAS_REFERENCES":
+            raise HTTPException(
+                status_code=409,
+                detail={"message": result["message"], "features": result["features"]}
+            )
+    return None
 
 
 # ============= Budget Line Endpoints =============

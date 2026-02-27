@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Input, InputNumber, Checkbox, Button, Space, message, Alert, Select } from 'antd';
-import { createBudgetLine, updateBudgetLine, BudgetLineCreate } from '../../../../services/budgetConfigService';
+import { createBudgetLine, updateBudgetLine, createTrainBudgetLine, updateTrainBudgetLine, BudgetLineCreate, TrainBudgetLineCreate } from '../../../../services/budgetConfigService';
 import { TransversalAllocation } from '../components/TransversalAllocation';
 import { getProducts } from '../../../../services/api';
 
@@ -15,6 +15,7 @@ interface BudgetLineFormProps {
   versionId: string;
   selectedProductId?: string;
   selectedProductName?: string;
+  mode?: 'product' | 'train';
   onSuccess: () => void;
   onCancel?: () => void;
 }
@@ -24,9 +25,11 @@ export const BudgetLineForm: React.FC<BudgetLineFormProps> = ({
   versionId,
   selectedProductId,
   selectedProductName,
+  mode = 'product',
   onSuccess,
   onCancel,
 }) => {
+  const isTrainMode = mode === 'train';
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [isTransversal, setIsTransversal] = useState(false);
@@ -74,16 +77,29 @@ export const BudgetLineForm: React.FC<BudgetLineFormProps> = ({
       setLoading(true);
 
       if (budgetLine) {
-        // Update existing budget line
-        await updateBudgetLine(budgetLine.id, {
+        if (isTrainMode) {
+          await updateTrainBudgetLine(budgetLine.id, {
+            name: values.name,
+            allocated_amount: values.allocated_amount,
+          });
+        } else {
+          await updateBudgetLine(budgetLine.id, {
+            name: values.name,
+            allocated_amount: values.allocated_amount,
+            is_transversal: values.is_transversal,
+            is_roadmap_eligible: values.is_roadmap_eligible,
+          });
+        }
+        message.success('Budget line updated');
+      } else if (isTrainMode) {
+        const trainData: TrainBudgetLineCreate = {
+          code: values.code.toUpperCase(),
           name: values.name,
           allocated_amount: values.allocated_amount,
-          is_transversal: values.is_transversal,
-          is_roadmap_eligible: values.is_roadmap_eligible,
-        });
-        message.success('Budget line updated');
+        };
+        await createTrainBudgetLine(versionId, trainData);
+        message.success('Train budget line created');
       } else {
-        // Create new budget line with product_id and budget_version_id
         const data: BudgetLineCreate = {
           budget_version_id: versionId,
           product_id: isTransversal ? undefined : (selectedProductId || values.product_id),
@@ -94,7 +110,6 @@ export const BudgetLineForm: React.FC<BudgetLineFormProps> = ({
           is_roadmap_eligible: values.is_roadmap_eligible ?? true,
           product_allocations: isTransversal ? productAllocations : undefined,
         };
-
         await createBudgetLine(data);
         message.success('Budget line created');
       }
@@ -126,8 +141,19 @@ export const BudgetLineForm: React.FC<BudgetLineFormProps> = ({
         layout="vertical"
         onFinish={handleSubmit}
       >
-        {/* Product selector - only show for new non-transversal lines */}
-        {!isEditMode && !isTransversal && (
+        {/* Train mode info banner */}
+        {isTrainMode && (
+          <Alert
+            message="Train-Level Budget Line"
+            description="Train-level lines are excluded from roadmap planning automatically. They represent operating costs and infrastructure shared across the entire train."
+            type="info"
+            showIcon
+            style={{ marginBottom: 16 }}
+          />
+        )}
+
+        {/* Product selector - only show for new non-transversal product lines */}
+        {!isEditMode && !isTransversal && !isTrainMode && (
           selectedProductId ? (
             // Product is pre-selected from tree - show as read-only
             <Form.Item label="Product">
@@ -199,23 +225,27 @@ export const BudgetLineForm: React.FC<BudgetLineFormProps> = ({
           />
         </Form.Item>
 
-        <Form.Item name="is_transversal" valuePropName="checked">
-          <Checkbox onChange={(e) => handleTransversalChange(e.target.checked)}>
-            Transversal Budget Line (shared across products)
-          </Checkbox>
-        </Form.Item>
+        {!isTrainMode && (
+          <Form.Item name="is_transversal" valuePropName="checked">
+            <Checkbox onChange={(e) => handleTransversalChange(e.target.checked)}>
+              Transversal Budget Line (shared across products)
+            </Checkbox>
+          </Form.Item>
+        )}
 
-        <Form.Item
-          name="is_roadmap_eligible"
-          valuePropName="checked"
-          help="Uncheck for operating budgets and costs not tracked in roadmap planning"
-        >
-          <Checkbox>
-            Include in Roadmap Planning
-          </Checkbox>
-        </Form.Item>
+        {!isTrainMode && (
+          <Form.Item
+            name="is_roadmap_eligible"
+            valuePropName="checked"
+            help="Uncheck for operating budgets and costs not tracked in roadmap planning"
+          >
+            <Checkbox>
+              Include in Roadmap Planning
+            </Checkbox>
+          </Form.Item>
+        )}
 
-        {isTransversal && !isEditMode && (
+        {isTransversal && !isEditMode && !isTrainMode && (
           <div style={{ marginBottom: 24 }}>
             <Alert
               message="Transversal Budget Line"
@@ -235,7 +265,7 @@ export const BudgetLineForm: React.FC<BudgetLineFormProps> = ({
         <Form.Item>
           <Space>
             <Button type="primary" htmlType="submit" loading={loading}>
-              {isEditMode ? 'Update' : 'Create'} Budget Line
+              {isEditMode ? 'Update' : 'Create'} {isTrainMode ? 'Train ' : ''}Budget Line
             </Button>
             {onCancel && (
               <Button onClick={onCancel}>

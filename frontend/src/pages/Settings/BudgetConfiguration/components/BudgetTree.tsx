@@ -1,14 +1,26 @@
 import React, { useEffect, useState } from 'react';
-import { Tree, Spin, message, Empty, Button, Popconfirm, Row, Col, Statistic, Progress, Tag } from 'antd';
-import { LinkOutlined, PlusOutlined, DeleteOutlined } from '@ant-design/icons';
-import { getProductBudgets, getProductBudgetDetail, ProductBudget, deleteProductBudget } from '../../../../services/budgetConfigService';
+import { Tree, Spin, message, Button, Popconfirm, Row, Col, Statistic, Progress, Tag, Drawer, Divider } from 'antd';
+import { LinkOutlined, PlusOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import {
+  getProductBudgets, getProductBudgetDetail, ProductBudget, deleteProductBudget,
+  getTrainBudgetLines, deleteTrainBudgetLine, BudgetLine,
+} from '../../../../services/budgetConfigService';
 import { AddProductBudgetModal } from '../modals/AddProductBudgetModal';
+import { BudgetLineForm } from '../forms/BudgetLineForm';
 
 interface BudgetTreeProps {
   versionId: string;
   onNodeSelect: (node: any) => void;
   refreshTrigger: number;
 }
+
+const TRAIN_SECTION_STYLE: React.CSSProperties = {
+  background: '#e6f4ff',
+  border: '1px solid #91caff',
+  borderRadius: 6,
+  padding: '12px 16px',
+  marginBottom: 12,
+};
 
 export const BudgetTree: React.FC<BudgetTreeProps> = ({
   versionId,
@@ -21,12 +33,35 @@ export const BudgetTree: React.FC<BudgetTreeProps> = ({
   const [loadedKeys, setLoadedKeys] = useState<Set<string>>(new Set());
   const [addModalVisible, setAddModalVisible] = useState(false);
   const [existingProductIds, setExistingProductIds] = useState<string[]>([]);
+  const [trainLines, setTrainLines] = useState<BudgetLine[]>([]);
+  const [trainDrawerOpen, setTrainDrawerOpen] = useState(false);
+  const [editingTrainLine, setEditingTrainLine] = useState<BudgetLine | null>(null);
 
   useEffect(() => {
     if (versionId) {
       loadBudgetData();
+      loadTrainLines();
     }
   }, [versionId, refreshTrigger]);
+
+  const loadTrainLines = async () => {
+    try {
+      const lines = await getTrainBudgetLines(versionId);
+      setTrainLines(lines);
+    } catch (error) {
+      console.error('Failed to load train budget lines:', error);
+    }
+  };
+
+  const handleDeleteTrainLine = async (line: BudgetLine) => {
+    try {
+      await deleteTrainBudgetLine(line.id);
+      message.success(`${line.name} deleted`);
+      loadTrainLines();
+    } catch (error: any) {
+      message.error(error.response?.data?.detail || 'Failed to delete train budget line');
+    }
+  };
 
   const loadBudgetData = async () => {
     try {
@@ -214,32 +249,11 @@ export const BudgetTree: React.FC<BudgetTreeProps> = ({
     );
   }
 
-  if (treeData.length === 0) {
-    return (
-      <div style={{ padding: '40px', textAlign: 'center' }}>
-        <Empty description="No budget data available" />
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          style={{ marginTop: 16 }}
-          onClick={() => setAddModalVisible(true)}
-        >
-          Add Product Budget
-        </Button>
-        
-        <AddProductBudgetModal
-          visible={addModalVisible}
-          versionId={versionId}
-          existingProductIds={existingProductIds}
-          onClose={() => setAddModalVisible(false)}
-          onSuccess={loadBudgetData}
-        />
-      </div>
-    );
-  }
-
-  const totalAllocated = treeData.reduce((sum, node) => sum + (node.data?.allocated_amount ?? 0), 0);
-  const totalUsed = treeData.reduce((sum, node) => sum + (node.data?.consumed_amount ?? 0), 0);
+  const productAllocated = treeData.reduce((sum, node) => sum + (node.data?.allocated_amount ?? 0), 0);
+  const productUsed = treeData.reduce((sum, node) => sum + (node.data?.consumed_amount ?? 0), 0);
+  const trainAllocated = trainLines.reduce((sum, l) => sum + (l.allocated_amount ?? 0), 0);
+  const totalAllocated = productAllocated + trainAllocated;
+  const totalUsed = productUsed;
   const totalRemaining = totalAllocated - totalUsed;
   const overallUtilisation = totalAllocated > 0 ? (totalUsed / totalAllocated) * 100 : 0;
   const utilisationColor = overallUtilisation > 90 ? '#f5222d' : overallUtilisation > 70 ? '#faad14' : '#52c41a';
@@ -289,8 +303,68 @@ export const BudgetTree: React.FC<BudgetTreeProps> = ({
         </Row>
       </div>
 
+      {/* ===== Train Level Section ===== */}
+      <div style={{ padding: '12px 16px', borderBottom: '1px solid #f0f0f0' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+          <span style={{ fontWeight: 600, color: '#0958d9' }}>
+            🚂 Train Level (Operating Budgets)
+          </span>
+          <Button
+            type="primary"
+            size="small"
+            icon={<PlusOutlined />}
+            onClick={() => { setEditingTrainLine(null); setTrainDrawerOpen(true); }}
+          >
+            Add Train Budget Line
+          </Button>
+        </div>
+
+        {trainLines.length === 0 ? (
+          <div style={{ color: '#999', fontSize: 13, padding: '4px 0' }}>No train-level lines yet</div>
+        ) : (
+          <div style={TRAIN_SECTION_STYLE}>
+            {trainLines.map(line => (
+              <div
+                key={line.id}
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid #bae0ff' }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontWeight: 500 }}>{line.code} — {line.name}</span>
+                  <Tag color="default" style={{ fontSize: 11 }}>Non-roadmap</Tag>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <span style={{ fontSize: 12, color: '#666' }}>{line.allocated_amount} KEUR | 0 used</span>
+                  <Button
+                    type="text"
+                    size="small"
+                    icon={<EditOutlined />}
+                    onClick={() => { setEditingTrainLine(line); setTrainDrawerOpen(true); }}
+                  />
+                  <Popconfirm
+                    title="Delete train budget line"
+                    description={`Delete "${line.name}"? This cannot be undone.`}
+                    onConfirm={() => handleDeleteTrainLine(line)}
+                    okText="Delete"
+                    cancelText="Cancel"
+                    okButtonProps={{ danger: true }}
+                  >
+                    <Button type="text" size="small" danger icon={<DeleteOutlined />} />
+                  </Popconfirm>
+                </div>
+              </div>
+            ))}
+            <div style={{ marginTop: 8, fontSize: 12, color: '#0958d9', fontWeight: 500 }}>
+              Total train budget: {trainAllocated} KEUR
+            </div>
+          </div>
+        )}
+      </div>
+
+      <Divider style={{ margin: 0 }} />
+
+      {/* ===== Product Hierarchy Section ===== */}
       <div style={{ padding: '16px', borderBottom: '1px solid #f0f0f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ fontWeight: 500 }}>Budget Hierarchy</span>
+        <span style={{ fontWeight: 500 }}>📦 Product Hierarchy</span>
         <Button
           type="primary"
           size="small"
@@ -300,15 +374,21 @@ export const BudgetTree: React.FC<BudgetTreeProps> = ({
           Add Product
         </Button>
       </div>
-      <Tree
-        showLine
-        loadData={handleLoadData}
-        expandedKeys={expandedKeys}
-        onExpand={handleExpand}
-        onSelect={handleSelect}
-        treeData={treeData}
-        style={{ padding: '16px' }}
-      />
+      {treeData.length === 0 ? (
+        <div style={{ padding: '24px', textAlign: 'center', color: '#999', fontSize: 13 }}>
+          No product budgets yet. Click "Add Product" to get started.
+        </div>
+      ) : (
+        <Tree
+          showLine
+          loadData={handleLoadData}
+          expandedKeys={expandedKeys}
+          onExpand={handleExpand}
+          onSelect={handleSelect}
+          treeData={treeData}
+          style={{ padding: '16px' }}
+        />
+      )}
       
       <AddProductBudgetModal
         visible={addModalVisible}
@@ -317,6 +397,23 @@ export const BudgetTree: React.FC<BudgetTreeProps> = ({
         onClose={() => setAddModalVisible(false)}
         onSuccess={loadBudgetData}
       />
+
+      {/* Train line add/edit drawer */}
+      <Drawer
+        title={editingTrainLine ? 'Edit Train Budget Line' : 'Add Train Budget Line'}
+        open={trainDrawerOpen}
+        onClose={() => { setTrainDrawerOpen(false); setEditingTrainLine(null); }}
+        width={480}
+        destroyOnClose
+      >
+        <BudgetLineForm
+          budgetLine={editingTrainLine || undefined}
+          versionId={versionId}
+          mode="train"
+          onSuccess={() => { setTrainDrawerOpen(false); setEditingTrainLine(null); loadTrainLines(); }}
+          onCancel={() => { setTrainDrawerOpen(false); setEditingTrainLine(null); }}
+        />
+      </Drawer>
     </div>
   );
 };
