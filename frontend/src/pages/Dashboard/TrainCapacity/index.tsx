@@ -118,7 +118,7 @@ export const TrainCapacityDashboard: React.FC = () => {
     } else if (viewMode === 'annual') {
       loadAnnualData();
     }
-  }, [selectedPI, selectedYear, selectedTeamIds, viewMode]);
+  }, [selectedPI, selectedYear, selectedTeamIds, viewMode, teams]);
 
   const loadPIs = async () => {
     try {
