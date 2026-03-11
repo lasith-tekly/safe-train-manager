@@ -493,11 +493,18 @@ This document tracks the development history of Amadeus Elevate, documenting eac
 - No new DB tables — reads from existing capacity tables
 - PI-boundary aware member counting
 - Extends existing capacity_service.py
+- **Single data source**: use `/api/teams/{id}/capacity` exclusively; removed duplicate `/api/capacity/summary` endpoint which caused PD/QA=0 (data was being read from wrong aggregation)
 
 ### Business Rules Implemented
 - Member counts respect effective_from_pi_id and left_after_pi_id
 - Utilisation = allocated eD / available capacity
 - Role split follows member role assignments
+
+### Bug Fixes Applied (2026-02-27)
+- Dashboard empty on initial load — useEffect not firing on mount
+- Dev/PD/QA showing 0 at iteration level — wrong data source (commit ed7dfac1)
+- QA bar label not visible — threshold too high (commit 0af1b207)
+- Role split bar too tall in iteration rows — removed from iteration level (commit 6ce2b8c3)
 
 ---
 
@@ -650,6 +657,19 @@ This document tracks the development history of Amadeus Elevate, documenting eac
 - **Lesson**: Database tracked by git caused data corruption on merge
 - **Action**: git rm --cached safe_train.db, established developer branch workflow
 
+### Phase 7A: Train Capacity Dashboard (2026-02-27 Session)
+- **Lesson**: Duplicate endpoint `/api/capacity/summary` returned PD/QA=0 because it used a different aggregation path than `/api/teams/{id}/capacity`. Two endpoints for the same data is always a bug waiting to happen.
+- **Action**: Removed `/api/capacity/summary`; consolidated all consumers onto single source `/api/teams/{id}/capacity`. Rule added: _Single source of truth — never duplicate endpoints, reuse existing services._
+
+- **Lesson**: FastAPI route ordering — `GET /versions/{version_id}` declared before `GET /versions/{version_id}/train-lines` caused FastAPI to parse `"train-lines"` as a UUID, returning 422 (manifests as CORS error on frontend).
+- **Action**: Always declare more-specific routes (with path suffix) **before** parameterised catch-all routes in the same router.
+
+- **Lesson**: `_log_audit()` called before `db.commit()` — `budget_line.id` is `None` until the DB assigns it after flush/commit, causing a NOT NULL constraint violation (500 error).
+- **Action**: Always `db.commit()` + `db.refresh()` before calling `_log_audit()`. Same pattern already used in all other `create_*` methods — must be applied consistently.
+
+- **Lesson**: Pydantic v2 — a field named `date` with type `Optional[date]` shadows the imported `date` type from the `datetime` module, causing a `TypeError` on model instantiation.
+- **Action**: Always alias date fields as `DateType = date` at import time, or use `datetime.date` explicitly. Never name a field the same as its type.
+
 ### General
 - **Lesson**: Database migrations must be tested thoroughly
 - **Action**: Always test forward and rollback migrations
@@ -678,7 +698,7 @@ This document tracks the development history of Amadeus Elevate, documenting eac
 
 ---
 
-**Document Version:** 2.0  
-**Last Updated:** 2026-02-26  
+**Document Version:** 2.1  
+**Last Updated:** 2026-02-27  
 **Maintained By:** @TechLead  
 **Review Frequency:** After each phase completion

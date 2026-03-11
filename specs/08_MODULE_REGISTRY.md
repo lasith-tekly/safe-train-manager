@@ -214,7 +214,7 @@ Always use _v4 versions. Legacy files exist but are NOT active:
 
 ### Phase 7A: Train Capacity Dashboard
 **Status:** 🔒 LOCKED  
-**Locked Date:** 2026-02-24  
+**Locked Date:** 2026-02-27  
 **Risk Level:** 🟡 Medium
 
 **Backend Files:**
@@ -222,8 +222,8 @@ Always use _v4 versions. Legacy files exist but are NOT active:
 - `backend/app/services/capacity_service.py` (extended)
 
 **Frontend Files:**
-- `frontend/src/pages/TrainCapacity/index.tsx`
-- `frontend/src/pages/TeamCapacity/index.tsx`
+- `frontend/src/pages/Dashboard/TrainCapacity/index.tsx`
+- `frontend/src/pages/Dashboard/TeamCapacity/index.tsx`
 
 **Features:**
 - PI/Annual capacity views
@@ -463,24 +463,33 @@ Always use _v4 versions. Legacy files exist but are NOT active:
 
 | Date | Module | Change | Risk | Commit | Impact |
 |------|--------|--------|------|--------|--------|
-| 2026-02-23 | Dashboard | Phase 3: Frontend - Complete Train Capacity Dashboard redesign | 🟡 Medium | TBD | Train Capacity UI |
-| 2026-02-23 | Capacity Estimation + Dashboard | Phase 1: Backend - Role splits, PI-boundary filtering, utilisation fix, annual view, team filter | 🔴 High | c2efad6c | Train Capacity Dashboard |
-| 2026-02-23 | Budget Configuration | Fix frontend crash on 409 budget line delete response | 🟢 Low | 1b8abd29 | Budget UI |
-| 2026-02-23 | Budget Configuration | Return 409 when deleting BL referenced by roadmap features | 🟡 Medium | b1d9513d | Budget delete |
-| 2026-02-23 | Budget Configuration | Fixed category delete missing cascade recalculation | 🟡 Medium | 8a8a287b | Budget totals |
-| 2026-02-26 | PMReview | Fix PMReviewPanel drawer width to 50% | 🟢 Low | d0605de0 | UI consistency |
-| 2026-02-26 | TeamPlanning | Fix plan status after PM rejection | 🟡 Medium | c273c355 | Plan status |
-| 2026-02-26 | TeamPlanning | Fix PM review panel after PO re-submission | 🟡 Medium | 2e9bda89 | PM workflow |
-| 2026-02-26 | BudgetValidation | Fix planned_keur=0 for NULL version_id features | 🟢 Low | 4286f573 | Budget bars roadmap |
-| 2026-02-26 | Budget | Fix ProductBudgetResponse types int→float | 🟡 Medium | 0872ead4 | Schema fix |
-| 2026-02-26 | Budget | Fix consumed_amount calculation from features | 🟡 Medium | 0872ead4 | Budget bars |
-| 2026-02-26 | Budget | Fix budget/products active version fallback | 🟢 Low | — | Feature form budget lines |
-| 2026-02-24 | Train Capacity | Train Capacity Dashboard implemented | 🟡 Medium | — | New dashboard |
-| 2026-02-23 | Capacity Estimation | Fixed PI-scoped member count + removed duplicate PI displays | 🟡 Medium | 9c4e76c1 | Teams overview |
 | 2026-02-19 | Team Planning | Fixed commit_plan UPDATE logic | 🟡 Medium | 6151d92b | PO workflow |
 | 2026-02-19 | JIRA Records | Fixed version_id inheritance | 🟡 Medium | 898003a9 | Record creation |
 | 2026-02-19 | JIRA Records | Made version_id optional in schema | 🟡 Medium | 898003a9 | API contract |
 | 2026-02-19 | Feature Service | Inherit version_id from feature | 🟡 Medium | 898003a9 | Service logic |
+| 2026-02-23 | Capacity Estimation | Fixed PI-scoped member count + removed duplicate PI displays | 🟡 Medium | 9c4e76c1 | Teams overview |
+| 2026-02-23 | Capacity Estimation + Dashboard | Backend — role splits, PI-boundary filtering, utilisation fix, annual view, team filter | 🔴 High | c2efad6c | Train Capacity Dashboard |
+| 2026-02-23 | Dashboard | Frontend — complete Train Capacity Dashboard redesign | 🟡 Medium | TBD | Train Capacity UI |
+| 2026-02-23 | Budget Configuration | Fix frontend crash on 409 budget line delete response | 🟢 Low | 1b8abd29 | Budget UI |
+| 2026-02-23 | Budget Configuration | Return 409 when deleting BL referenced by roadmap features | 🟡 Medium | b1d9513d | Budget delete |
+| 2026-02-23 | Budget Configuration | Fixed category delete missing cascade recalculation | � Medium | 8a8a287b | Budget totals |
+| 2026-02-24 | Train Capacity | Train Capacity Dashboard fully implemented | 🟡 Medium | — | New dashboard |
+| 2026-02-26 | Phase1 | Fix PI iteration count (IP is additive, not included in count) | 🟡 Medium | ✅ | PI Calendar |
+| 2026-02-26 | Phase1 | Fix holiday edit 422 — Pydantic v2 date field shadows type | 🟡 Medium | 5ddb4a5a | Holiday form |
+| 2026-02-26 | PMReview | Fix PMReviewPanel drawer width to 50% | 🟢 Low | d0605de0 | UI consistency |
+| 2026-02-26 | TeamPlanning | Fix plan status after PM rejection | 🟡 Medium | c273c355 | Plan status |
+| 2026-02-26 | TeamPlanning | Fix PM review panel after PO re-submission | 🟡 Medium | 2e9bda89 | PM workflow |
+| 2026-02-26 | Budget | Fix ProductBudgetResponse types int→float | 🟡 Medium | 0872ead4 | Schema fix |
+| 2026-02-26 | Budget | Fix consumed_amount calculation from features | 🟡 Medium | 0872ead4 | Budget bars |
+| 2026-02-26 | Budget | Fix NULL version_id in deviation service (planned_keur=0) | 🟢 Low | 4286f573 | Budget bars roadmap |
+| 2026-02-26 | Budget | Fix budget/products active version fallback | 🟢 Low | — | Feature form budget lines |
+| 2026-02-26 | Budget | Add is_roadmap_eligible to budget_lines | 🔴 High | f98a35d2 | Schema + UI |
+| 2026-02-26 | Budget | Add train-level budget lines (operating costs, non-roadmap) | 🔴 High | 78fbca4a | New feature |
+| 2026-02-27 | TrainCapacity | Remove /api/capacity/summary duplicate — single source /api/teams/{id}/capacity | 🟡 Medium | ed7dfac1 | Dashboard data |
+| 2026-02-27 | Layout | Content area max-width removed, nav fixes | 🟢 Low | ✅ | UI consistency |
+| 2026-02-27 | Budget | Fix train-lines CORS — route ordering bug (GET /versions/{id} shadowed train-lines route) | 🟡 Medium | 93c8a7f3 | API routing |
+| 2026-02-27 | Budget | Enable categories for train-level budget lines | 🟡 Medium | 93c8a7f3 | Train lines UI |
+| 2026-02-27 | Budget | Fix create_train_budget_line 500 — audit called before db.commit() | 🟢 Low | 9ddb5c2b | Budget API |
 
 ---
 
@@ -492,10 +501,12 @@ Always use _v4 versions. Legacy files exist but are NOT active:
 | 2026-02-05 | Team planning tables | team_planning, po_plan_versions | ✅ Yes |
 | 2026-02-12 | PM review columns | team_planning, po_plan_versions | ✅ Yes |
 | 2026-02-26 | DB Reset | Full DB reset — tables recreated from SQLAlchemy models directly (Alembic chain was broken) | All 42 tables |
+| 2026-02-26 | is_roadmap_eligible | Add is_roadmap_eligible boolean column to budget_lines | budget_lines |
+| 2026-02-26 | train_budget_lines | product_budget_id nullable confirmed, budget_version_id FK present — no-op migration (schema already correct) | budget_lines |
 
 ---
 
-**Document Version:** 2.0  
-**Last Updated:** 2026-02-26  
+**Document Version:** 2.1  
+**Last Updated:** 2026-02-27  
 **Maintained By:** @TechLead  
 **Review Frequency:** After each phase completion
