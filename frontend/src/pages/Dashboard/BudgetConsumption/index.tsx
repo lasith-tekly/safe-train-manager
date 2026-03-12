@@ -360,7 +360,7 @@ export const BudgetConsumptionDashboard: React.FC = () => {
   const hook = useBudgetConsumption();
   const {
     fiscalYears, selectedYearId, setSelectedYearId,
-    hierarchy, trainLines, quarters, totalIterations,
+    hierarchy, productBudgetDetails, trainLines, quarters,
     calcBaseline, strategicByQuarter, plannedByQuarter, actualByQuarter,
     summaryCards, productColorMap,
     isLoading, error,
@@ -403,62 +403,64 @@ export const BudgetConsumptionDashboard: React.FC = () => {
       }));
     }
     if (viewLevel === 'budgetline') {
-      const filtered = contextFilter === 'all' ? products : products.filter(pb => pb.product.id === contextFilter);
-      return filtered.flatMap(pb =>
-        (pb.budget_lines || []).map(bl => ({
+      const filtered = contextFilter === 'all'
+        ? productBudgetDetails
+        : productBudgetDetails.filter((pb: any) => pb.product?.id === contextFilter);
+      return filtered.flatMap((pb: any) =>
+        (pb.budget_lines || []).map((bl: any) => ({
           id: bl.id,
-          label: `${pb.product.short_code} — ${bl.name}`,
+          label: `${pb.product?.short_code} — ${bl.name}`,
           sub: `${fmt(bl.allocated_amount)}K`,
-          color: productColorMap[pb.product.id] || '#3b82f6',
+          color: productColorMap[pb.product?.id] || '#3b82f6',
         }))
       );
     }
     if (viewLevel === 'category') {
       if (contextFilter === 'all') {
-        return products.flatMap(pb =>
-          (pb.budget_lines || []).flatMap(bl =>
-            (bl.categories || []).map(cat => ({
+        return productBudgetDetails.flatMap((pb: any) =>
+          (pb.budget_lines || []).flatMap((bl: any) =>
+            (bl.categories || []).map((cat: any) => ({
               id: cat.id,
               label: cat.name,
               sub: `${bl.name} · ${fmt(cat.allocated_amount)}K`,
-              color: productColorMap[pb.product.id] || '#3b82f6',
+              color: productColorMap[pb.product?.id] || '#3b82f6',
             }))
           )
         );
       }
       // contextFilter = budget_line_id
-      for (const pb of products) {
-        const bl = (pb.budget_lines || []).find(b => b.id === contextFilter);
+      for (const pb of productBudgetDetails) {
+        const bl = (pb.budget_lines || []).find((b: any) => b.id === contextFilter);
         if (bl) {
-          return (bl.categories || []).map(cat => ({
+          return (bl.categories || []).map((cat: any) => ({
             id: cat.id,
             label: cat.name,
             sub: `${fmt(cat.allocated_amount)}K`,
-            color: productColorMap[pb.product.id] || '#3b82f6',
+            color: productColorMap[pb.product?.id] || '#3b82f6',
           }));
         }
       }
     }
     return [];
-  }, [viewLevel, contextFilter, products, productColorMap]);
+  }, [viewLevel, contextFilter, products, productBudgetDetails, productColorMap]);
 
   // Auto-select all chips when items list changes
   const effectiveChips = useMemo(() => {
     if (selectedChips.size === 0 && chipItems.length > 0) {
-      return new Set(chipItems.map(c => c.id));
+      return new Set(chipItems.map((c: { id: string }) => c.id));
     }
     return selectedChips;
   }, [selectedChips, chipItems]);
 
   const toggleChip = (id: string) => {
-    setSelectedChips(prev => {
-      const next = new Set(prev.size === 0 ? chipItems.map(c => c.id) : prev);
+    setSelectedChips((prev: Set<string>) => {
+      const next = new Set<string>(prev.size === 0 ? chipItems.map((c: { id: string }) => c.id) : prev);
       if (next.has(id)) next.delete(id); else next.add(id);
       return next;
     });
   };
-  const selectAll = () => setSelectedChips(new Set(chipItems.map(c => c.id)));
-  const clearAll  = () => setSelectedChips(new Set());
+  const selectAll = () => setSelectedChips(new Set<string>(chipItems.map((c: { id: string }) => c.id)));
+  const clearAll  = () => setSelectedChips(new Set<string>());
 
   // ── Context filter options ─────────────────────────────────────────────────
   const contextOptions = useMemo(() => {
@@ -475,35 +477,6 @@ export const BudgetConsumptionDashboard: React.FC = () => {
     }
     return [];
   }, [viewLevel, products]);
-
-  // ── Chart data ─────────────────────────────────────────────────────────────
-  const chartData = useMemo(() => {
-    const qlabels = quarters.length === 4
-      ? quarters.map(q => q.label)
-      : ['Q1', 'Q2', 'Q3', 'Q4'];
-
-    return qlabels.map((label, idx) => {
-      const point: Record<string, number | null | string> = { quarter: label };
-
-      // Strategic committed/forecast split
-      if (showStrategic) {
-        const v = strategicByQuarter[idx];
-        const isCommitted = quarters[idx]?.status !== 'future';
-        if (isCommitted) {
-          point['strategic_committed'] = v;
-          point['strategic_forecast']  = null;
-        } else {
-          point['strategic_committed'] = null;
-          point['strategic_forecast']  = v;
-        }
-      }
-
-      if (showPlanned) point['planned']  = plannedByQuarter[idx];
-      if (showActual)  point['actual']   = actualByQuarter[idx];
-
-      return point;
-    });
-  }, [quarters, strategicByQuarter, plannedByQuarter, actualByQuarter, showStrategic, showPlanned, showActual]);
 
   // ── Baseline bar datasets: one Bar per product ────────────────────────────
   const baselineProducts = useMemo(() => {
@@ -523,6 +496,42 @@ export const BudgetConsumptionDashboard: React.FC = () => {
     const total = trainLines.reduce((s, tl) => s + tl.allocated_amount, 0);
     return [0, 1, 2, 3].map(i => calcBaseline(total, i));
   }, [showOps, showBaseline, trainLines, calcBaseline]);
+
+  // ── Chart data ─────────────────────────────────────────────────────────────
+  const chartData = useMemo(() => {
+    const qlabels = quarters.length === 4
+      ? quarters.map(q => q.label)
+      : ['Q1', 'Q2', 'Q3', 'Q4'];
+
+    return qlabels.map((label, idx) => {
+      const point: Record<string, number | null | string> = { quarter: label };
+
+      // Per-product baseline keys (consumed by Bar dataKey)
+      baselineProducts.forEach(bp => {
+        point[`_bl_${bp.id}`] = bp.data[idx] ?? null;
+      });
+      // OPS baseline key
+      if (opsBaseline) point['_ops'] = opsBaseline[idx] ?? null;
+
+      // Strategic committed/forecast split
+      if (showStrategic) {
+        const v = strategicByQuarter[idx];
+        const isCommitted = quarters[idx]?.status !== 'future';
+        if (isCommitted) {
+          point['strategic_committed'] = v;
+          point['strategic_forecast']  = null;
+        } else {
+          point['strategic_committed'] = null;
+          point['strategic_forecast']  = v;
+        }
+      }
+
+      if (showPlanned) point['planned']  = plannedByQuarter[idx];
+      if (showActual)  point['actual']   = actualByQuarter[idx];
+
+      return point;
+    });
+  }, [quarters, baselineProducts, opsBaseline, strategicByQuarter, plannedByQuarter, actualByQuarter, showStrategic, showPlanned, showActual]);
 
   // ── Tree rows ──────────────────────────────────────────────────────────────
   const treeRows: TreeRow[] = useMemo(() => {
@@ -677,17 +686,19 @@ export const BudgetConsumptionDashboard: React.FC = () => {
 
       {/* Breadcrumb */}
       <div style={{ marginBottom: 12 }}>
-        <Breadcrumb>
-          {LEVEL_ORDER.slice(0, LEVEL_ORDER.indexOf(viewLevel) + 1).map((lvl) => (
-            <Breadcrumb.Item
-              key={lvl}
-              onClick={() => lvl !== viewLevel && handleLevelChange(lvl)}
-              style={{ cursor: lvl !== viewLevel ? 'pointer' : 'default', fontWeight: lvl === viewLevel ? 600 : 400 }}
-            >
-              {LEVEL_LABELS[lvl]}
-            </Breadcrumb.Item>
-          ))}
-        </Breadcrumb>
+        <Breadcrumb
+          items={LEVEL_ORDER.slice(0, LEVEL_ORDER.indexOf(viewLevel) + 1).map((lvl) => ({
+            key: lvl,
+            title: (
+              <span
+                onClick={() => lvl !== viewLevel && handleLevelChange(lvl)}
+                style={{ cursor: lvl !== viewLevel ? 'pointer' : 'default', fontWeight: lvl === viewLevel ? 600 : 400 }}
+              >
+                {LEVEL_LABELS[lvl]}
+              </span>
+            ),
+          }))}
+        />
       </div>
 
       {isLoading ? (
@@ -759,7 +770,7 @@ export const BudgetConsumptionDashboard: React.FC = () => {
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
               {viewLevel === 'train' ? (
                 <span style={{ color: '#9ca3af', fontSize: 12 }}>All data aggregated at Train level.</span>
-              ) : chipItems.map(item => {
+              ) : chipItems.map((item: { id: string; label: string; sub?: string; color: string }) => {
                 const on = effectiveChips.has(item.id);
                 return (
                   <div
@@ -824,30 +835,25 @@ export const BudgetConsumptionDashboard: React.FC = () => {
                   <Tooltip
                     contentStyle={{ background: '#1a1d23', border: 'none', borderRadius: 6, color: '#e2e8f0', fontSize: 11 }}
                     labelStyle={{ fontWeight: 600, marginBottom: 4 }}
-                    formatter={(value: any, name: string) => value == null ? null : [`${Number(value).toLocaleString()} KEUR`, name]}
+                    formatter={(value: any, name: string | undefined) => value == null ? null : [`${Number(value).toLocaleString()} KEUR`, name ?? ''] as [string, string]}
                   />
                   <Legend wrapperStyle={{ fontSize: 11 }} iconType="circle" />
 
                   {/* Baseline bars per product — inject per-product data via data prop */}
-                  {baselineProducts.map((bp) => {
-                    const bpData = chartData.map((d, i) => ({ ...d, [`_bl_${bp.id}`]: bp.data[i] }));
-                    return (
-                      <Bar
-                        key={`bl_${bp.id}`}
-                        data={bpData}
-                        dataKey={`_bl_${bp.id}`}
-                        name={`Baseline — ${bp.name}`}
-                        stackId="baseline"
-                        fill={`${bp.color}44`}
-                        stroke={`${bp.color}88`}
-                        strokeWidth={1}
-                      />
-                    );
-                  })}
+                  {baselineProducts.map((bp) => (
+                    <Bar
+                      key={`bl_${bp.id}`}
+                      dataKey={`_bl_${bp.id}`}
+                      name={`Baseline — ${bp.name}`}
+                      stackId="baseline"
+                      fill={`${bp.color}44`}
+                      stroke={`${bp.color}88`}
+                      strokeWidth={1}
+                    />
+                  ))}
                   {/* OPS baseline */}
                   {showOps && showBaseline && opsBaseline && (
                     <Bar
-                      data={chartData.map((d, i) => ({ ...d, _ops: opsBaseline[i] }))}
                       dataKey="_ops"
                       name="Train Operating Cost"
                       stackId="baseline"
