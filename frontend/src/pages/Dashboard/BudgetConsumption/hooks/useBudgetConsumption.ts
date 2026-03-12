@@ -84,7 +84,7 @@ export function useBudgetConsumption() {
   const [pis, setPis] = useState<any[]>([]);
   const [globalSettings, setGlobalSettings] = useState<any | null>(null);
   const [features, setFeatures] = useState<any[]>([]);          // all product features
-  const [planningItems, setPlanningItems] = useState<any[]>([]);  // all team-planning items (approved)
+  const [jiraRecords, setJiraRecords] = useState<any[]>([]);      // all JIRA records from features
   const [productBudgetDetails, setProductBudgetDetails] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -182,31 +182,17 @@ export function useBudgetConsumption() {
 
         // Fetch all features in one call (product_id filter unreliable — filter client-side)
         const allFeaturesRes = await axios.get(`${API}/features`, {
-          params: { page_size: 500 }
+          params: { page_size: 100 }
         }).catch(() => ({ data: [] }));
         const allFeatures: any[] = allFeaturesRes.data?.data || allFeaturesRes.data || [];
         setFeatures(allFeatures);
 
-        // Fetch all approved team planning items by fanning out per team × PI
-        try {
-          const teamsRes = await axios.get(`${API}/teams`);
-          const teams: any[] = teamsRes.data.data || teamsRes.data || [];
-          const piIds = loadedPIs.map((p: any) => p.id);
-          const pairs: { teamId: string; piId: string }[] = [];
-          teams.forEach((t: any) => piIds.forEach((pid: string) => pairs.push({ teamId: t.id, piId: pid })));
-          const responses = await Promise.allSettled(
-            pairs.map(({ teamId, piId }) =>
-              axios
-                .get(`${API}/teams/${teamId}/planning`, { params: { pi_id: piId } })
-                .then((r) => (r.data.items || []) as any[])
-                .catch(() => [] as any[])
-            )
-          );
-          const allItems: any[] = responses.flatMap((r) => (r.status === 'fulfilled' ? r.value : []));
-          setPlanningItems(allItems.filter((i: any) => i.review_status === 'approved'));
-        } catch {
-          setPlanningItems([]);
-        }
+        // Extract all JIRA records from features (already fetched)
+        // No extra API calls needed
+        const allJiraRecords: any[] = allFeatures.flatMap(
+          (f: any) => f.jira_records || []
+        );
+        setJiraRecords(allJiraRecords);
       })
       .catch(() => setError('Failed to load budget data'))
       .finally(() => setIsLoading(false));
@@ -285,6 +271,26 @@ export function useBudgetConsumption() {
     [quarters]
   );
 
+  // ── PI → quarter index map (SAFe sequence, shared by planned + actual) ────────
+  const piQuarterMap: Record<string, number> = useMemo(() => {
+    const map: Record<string, number> = {};
+    const sortedPIs = [...pis].sort((a, b) => {
+      const getFirst = (pi: any) =>
+        (pi.iterations || [])
+          .filter((i: any) => !i.is_ip_iteration)
+          .sort((x: any, y: any) =>
+            new Date(x.start_date).getTime() - new Date(y.start_date).getTime()
+          )[0];
+      const aFirst = getFirst(a);
+      const bFirst = getFirst(b);
+      if (!aFirst) return 1;
+      if (!bFirst) return -1;
+      return new Date(aFirst.start_date).getTime() - new Date(bFirst.start_date).getTime();
+    });
+    sortedPIs.forEach((pi, idx) => { map[pi.id] = idx; });
+    return map;
+  }, [pis]);
+
   // ── Baseline per item per quarter ───────────────────────────────────────────
   function calcBaseline(total: number, qIdx: number): number {
     if (totalIterations === 0) return 0;
@@ -346,73 +352,49 @@ export function useBudgetConsumption() {
 
   // ── Planned consumption per quarter ─────────────────────────────────────────
   const plannedByQuarter: (number | null)[] = useMemo(() => {
-    if (!planningItems.length || !quarters.length || !globalSettings) {
+    if (!jiraRecords.length || !quarters.length || !globalSettings) {
       return [null, null, null, null];
     }
-    const unitCost: number = globalSettings.train_unit_cost_keur || 85;
 
-    // Sort PIs same way as quarters so index alignment is guaranteed
-    const sortedPIs = [...pis].sort((a, b) => {
-      const aFirst = (a.iterations || [])
-        .filter((i: any) => !i.is_ip_iteration)
-        .sort((x: any, y: any) => new Date(x.start_date).getTime() - new Date(y.start_date).getTime())[0];
-      const bFirst = (b.iterations || [])
-        .filter((i: any) => !i.is_ip_iteration)
-        .sort((x: any, y: any) => new Date(x.start_date).getTime() - new Date(y.start_date).getTime())[0];
-      if (!aFirst) return 1;
-      if (!bFirst) return -1;
-      return new Date(aFirst.start_date).getTime() - new Date(bFirst.start_date).getTime();
-    });
+    const unitCostPerDay: number =
+      (globalSettings.train_unit_cost_keur || 78) /
+      (globalSettings.effort_days_per_year || 220);
 
     const result: (number | null)[] = [null, null, null, null];
-    [0, 1, 2, 3].forEach((idx) => {
-      if (quarters[idx]?.iters === 0) return;
-      // PI at this index corresponds to this quarter (SAFe sequence)
-      const pi = sortedPIs[idx];
-      const piIds = new Set(pi ? [pi.id] : []);
 
-      let total = 0;
-      let hasData = false;
-      for (const item of planningItems) {
-        if (piIds.has(item.pi_id)) {
-          const effort =
-            (Number(item.dev_effort) || 0) +
-            (Number(item.pd_effort) || 0) +
-            (Number(item.qa_effort) || 0);
-          total += effort * unitCost;
-          hasData = true;
-        }
-      }
-      result[idx] = hasData ? Math.round(total) : null;
-    });
-    return result;
-  }, [planningItems, quarters, pis, globalSettings]);
+    for (const jr of jiraRecords) {
+      const qIdx = piQuarterMap[jr.pi_id];
+      if (qIdx === undefined) continue;
+      const effort = Number(jr.planned_effort) || 0;
+      if (effort === 0) continue;
+      result[qIdx] = (result[qIdx] ?? 0) + Math.round(effort * unitCostPerDay * 10) / 10;
+    }
 
-  // ── Actual consumption per quarter (from consumed_amount on budget lines) ───
+    return result.map(v => v !== null ? Math.round(v) : null);
+  }, [jiraRecords, quarters, piQuarterMap, globalSettings]);
+
+  // ── Actual consumption per quarter (from JIRA actual_effort) ───────────────
   const actualByQuarter: (number | null)[] = useMemo(() => {
-    if (!hierarchy || !quarters.length) return [null, null, null, null];
+    if (!jiraRecords.length || !quarters.length || !globalSettings) {
+      return [null, null, null, null];
+    }
 
-    const totalActual = (hierarchy.product_budgets || []).reduce(
-      (s, pb) => s + (pb.consumed_amount || 0),
-      0
-    );
+    const unitCostPerDay: number =
+      (globalSettings.train_unit_cost_keur || 78) /
+      (globalSettings.effort_days_per_year || 220);
 
-    // Spread actual proportionally across past + current quarters by iteration ratio
     const result: (number | null)[] = [null, null, null, null];
-    const committedIters = quarters
-      .filter((q) => q.status !== 'future')
-      .reduce((s, q) => s + q.iters, 0);
 
-    [0, 1, 2, 3].forEach((idx) => {
-      const q = quarters[idx];
-      if (!q || q.status === 'future' || q.iters === 0) return;
-      result[idx] =
-        committedIters > 0
-          ? Math.round((totalActual * q.iters) / committedIters)
-          : null;
-    });
-    return result;
-  }, [hierarchy, quarters]);
+    for (const jr of jiraRecords) {
+      const qIdx = piQuarterMap[jr.pi_id];
+      if (qIdx === undefined) continue;
+      const effort = Number(jr.actual_effort) || 0;
+      if (effort === 0) continue;
+      result[qIdx] = (result[qIdx] ?? 0) + Math.round(effort * unitCostPerDay * 10) / 10;
+    }
+
+    return result.map(v => v !== null ? Math.round(v) : null);
+  }, [jiraRecords, quarters, piQuarterMap, globalSettings]);
 
   // ── Summary card values ──────────────────────────────────────────────────────
   const summaryCards = useMemo(() => {
@@ -475,6 +457,7 @@ export function useBudgetConsumption() {
     trainLines,
     quarters,
     totalIterations,
+    jiraRecords,
     // Calculations
     calcBaseline,
     strategicByQuarter,
