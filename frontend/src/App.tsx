@@ -6,6 +6,7 @@ import CapacityView from './pages/Dashboard/CapacityView';
 import { TrainCapacityDashboard } from './pages/Dashboard/TrainCapacity';
 import { TeamCapacityDashboardPage } from './pages/Dashboard/TeamCapacity';
 import { BudgetDashboard } from './pages/Dashboard/BudgetDashboard';
+import { BudgetConsumptionDashboard } from './pages/Dashboard/BudgetConsumption';
 import { ProductsPage } from './pages/Products';
 import { FeaturesPage } from './pages/Features';
 import { PICalendarPage } from './pages/PICalendar';
@@ -30,6 +31,7 @@ const App: React.FC = () => {
           <Route path="/train-capacity" element={<TrainCapacityDashboard />} />
           <Route path="/team-capacity" element={<TeamCapacityDashboardPage />} />
           <Route path="/budget-dashboard" element={<BudgetDashboard />} />
+          <Route path="/budget-consumption" element={<BudgetConsumptionDashboard />} />
           
           {/* Products Section */}
           <Route path="/products" element={<Navigate to="/products/list" replace />} />

@@ -248,6 +248,26 @@ Agents implement → Lasith verifies → commits to developer
 
 ---
 
+## Phase 7B — Budget Consumption Dashboard ✅ Complete
+
+| # | Task | Agent | Status |
+|---|------|-------|--------|
+| 7B.01 | `useBudgetConsumption.ts` hook — fetch + calc logic | @FrontendDeveloper | ✅ |
+| 7B.02 | `BudgetConsumption/index.tsx` — full page component | @FrontendDeveloper | ✅ |
+| 7B.03 | Add route `/budget-consumption` to App.tsx | @FrontendDeveloper | ✅ |
+| 7B.04 | Add nav item under Dashboard in SideNavLayout.tsx | @FrontendDeveloper | ✅ |
+| 7B.05 | Update DASHBOARD_BUILD_PLAN.md + BUILD_PLAN.md | @TechLead | ✅ |
+
+### Phase 7B Notes
+
+- Zero backend or locked module changes
+- New files only: `BudgetConsumption/index.tsx`, `hooks/useBudgetConsumption.ts`
+- Minimal modifications: `App.tsx` (route), `SideNavLayout.tsx` (nav item)
+- Recharts `ComposedChart` with stacked baseline bars + strategic/planned/actual lines
+- Custom CSS toggle for Train Operating Cost; collapsible 5-level tree table
+
+---
+
 ## UI / Layout Fixes ✅ Complete (2026-02-26/27)
 
 | # | Fix | Risk | Commit |
@@ -265,7 +285,7 @@ Agents implement → Lasith verifies → commits to developer
 | # | Task | Agent | Status |
 |---|------|-------|--------|
 | P.01 | Train-level budget line 500 error — move db.commit() before _log_audit in create_train_budget_line | @BackendDeveloper | ✅ |
-| P.02 | Update specs: 08_MODULE_REGISTRY.md + 10_PHASE_HISTORY.md to reflect all Phase 7A + recent fixes | @TechLead | 🟡 |
+| P.02 | Update specs: 08_MODULE_REGISTRY.md + 10_PHASE_HISTORY.md to reflect all Phase 7A + recent fixes | @TechLead | ✅ |
 
 ---
 
@@ -368,9 +388,10 @@ Update to 🔴 and add a note below the table.
 ## Current Step
 
 ```
-Phase: Pending Fixes
-Step: P.02 — Update specs (MODULE_REGISTRY + PHASE_HISTORY + BUILD_PLAN)
-Status: 🟡 In Progress
+Phase: 7B — Budget Consumption Dashboard
+Step: Complete — committed to developer branch
+Next: Phase 7C or D2 dashboard — TBD
+Status: ✅ Complete
 ```
 
 ---
@@ -378,4 +399,4 @@ Status: 🟡 In Progress
 **Document Version:** 2.0
 **Project:** Amadeus Elevate — SAFe Train Manager
 **Maintained By:** Lasith Jayarathne
-**Last Updated:** 2026-03-10
+**Last Updated:** 2026-03-13

@@ -5,7 +5,7 @@ import type { MenuProps } from 'antd';
 import {
   DashboardOutlined,
   CalendarOutlined,
-  // BarChartOutlined,  // Unused - Reports menu item hidden
+  BarChartOutlined,
   SettingOutlined,
   TeamOutlined,
   GlobalOutlined,
@@ -53,6 +53,7 @@ const menuItems: MenuItem[] = [
     getItem('Train Capacity', '/train-capacity', <FundOutlined />),
     getItem('Team Capacity', '/team-capacity', <TeamOutlined />),
     getItem('Budget Dashboard', '/budget-dashboard', <DollarOutlined />),
+    getItem('Budget Consumption', '/budget-consumption', <BarChartOutlined />),
   ]),
   getItem('Products', '/products', <ProductOutlined />, [
     getItem('Product List', '/products/list', <UnorderedListOutlined />),
