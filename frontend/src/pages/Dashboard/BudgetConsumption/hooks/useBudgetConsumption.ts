@@ -178,17 +178,29 @@ export function useBudgetConsumption() {
         const featureArrays = await Promise.all(
           products.map((pb) =>
             axios
-              .get(`${API}/products/${pb.product.id}/features`)
+              .get(`${API}/features`, { params: { product_id: pb.product.id } })
               .then((r) => r.data.data || r.data || [])
               .catch(() => [])
           )
         );
         setFeatures(featureArrays.flat());
 
-        // Fetch all approved team planning items
+        // Fetch all approved team planning items by fanning out per team × PI
         try {
-          const planRes = await axios.get(`${API}/team-planning`);
-          const allItems: any[] = planRes.data.items || planRes.data.data || planRes.data || [];
+          const teamsRes = await axios.get(`${API}/teams`);
+          const teams: any[] = teamsRes.data.data || teamsRes.data || [];
+          const piIds = loadedPIs.map((p: any) => p.id);
+          const pairs: { teamId: string; piId: string }[] = [];
+          teams.forEach((t: any) => piIds.forEach((pid: string) => pairs.push({ teamId: t.id, piId: pid })));
+          const responses = await Promise.allSettled(
+            pairs.map(({ teamId, piId }) =>
+              axios
+                .get(`${API}/teams/${teamId}/planning`, { params: { pi_id: piId } })
+                .then((r) => (r.data.items || []) as any[])
+                .catch(() => [] as any[])
+            )
+          );
+          const allItems: any[] = responses.flatMap((r) => (r.status === 'fulfilled' ? r.value : []));
           setPlanningItems(allItems.filter((i: any) => i.review_status === 'approved'));
         } catch {
           setPlanningItems([]);
