@@ -349,6 +349,64 @@ const CalcReference: React.FC = () => (
   />
 );
 
+// ─── Custom Chart Tooltip ────────────────────────────────────────────────────
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div style={{
+      background: '#fff',
+      border: '1px solid #e8eaed',
+      borderRadius: 8,
+      padding: '10px 14px',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
+      fontSize: 12,
+      minWidth: 180,
+    }}>
+      <div style={{
+        fontWeight: 700,
+        marginBottom: 8,
+        color: '#1a1d23',
+        fontSize: 13,
+        borderBottom: '1px solid #f0f0f0',
+        paddingBottom: 6,
+      }}>
+        {label}
+      </div>
+      {payload.map((entry: any, i: number) => {
+        if (entry.value == null || entry.value === 0) return null;
+        return (
+          <div key={i} style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 16,
+            padding: '2px 0',
+            color: '#374151',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{
+                width: 8, height: 8,
+                borderRadius: entry.type === 'line' ? '50%' : 2,
+                background: entry.color,
+                display: 'inline-block',
+                flexShrink: 0,
+              }} />
+              <span style={{ color: '#6b7280', fontSize: 11 }}>{entry.name}</span>
+            </div>
+            <span style={{
+              fontWeight: 600,
+              color: '#1a1d23',
+              fontFamily: 'monospace',
+            }}>
+              {Number(entry.value).toLocaleString()} KEUR
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 type ViewLevel = 'train' | 'product' | 'budgetline' | 'category';
 const LEVEL_ORDER: ViewLevel[] = ['train', 'product', 'budgetline', 'category'];
@@ -832,11 +890,7 @@ export const BudgetConsumptionDashboard: React.FC = () => {
                     tickFormatter={(v) => `${v.toLocaleString()}K`}
                     label={{ value: 'KEUR', angle: -90, position: 'insideLeft', fontSize: 11, fill: '#9ca3af' }}
                   />
-                  <Tooltip
-                    contentStyle={{ background: '#1a1d23', border: 'none', borderRadius: 6, color: '#e2e8f0', fontSize: 11 }}
-                    labelStyle={{ fontWeight: 600, marginBottom: 4 }}
-                    formatter={(value: any, name: string | undefined) => value == null ? null : [`${Number(value).toLocaleString()} KEUR`, name ?? ''] as [string, string]}
-                  />
+                  <Tooltip content={<CustomTooltip />} />
                   <Legend wrapperStyle={{ fontSize: 11 }} iconType="circle" />
 
                   {/* Baseline bars per product — inject per-product data via data prop */}

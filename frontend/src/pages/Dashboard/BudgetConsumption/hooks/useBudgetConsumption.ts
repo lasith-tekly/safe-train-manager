@@ -180,17 +180,12 @@ export function useBudgetConsumption() {
 
         setGlobalSettings(settingsRes.data);
 
-        // Fetch features for each product in hierarchy
-        const products = hierData.product_budgets || [];
-        const featureArrays = await Promise.all(
-          products.map((pb) =>
-            axios
-              .get(`${API}/features`, { params: { product_id: pb.product.id } })
-              .then((r) => r.data.data || r.data || [])
-              .catch(() => [])
-          )
-        );
-        setFeatures(featureArrays.flat());
+        // Fetch all features in one call (product_id filter unreliable — filter client-side)
+        const allFeaturesRes = await axios.get(`${API}/features`, {
+          params: { page_size: 500 }
+        }).catch(() => ({ data: [] }));
+        const allFeatures: any[] = allFeaturesRes.data?.data || allFeaturesRes.data || [];
+        setFeatures(allFeatures);
 
         // Fetch all approved team planning items by fanning out per team × PI
         try {
