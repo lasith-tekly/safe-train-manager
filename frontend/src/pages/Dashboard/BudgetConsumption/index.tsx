@@ -419,6 +419,7 @@ export const BudgetConsumptionDashboard: React.FC = () => {
   const {
     fiscalYears, selectedYearId, setSelectedYearId,
     hierarchy, productBudgetDetails, trainLines, quarters,
+    features,
     calcBaseline, strategicByQuarter, plannedByQuarter, actualByQuarter,
     summaryCards, productColorMap,
     isLoading, error,
@@ -555,6 +556,99 @@ export const BudgetConsumptionDashboard: React.FC = () => {
     return [0, 1, 2, 3].map(i => calcBaseline(total, i));
   }, [showOps, showBaseline, trainLines, calcBaseline]);
 
+  // ── Strategic by quarter — filtered by chip selection ─────────────────────
+  const filteredStrategicByQuarter: (number | null)[] = useMemo(() => {
+    if (!quarters.length) return [null, null, null, null];
+
+    // 1. Determine selected budget total based on viewLevel + effectiveChips
+    let selectedBudget = 0;
+
+    if (viewLevel === 'train') {
+      selectedBudget = products.reduce((s, pb) => s + (pb.allocated_amount || 0), 0)
+        + trainLines.reduce((s, tl) => s + (tl.allocated_amount || 0), 0);
+    } else if (viewLevel === 'product') {
+      selectedBudget = products
+        .filter(pb => effectiveChips.has(pb.product.id))
+        .reduce((s, pb) => s + (pb.allocated_amount || 0), 0);
+    } else if (viewLevel === 'budgetline') {
+      selectedBudget = productBudgetDetails.flatMap((pb: any) => pb.budget_lines || [])
+        .filter((bl: any) => effectiveChips.has(bl.id))
+        .reduce((s: number, bl: any) => s + (bl.allocated_amount || 0), 0);
+    } else if (viewLevel === 'category') {
+      selectedBudget = productBudgetDetails
+        .flatMap((pb: any) => (pb.budget_lines || []).flatMap((bl: any) => bl.categories || []))
+        .filter((cat: any) => effectiveChips.has(cat.id))
+        .reduce((s: number, cat: any) => s + (cat.allocated_amount || 0), 0);
+    }
+
+    // 2. Filter features to selected scope
+    const selectedProductIds: Set<string> = new Set(
+      viewLevel === 'train'
+        ? products.map(pb => pb.product.id)
+        : viewLevel === 'product'
+        ? products.filter(pb => effectiveChips.has(pb.product.id)).map(pb => pb.product.id)
+        : viewLevel === 'budgetline'
+        ? productBudgetDetails
+            .filter((pb: any) => (pb.budget_lines || []).some((bl: any) => effectiveChips.has(bl.id)))
+            .map((pb: any) => pb.product?.id)
+        : productBudgetDetails
+            .filter((pb: any) =>
+              (pb.budget_lines || []).some((bl: any) =>
+                (bl.categories || []).some((cat: any) => effectiveChips.has(cat.id))
+              )
+            )
+            .map((pb: any) => pb.product?.id)
+    );
+
+    const selectedFeatures = features.filter((f: any) =>
+      selectedProductIds.has(f.product_id)
+    );
+
+    // 3. Compute committed per quarter (past + current)
+    const result: (number | null)[] = [null, null, null, null];
+
+    [0, 1, 2, 3].forEach((idx) => {
+      const qStatus = quarters[idx]?.status;
+      if (!qStatus) return;
+
+      if (qStatus === 'past' || qStatus === 'current') {
+        let total = 0;
+        for (const f of selectedFeatures) {
+          for (const qa of f.quarterly_allocations || []) {
+            if (qa.quarter === idx + 1) {
+              const ratio = f.net_sizing_ed > 0
+                ? qa.allocated_ed / f.net_sizing_ed
+                : 0;
+              total += ratio * (f.total_cost_keur || 0);
+            }
+          }
+        }
+        result[idx] = Math.round(total);
+      }
+    });
+
+    // 4. Compute forecast for future quarters
+    const totalCommitted: number = result.reduce<number>(
+      (s, v) => s + (v !== null ? v : 0), 0
+    );
+    const remaining = Math.max(0, selectedBudget - totalCommitted);
+    const futureQuarters = quarters.filter(q => q.status === 'future');
+    const futureIters = futureQuarters.reduce((s, q) => s + q.iters, 0);
+
+    [0, 1, 2, 3].forEach((idx) => {
+      if (quarters[idx]?.status === 'future') {
+        result[idx] = futureIters > 0
+          ? Math.round((remaining * quarters[idx].iters) / futureIters)
+          : null;
+      }
+    });
+
+    return result;
+  }, [
+    viewLevel, effectiveChips, quarters, products, productBudgetDetails,
+    features, trainLines,
+  ]);
+
   // ── Chart data ─────────────────────────────────────────────────────────────
   const chartData = useMemo(() => {
     const qlabels = quarters.length === 4
@@ -573,7 +667,7 @@ export const BudgetConsumptionDashboard: React.FC = () => {
 
       // Strategic committed/forecast split
       if (showStrategic) {
-        const v = strategicByQuarter[idx];
+        const v = filteredStrategicByQuarter[idx];
         const isCommitted = quarters[idx]?.status !== 'future';
         if (isCommitted) {
           point['strategic_committed'] = v;
@@ -589,7 +683,7 @@ export const BudgetConsumptionDashboard: React.FC = () => {
 
       return point;
     });
-  }, [quarters, baselineProducts, opsBaseline, strategicByQuarter, plannedByQuarter, actualByQuarter, showStrategic, showPlanned, showActual]);
+  }, [quarters, baselineProducts, opsBaseline, filteredStrategicByQuarter, plannedByQuarter, actualByQuarter, showStrategic, showPlanned, showActual]);
 
   // ── Tree rows ──────────────────────────────────────────────────────────────
   const treeRows: TreeRow[] = useMemo(() => {
@@ -601,7 +695,7 @@ export const BudgetConsumptionDashboard: React.FC = () => {
     const trainTotal    = totalProducts + totalOps;
 
     const trainActual   = products.reduce((s, pb) => s + pb.consumed_amount, 0) + trainLines.reduce((s, tl) => s + tl.consumed_amount, 0);
-    const trainStrat    = (strategicByQuarter[currentQIdx] as number) || 0;
+    const trainStrat    = (filteredStrategicByQuarter[currentQIdx] as number) || 0;
     const trainPlanned  = (plannedByQuarter[currentQIdx]  as number) || 0;
 
     rows.push({

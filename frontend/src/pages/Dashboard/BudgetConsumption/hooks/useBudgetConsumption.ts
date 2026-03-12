@@ -454,6 +454,7 @@ export function useBudgetConsumption() {
     setSelectedYearId,
     hierarchy,
     productBudgetDetails,
+    features,
     trainLines,
     quarters,
     totalIterations,
