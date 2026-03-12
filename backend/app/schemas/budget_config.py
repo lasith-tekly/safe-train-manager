@@ -1,7 +1,7 @@
 from datetime import datetime, date
 from typing import Optional, List
 from uuid import UUID
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from enum import Enum
 
 
@@ -92,6 +92,7 @@ class ProductBudgetUpdate(BaseModel):
 
 
 class ProductInfo(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id: UUID
     name: str
     short_code: str
