@@ -541,25 +541,71 @@ export const BudgetConsumptionDashboard: React.FC = () => {
   const baselineProducts = useMemo(() => {
     if (!showBaseline) return [];
 
-    const totalProductBudget = products.reduce(
-      (s, pb) => s + (pb.allocated_amount || 0), 0
-    );
-    const totalOps = showOps
-      ? trainLines.reduce((s, tl) => s + (tl.allocated_amount || 0), 0)
-      : 0;
-
     return products
-      .filter(pb =>
-        viewLevel === 'train' ||
-        viewLevel !== 'product' ||
-        effectiveChips.has(pb.product.id)
-      )
+      .filter(pb => {
+        if (viewLevel === 'train') return true;
+
+        if (viewLevel === 'product') {
+          return effectiveChips.has(pb.product.id);
+        }
+
+        if (viewLevel === 'budgetline') {
+          const detail = productBudgetDetails.find(
+            (d: any) => d.product?.id === pb.product.id
+          );
+          return (detail?.budget_lines || []).some(
+            (bl: any) => effectiveChips.has(bl.id)
+          );
+        }
+
+        if (viewLevel === 'category') {
+          const detail = productBudgetDetails.find(
+            (d: any) => d.product?.id === pb.product.id
+          );
+          return (detail?.budget_lines || []).some((bl: any) =>
+            (bl.categories || []).some((cat: any) => effectiveChips.has(cat.id))
+          );
+        }
+
+        return false;
+      })
       .map(pb => {
-        const productBudget = pb.allocated_amount || 0;
-        const opsShare = totalProductBudget > 0
-          ? (productBudget / totalProductBudget) * totalOps
+        const totalProdBudget = products.reduce(
+          (s, p) => s + (p.allocated_amount || 0), 0
+        );
+        const opsTotal = showOps
+          ? trainLines.reduce((s, tl) => s + (tl.allocated_amount || 0), 0)
           : 0;
-        const totalForBaseline = productBudget + opsShare;
+
+        // Determine which portion of this product's budget is selected
+        let selectedAmount = pb.allocated_amount || 0;
+
+        if (viewLevel === 'budgetline') {
+          const detail = productBudgetDetails.find(
+            (d: any) => d.product?.id === pb.product.id
+          );
+          selectedAmount = (detail?.budget_lines || [])
+            .filter((bl: any) => effectiveChips.has(bl.id))
+            .reduce((s: number, bl: any) => s + (bl.allocated_amount || 0), 0);
+        }
+
+        if (viewLevel === 'category') {
+          const detail = productBudgetDetails.find(
+            (d: any) => d.product?.id === pb.product.id
+          );
+          selectedAmount = (detail?.budget_lines || [])
+            .flatMap((bl: any) => bl.categories || [])
+            .filter((cat: any) => effectiveChips.has(cat.id))
+            .reduce((s: number, cat: any) => s + (cat.allocated_amount || 0), 0);
+        }
+
+        // OPS share proportional to full product budget (not just selected)
+        const opsShare = totalProdBudget > 0 && opsTotal > 0
+          ? ((pb.allocated_amount || 0) / totalProdBudget) * opsTotal
+          : 0;
+
+        const totalForBaseline = selectedAmount + (showOps ? opsShare : 0);
+
         return {
           id: pb.product.id,
           name: pb.product.short_code,
@@ -568,8 +614,8 @@ export const BudgetConsumptionDashboard: React.FC = () => {
           opsShare: Math.round(opsShare),
         };
       });
-  }, [showBaseline, showOps, products, trainLines, viewLevel,
-      effectiveChips, productColorMap, calcBaseline]);
+  }, [showBaseline, showOps, products, productBudgetDetails, trainLines,
+      viewLevel, effectiveChips, productColorMap, calcBaseline]);
 
   // ── Strategic by quarter — filtered by chip selection ─────────────────────
   const filteredStrategicByQuarter: (number | null)[] = useMemo(() => {
