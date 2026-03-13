@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import {
   Select, Breadcrumb, Collapse,
   Skeleton, Alert, Typography,
@@ -70,31 +71,6 @@ const OpsSwitch: React.FC<{ on: boolean; onToggle: () => void }> = ({ on, onTogg
       Train Operating Cost
     </span>
   </div>
-);
-
-// ─── Expand/collapse chart button ────────────────────────────────────────────
-const ExpandIcon = ({ expanded, onToggle }: { expanded: boolean; onToggle: () => void }) => (
-  <button
-    onClick={onToggle}
-    title={expanded ? 'Collapse chart' : 'Expand chart'}
-    style={{
-      background: 'none', border: '1px solid #e5e7eb', borderRadius: 6,
-      cursor: 'pointer', padding: '4px 8px', color: '#6b7280',
-      display: 'flex', alignItems: 'center', gap: 4, fontSize: 11,
-      transition: 'all .15s',
-    }}
-  >
-    {expanded ? (
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>
-      </svg>
-    ) : (
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
-      </svg>
-    )}
-    {expanded ? 'Collapse' : 'Expand'}
-  </button>
 );
 
 // ─── Series toggle pill ────────────────────────────────────────────────────────
@@ -467,11 +443,11 @@ export const BudgetConsumptionDashboard: React.FC = () => {
   // Close expanded chart on Escape
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setChartExpanded(false);
+      if (e.key === 'Escape' && chartExpanded) setChartExpanded(false);
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, []);
+  }, [chartExpanded]);
 
   // Reset chip selection when level or context changes
   const handleLevelChange = (lvl: ViewLevel) => {
@@ -1102,127 +1078,148 @@ export const BudgetConsumptionDashboard: React.FC = () => {
             </div>
           </div>
 
-          {/* Chart Panel */}
-          <div style={chartExpanded ? {
-            position: 'fixed', inset: 0, zIndex: 1000,
-            background: 'rgba(0,0,0,0.5)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: 24,
-          } : {}}>
-          <div style={chartExpanded ? {
-            background: '#fff', borderRadius: 12, width: '100%', height: '100%',
-            overflow: 'auto', boxShadow: '0 25px 50px rgba(0,0,0,.25)',
-          } : { background: '#fff', border: '1px solid #e8eaed', borderRadius: 8, boxShadow: '0 4px 6px -1px rgba(0,0,0,.07)', marginBottom: 16, overflow: 'hidden' }}>
-            {/* Chart header */}
-            <div style={{ padding: '14px 20px', borderBottom: '1px solid #e8eaed', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-              <div>
-                <div style={{ fontSize: 14, fontWeight: 600 }}>Budget Consumption — Quarterly View</div>
-                <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>{`Bars = theoretical baseline${showOps ? ' (incl. OPS share)' : ''} · Lines = strategic / planned / actual consumption`}</div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                <ExpandIcon expanded={chartExpanded} onToggle={() => setChartExpanded(v => !v)} />
-                <div style={{ width: 1, height: 22, background: '#d1d5db', margin: '0 2px' }} />
-                <OpsSwitch on={showOps} onToggle={() => setShowOps(v => !v)} />
-                <div style={{ width: 1, height: 22, background: '#d1d5db', margin: '0 2px' }} />
-                <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap' }}>
+          {/* Chart Panel — normal view (hidden when expanded) */}
+          {!chartExpanded && (
+            <div style={{ background: '#fff', border: '1px solid #e8eaed', borderRadius: 8, boxShadow: '0 1px 3px rgba(0,0,0,.08)', marginBottom: 16, overflow: 'hidden' }}>
+              {/* Chart header */}
+              <div style={{ padding: '14px 20px', borderBottom: '1px solid #e8eaed', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 600 }}>Budget Consumption — Quarterly View</div>
+                  <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>{`Bars = theoretical baseline${showOps ? ' (incl. OPS share)' : ''} · Lines = strategic / planned / actual consumption`}</div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                  <OpsSwitch on={showOps} onToggle={() => setShowOps(v => !v)} />
+                  <div style={{ width: 1, height: 22, background: '#d1d5db', margin: '0 2px' }} />
                   <SeriesToggle label="Baseline"  color={C_BASELINE}  on={showBaseline}  onToggle={() => setShowBaseline(v => !v)}  activeStyle={{ background: '#dbeafe', borderColor: '#93c5fd', color: '#1e40af' }} />
                   <SeriesToggle label="Strategic" color={C_STRATEGIC} on={showStrategic} onToggle={() => setShowStrategic(v => !v)} activeStyle={{ background: '#eff6ff', borderColor: C_STRATEGIC, color: C_STRATEGIC }} />
                   <SeriesToggle label="Planned"   color={C_PLANNED}   on={showPlanned}   onToggle={() => setShowPlanned(v => !v)}   activeStyle={{ background: '#fff7ed', borderColor: '#fb923c', color: '#c2410c' }} />
                   <SeriesToggle label="Actual"    color={C_ACTUAL}    on={showActual}    onToggle={() => setShowActual(v => !v)}    activeStyle={{ background: '#f0fdf4', borderColor: '#86efac', color: '#166534' }} />
+                  <button
+                    onClick={() => setChartExpanded(true)}
+                    title="Expand chart"
+                    style={{
+                      background: 'none', border: '1px solid #e5e7eb', borderRadius: 6,
+                      cursor: 'pointer', padding: '4px 8px', color: '#6b7280',
+                      display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, marginLeft: 4,
+                    }}
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+                    </svg>
+                    Expand
+                  </button>
                 </div>
               </div>
-            </div>
-
-            {/* Quarter strip */}
-            {quarters.length === 4 && (
-              <div style={{ display: 'grid', gridTemplateColumns: '50px repeat(4, 1fr)', gap: 4, padding: '10px 20px 0' }}>
-                <div />
-                {quarters.map((q, i) => <QTag key={i} q={q} />)}
+              {/* Quarter strip */}
+              {quarters.length === 4 && (
+                <div style={{ display: 'grid', gridTemplateColumns: '50px repeat(4, 1fr)', gap: 4, padding: '10px 20px 0' }}>
+                  <div />
+                  {quarters.map((q, i) => <QTag key={i} q={q} />)}
+                </div>
+              )}
+              {/* Chart */}
+              <div style={{ padding: '8px 20px 20px', height: 360 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <ComposedChart data={chartData} margin={{ top: 10, right: 10, bottom: 0, left: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f2f5" vertical={false} />
+                    <XAxis dataKey="quarter" tick={{ fontSize: 11 }} />
+                    <YAxis
+                      tick={{ fontSize: 10, fontFamily: 'monospace' }}
+                      tickFormatter={(v) => `${v.toLocaleString()}K`}
+                      label={{ value: 'KEUR', angle: -90, position: 'insideLeft', fontSize: 11, fill: '#9ca3af' }}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend wrapperStyle={{ fontSize: 11 }} iconType="circle" />
+                    {baselineSeries.map((bp, bpIdx) => (
+                      <Bar key={`bl_${bp.id}`} dataKey={`_bl_${bp.id}`} name={`Baseline — ${bp.name}`} stackId="baseline"
+                        fill={`${bp.color}${bpIdx % 2 === 0 ? '44' : '66'}`} stroke={`${bp.color}88`} strokeWidth={1} />
+                    ))}
+                    {showStrategic && <Line dataKey="strategic_committed" name="Strategic — Committed" stroke={C_STRATEGIC} strokeWidth={2.5} dot={{ r: 6, fill: C_STRATEGIC }} connectNulls={false} type="monotone" />}
+                    {showStrategic && <Line dataKey="strategic_forecast" name="Strategic — Forecast" stroke={C_STRATEGIC} strokeWidth={2} strokeDasharray="8 5" dot={{ r: 5, fill: '#fff', stroke: C_STRATEGIC, strokeWidth: 2 }} connectNulls={false} type="monotone" />}
+                    {showPlanned && <Line dataKey="planned" name="Planned Consumption" stroke={C_PLANNED} strokeWidth={2} dot={{ r: 5, fill: C_PLANNED }} connectNulls={false} type="monotone" />}
+                    {showActual && <Line dataKey="actual" name="Actual Consumption" stroke={C_ACTUAL} strokeWidth={2} dot={{ r: 5, fill: C_ACTUAL }} connectNulls={false} type="monotone" />}
+                  </ComposedChart>
+                </ResponsiveContainer>
               </div>
-            )}
-
-            {/* Chart */}
-            <div style={{ padding: '8px 20px 20px', height: chartExpanded ? 'calc(100vh - 200px)' : 360 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={chartData} margin={{ top: 10, right: 10, bottom: 0, left: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f2f5" vertical={false} />
-                  <XAxis dataKey="quarter" tick={{ fontSize: 11 }} />
-                  <YAxis
-                    tick={{ fontSize: 10, fontFamily: 'monospace' }}
-                    tickFormatter={(v) => `${v.toLocaleString()}K`}
-                    label={{ value: 'KEUR', angle: -90, position: 'insideLeft', fontSize: 11, fill: '#9ca3af' }}
-                  />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Legend wrapperStyle={{ fontSize: 11 }} iconType="circle" />
-
-                  {/* Baseline bars — granularity per viewLevel */}
-                  {baselineSeries.map((bp, bpIdx) => (
-                    <Bar
-                      key={`bl_${bp.id}`}
-                      dataKey={`_bl_${bp.id}`}
-                      name={`Baseline — ${bp.name}`}
-                      stackId="baseline"
-                      fill={`${bp.color}${bpIdx % 2 === 0 ? '44' : '66'}`}
-                      stroke={`${bp.color}88`}
-                      strokeWidth={1}
-                    />
-                  ))}
-
-
-                  {/* Strategic committed (solid) */}
-                  {showStrategic && (
-                    <Line
-                      dataKey="strategic_committed"
-                      name="Strategic — Committed"
-                      stroke={C_STRATEGIC}
-                      strokeWidth={2.5}
-                      dot={{ r: 6, fill: C_STRATEGIC }}
-                      connectNulls={false}
-                      type="monotone"
-                    />
-                  )}
-                  {/* Strategic forecast (dashed) */}
-                  {showStrategic && (
-                    <Line
-                      dataKey="strategic_forecast"
-                      name="Strategic — Forecast"
-                      stroke={C_STRATEGIC}
-                      strokeWidth={2}
-                      strokeDasharray="8 5"
-                      dot={{ r: 5, fill: '#fff', stroke: C_STRATEGIC, strokeWidth: 2 }}
-                      connectNulls={false}
-                      type="monotone"
-                    />
-                  )}
-                  {/* Planned */}
-                  {showPlanned && (
-                    <Line
-                      dataKey="planned"
-                      name="Planned Consumption"
-                      stroke={C_PLANNED}
-                      strokeWidth={2}
-                      dot={{ r: 5, fill: C_PLANNED }}
-                      connectNulls={false}
-                      type="monotone"
-                    />
-                  )}
-                  {/* Actual */}
-                  {showActual && (
-                    <Line
-                      dataKey="actual"
-                      name="Actual Consumption"
-                      stroke={C_ACTUAL}
-                      strokeWidth={2}
-                      dot={{ r: 5, fill: C_ACTUAL }}
-                      connectNulls={false}
-                      type="monotone"
-                    />
-                  )}
-                </ComposedChart>
-              </ResponsiveContainer>
             </div>
-          </div>
-          </div>
+          )}
+
+          {/* Expanded chart — fullscreen portal (z-index 1100, above sidebar) */}
+          {chartExpanded && typeof document !== 'undefined' && ReactDOM.createPortal(
+            <>
+              {/* Backdrop */}
+              <div onClick={() => setChartExpanded(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1099 }} />
+              {/* Modal panel */}
+              <div style={{
+                position: 'fixed', inset: '24px', zIndex: 1100,
+                background: '#fff', borderRadius: 12,
+                boxShadow: '0 25px 60px rgba(0,0,0,0.35)',
+                display: 'flex', flexDirection: 'column', overflow: 'hidden',
+              }}>
+                {/* Modal header */}
+                <div style={{ padding: '14px 20px', borderBottom: '1px solid #e8eaed', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0, flexWrap: 'wrap', gap: 8 }}>
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: 14 }}>Budget Consumption — Quarterly View</div>
+                    <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>{`Bars = theoretical baseline${showOps ? ' (incl. OPS share)' : ''} · Lines = strategic / planned / actual consumption`}</div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                    <OpsSwitch on={showOps} onToggle={() => setShowOps(v => !v)} />
+                    <div style={{ width: 1, height: 22, background: '#d1d5db', margin: '0 2px' }} />
+                    <SeriesToggle label="Baseline"  color={C_BASELINE}  on={showBaseline}  onToggle={() => setShowBaseline(v => !v)}  activeStyle={{ background: '#dbeafe', borderColor: '#93c5fd', color: '#1e40af' }} />
+                    <SeriesToggle label="Strategic" color={C_STRATEGIC} on={showStrategic} onToggle={() => setShowStrategic(v => !v)} activeStyle={{ background: '#eff6ff', borderColor: C_STRATEGIC, color: C_STRATEGIC }} />
+                    <SeriesToggle label="Planned"   color={C_PLANNED}   on={showPlanned}   onToggle={() => setShowPlanned(v => !v)}   activeStyle={{ background: '#fff7ed', borderColor: '#fb923c', color: '#c2410c' }} />
+                    <SeriesToggle label="Actual"    color={C_ACTUAL}    on={showActual}    onToggle={() => setShowActual(v => !v)}    activeStyle={{ background: '#f0fdf4', borderColor: '#86efac', color: '#166534' }} />
+                    <button
+                      onClick={() => setChartExpanded(false)}
+                      title="Close (Esc)"
+                      style={{
+                        background: 'none', border: '1px solid #e5e7eb', borderRadius: 6,
+                        cursor: 'pointer', padding: '4px 10px', color: '#374151',
+                        display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 500, marginLeft: 8,
+                      }}
+                    >
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                      </svg>
+                      Close
+                    </button>
+                  </div>
+                </div>
+                {/* Quarter strip */}
+                {quarters.length === 4 && (
+                  <div style={{ display: 'grid', gridTemplateColumns: '50px repeat(4, 1fr)', gap: 4, padding: '10px 20px 0', flexShrink: 0 }}>
+                    <div />
+                    {quarters.map((q, i) => <QTag key={i} q={q} />)}
+                  </div>
+                )}
+                {/* Chart — expanded */}
+                <div style={{ flex: 1, padding: '8px 20px 20px', minHeight: 0 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart data={chartData} margin={{ top: 10, right: 10, bottom: 0, left: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f2f5" vertical={false} />
+                      <XAxis dataKey="quarter" tick={{ fontSize: 11 }} />
+                      <YAxis
+                        tick={{ fontSize: 10, fontFamily: 'monospace' }}
+                        tickFormatter={(v) => `${v.toLocaleString()}K`}
+                        label={{ value: 'KEUR', angle: -90, position: 'insideLeft', fontSize: 11, fill: '#9ca3af' }}
+                      />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Legend wrapperStyle={{ fontSize: 11 }} iconType="circle" />
+                      {baselineSeries.map((bp, bpIdx) => (
+                        <Bar key={`bl_${bp.id}`} dataKey={`_bl_${bp.id}`} name={`Baseline — ${bp.name}`} stackId="baseline"
+                          fill={`${bp.color}${bpIdx % 2 === 0 ? '44' : '66'}`} stroke={`${bp.color}88`} strokeWidth={1} />
+                      ))}
+                      {showStrategic && <Line dataKey="strategic_committed" name="Strategic — Committed" stroke={C_STRATEGIC} strokeWidth={2.5} dot={{ r: 6, fill: C_STRATEGIC }} connectNulls={false} type="monotone" />}
+                      {showStrategic && <Line dataKey="strategic_forecast" name="Strategic — Forecast" stroke={C_STRATEGIC} strokeWidth={2} strokeDasharray="8 5" dot={{ r: 5, fill: '#fff', stroke: C_STRATEGIC, strokeWidth: 2 }} connectNulls={false} type="monotone" />}
+                      {showPlanned && <Line dataKey="planned" name="Planned Consumption" stroke={C_PLANNED} strokeWidth={2} dot={{ r: 5, fill: C_PLANNED }} connectNulls={false} type="monotone" />}
+                      {showActual && <Line dataKey="actual" name="Actual Consumption" stroke={C_ACTUAL} strokeWidth={2} dot={{ r: 5, fill: C_ACTUAL }} connectNulls={false} type="monotone" />}
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </>,
+            document.body
+          )}
 
           {/* Tree Table */}
           <TreeTable rows={treeRows} currentQLabel={currentQ?.label ?? '—'} />
