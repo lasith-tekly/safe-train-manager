@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Select, Breadcrumb, Collapse,
   Skeleton, Alert, Typography,
@@ -70,6 +70,31 @@ const OpsSwitch: React.FC<{ on: boolean; onToggle: () => void }> = ({ on, onTogg
       Train Operating Cost
     </span>
   </div>
+);
+
+// ─── Expand/collapse chart button ────────────────────────────────────────────
+const ExpandIcon = ({ expanded, onToggle }: { expanded: boolean; onToggle: () => void }) => (
+  <button
+    onClick={onToggle}
+    title={expanded ? 'Collapse chart' : 'Expand chart'}
+    style={{
+      background: 'none', border: '1px solid #e5e7eb', borderRadius: 6,
+      cursor: 'pointer', padding: '4px 8px', color: '#6b7280',
+      display: 'flex', alignItems: 'center', gap: 4, fontSize: 11,
+      transition: 'all .15s',
+    }}
+  >
+    {expanded ? (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>
+      </svg>
+    ) : (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+      </svg>
+    )}
+    {expanded ? 'Collapse' : 'Expand'}
+  </button>
 );
 
 // ─── Series toggle pill ────────────────────────────────────────────────────────
@@ -419,8 +444,8 @@ export const BudgetConsumptionDashboard: React.FC = () => {
   const {
     fiscalYears, selectedYearId, setSelectedYearId,
     hierarchy, productBudgetDetails, trainLines, quarters,
-    features,
-    calcBaseline, strategicByQuarter, plannedByQuarter, actualByQuarter,
+    features, piQuarterMap,
+    calcBaseline, plannedByQuarter, actualByQuarter,
     summaryCards, productColorMap,
     isLoading, error,
   } = hook;
@@ -435,14 +460,34 @@ export const BudgetConsumptionDashboard: React.FC = () => {
   const [showPlanned,   setShowPlanned]   = useState(true);
   const [showActual,    setShowActual]    = useState(true);
   const [showOps,       setShowOps]       = useState(false);
+  const [chartExpanded, setChartExpanded] = useState(false);
 
   const products = hierarchy?.product_budgets || [];
+
+  // Close expanded chart on Escape
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setChartExpanded(false);
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
 
   // Reset chip selection when level or context changes
   const handleLevelChange = (lvl: ViewLevel) => {
     setViewLevel(lvl);
-    setContextFilter('all');
     setSelectedChips(new Set());
+    if (lvl === 'budgetline' || lvl === 'category') {
+      // Auto-select first product to avoid cluttered "all products" view
+      const firstProduct = products[0];
+      if (firstProduct) {
+        setContextFilter(firstProduct.product.id);
+      } else {
+        setContextFilter('all');
+      }
+    } else {
+      setContextFilter('all');
+    }
   };
 
   const handleContextChange = (val: string) => {
@@ -818,12 +863,38 @@ export const BudgetConsumptionDashboard: React.FC = () => {
 
     products.forEach((pb) => {
       const pColor = productColorMap[pb.product.id] || '#3b82f6';
+
+      // Strategic: sum feature quarterly allocations for this product at displayQIdx
+      const productFeatures = features.filter(
+        (f: any) => f.product_id === pb.product.id
+      );
+      const productStrategic = productFeatures.reduce((sum: number, f: any) => {
+        const qa = (f.quarterly_allocations || []).find(
+          (q: any) => q.quarter === displayQIdx + 1
+        );
+        if (!qa) return sum;
+        const ratio = f.net_sizing_ed > 0 ? qa.allocated_ed / f.net_sizing_ed : 0;
+        return sum + ratio * (f.total_cost_keur || 0);
+      }, 0);
+
+      // Planned: sum jira planned effort for this product's features at displayQIdx
+      const unitCostPerDay = 78 / 220;
+      const productPlanned = productFeatures.reduce((sum: number, f: any) => {
+        return sum + (f.jira_records || [])
+          .filter((jr: any) => piQuarterMap[jr.pi_id] === displayQIdx)
+          .reduce((s: number, jr: any) =>
+            s + (Number(jr.planned_effort) || 0) * unitCostPerDay, 0
+          );
+      }, 0);
+
       rows.push({
         key: `__p_${pb.product.id}__`, parentKey: '__train__', level: 1,
         name: pb.product.name, color: pColor,
         tag: { label: 'Product', color: '#166534', bg: '#dcfce7' },
         total: pb.allocated_amount, baseline: calcBaseline(pb.allocated_amount, displayQIdx),
-        strategic: 0, planned: 0, actual: pb.consumed_amount,
+        strategic: Math.round(productStrategic),
+        planned: Math.round(productPlanned),
+        actual: pb.consumed_amount,
       });
       (pb.budget_lines || []).forEach((bl) => {
         rows.push({
@@ -846,7 +917,7 @@ export const BudgetConsumptionDashboard: React.FC = () => {
     });
 
     return rows;
-  }, [products, trainLines, quarters, calcBaseline, strategicByQuarter, plannedByQuarter, productColorMap]);
+  }, [products, trainLines, quarters, calcBaseline, filteredStrategicByQuarter, plannedByQuarter, productColorMap, features, piQuarterMap]);
 
   const currentQ = quarters.find(q => q.status === 'current');
 
@@ -1032,7 +1103,16 @@ export const BudgetConsumptionDashboard: React.FC = () => {
           </div>
 
           {/* Chart Panel */}
-          <div style={{ background: '#fff', border: '1px solid #e8eaed', borderRadius: 8, boxShadow: '0 4px 6px -1px rgba(0,0,0,.07)', marginBottom: 16, overflow: 'hidden' }}>
+          <div style={chartExpanded ? {
+            position: 'fixed', inset: 0, zIndex: 1000,
+            background: 'rgba(0,0,0,0.5)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: 24,
+          } : {}}>
+          <div style={chartExpanded ? {
+            background: '#fff', borderRadius: 12, width: '100%', height: '100%',
+            overflow: 'auto', boxShadow: '0 25px 50px rgba(0,0,0,.25)',
+          } : { background: '#fff', border: '1px solid #e8eaed', borderRadius: 8, boxShadow: '0 4px 6px -1px rgba(0,0,0,.07)', marginBottom: 16, overflow: 'hidden' }}>
             {/* Chart header */}
             <div style={{ padding: '14px 20px', borderBottom: '1px solid #e8eaed', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
               <div>
@@ -1040,6 +1120,8 @@ export const BudgetConsumptionDashboard: React.FC = () => {
                 <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>{`Bars = theoretical baseline${showOps ? ' (incl. OPS share)' : ''} · Lines = strategic / planned / actual consumption`}</div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                <ExpandIcon expanded={chartExpanded} onToggle={() => setChartExpanded(v => !v)} />
+                <div style={{ width: 1, height: 22, background: '#d1d5db', margin: '0 2px' }} />
                 <OpsSwitch on={showOps} onToggle={() => setShowOps(v => !v)} />
                 <div style={{ width: 1, height: 22, background: '#d1d5db', margin: '0 2px' }} />
                 <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap' }}>
@@ -1060,7 +1142,7 @@ export const BudgetConsumptionDashboard: React.FC = () => {
             )}
 
             {/* Chart */}
-            <div style={{ padding: '8px 20px 20px', height: 360 }}>
+            <div style={{ padding: '8px 20px 20px', height: chartExpanded ? 'calc(100vh - 200px)' : 360 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={chartData} margin={{ top: 10, right: 10, bottom: 0, left: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f2f5" vertical={false} />
@@ -1139,6 +1221,7 @@ export const BudgetConsumptionDashboard: React.FC = () => {
                 </ComposedChart>
               </ResponsiveContainer>
             </div>
+          </div>
           </div>
 
           {/* Tree Table */}

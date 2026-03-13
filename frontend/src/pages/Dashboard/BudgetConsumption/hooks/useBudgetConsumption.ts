@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 
@@ -459,6 +460,7 @@ export function useBudgetConsumption() {
     quarters,
     totalIterations,
     jiraRecords,
+    piQuarterMap,
     // Calculations
     calcBaseline,
     strategicByQuarter,
