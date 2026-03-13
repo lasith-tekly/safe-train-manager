@@ -668,10 +668,14 @@ export const BudgetConsumptionDashboard: React.FC = () => {
       // Strategic committed/forecast split
       if (showStrategic) {
         const v = filteredStrategicByQuarter[idx];
-        const isCommitted = quarters[idx]?.status !== 'future';
-        if (isCommitted) {
+        const qStatus = quarters[idx]?.status;
+        if (qStatus === 'past') {
           point['strategic_committed'] = v;
           point['strategic_forecast']  = null;
+        } else if (qStatus === 'current') {
+          // Bridge point — set both so solid and dashed lines connect here
+          point['strategic_committed'] = v;
+          point['strategic_forecast']  = v;
         } else {
           point['strategic_committed'] = null;
           point['strategic_forecast']  = v;
@@ -689,19 +693,25 @@ export const BudgetConsumptionDashboard: React.FC = () => {
   const treeRows: TreeRow[] = useMemo(() => {
     const rows: TreeRow[] = [];
     const currentQIdx = quarters.findIndex(q => q.status === 'current');
+    // Guard: if no current quarter found, use first future quarter
+    // to avoid NaN in baseline calculations
+    const safeQIdx = currentQIdx >= 0
+      ? currentQIdx
+      : quarters.findIndex(q => q.status === 'future');
+    const displayQIdx = safeQIdx >= 0 ? safeQIdx : 0;
 
     const totalProducts = products.reduce((s, pb) => s + pb.allocated_amount, 0);
     const totalOps      = trainLines.reduce((s, tl) => s + tl.allocated_amount, 0);
     const trainTotal    = totalProducts + totalOps;
 
     const trainActual   = products.reduce((s, pb) => s + pb.consumed_amount, 0) + trainLines.reduce((s, tl) => s + tl.consumed_amount, 0);
-    const trainStrat    = (filteredStrategicByQuarter[currentQIdx] as number) || 0;
-    const trainPlanned  = (plannedByQuarter[currentQIdx]  as number) || 0;
+    const trainStrat    = (filteredStrategicByQuarter[displayQIdx] as number) || 0;
+    const trainPlanned  = (plannedByQuarter[displayQIdx]  as number) || 0;
 
     rows.push({
       key: '__train__', parentKey: null, level: 0,
       name: 'Train Total (Products + Operating)', color: C_STRATEGIC,
-      total: trainTotal, baseline: calcBaseline(trainTotal, currentQIdx),
+      total: trainTotal, baseline: calcBaseline(trainTotal, displayQIdx),
       strategic: trainStrat, planned: trainPlanned, actual: trainActual,
     });
 
@@ -709,7 +719,7 @@ export const BudgetConsumptionDashboard: React.FC = () => {
       key: '__ops__', parentKey: '__train__', level: 1,
       name: 'Train Operating Cost', color: C_OPS,
       tag: { label: 'Operating', color: '#7c3aed', bg: '#f3e8ff' },
-      total: totalOps, baseline: calcBaseline(totalOps, currentQIdx),
+      total: totalOps, baseline: calcBaseline(totalOps, displayQIdx),
       strategic: 0, planned: 0, actual: trainLines.reduce((s, tl) => s + tl.consumed_amount, 0),
     });
 
@@ -717,14 +727,14 @@ export const BudgetConsumptionDashboard: React.FC = () => {
       rows.push({
         key: `__opl_${ti}__`, parentKey: '__ops__', level: 2,
         name: tl.name, color: `${C_OPS}99`,
-        total: tl.allocated_amount, baseline: calcBaseline(tl.allocated_amount, currentQIdx),
+        total: tl.allocated_amount, baseline: calcBaseline(tl.allocated_amount, displayQIdx),
         strategic: 0, planned: 0, actual: tl.consumed_amount,
       });
       (tl.categories || []).forEach((cat, ci) => {
         rows.push({
           key: `__opl_${ti}_cat_${ci}__`, parentKey: `__opl_${ti}__`, level: 3,
           name: `↳ ${cat.name}`,
-          total: cat.allocated_amount, baseline: calcBaseline(cat.allocated_amount, currentQIdx),
+          total: cat.allocated_amount, baseline: calcBaseline(cat.allocated_amount, displayQIdx),
           strategic: 0, planned: 0, actual: cat.consumed_amount,
         });
       });
@@ -736,7 +746,7 @@ export const BudgetConsumptionDashboard: React.FC = () => {
         key: `__p_${pb.product.id}__`, parentKey: '__train__', level: 1,
         name: pb.product.name, color: pColor,
         tag: { label: 'Product', color: '#166534', bg: '#dcfce7' },
-        total: pb.allocated_amount, baseline: calcBaseline(pb.allocated_amount, currentQIdx),
+        total: pb.allocated_amount, baseline: calcBaseline(pb.allocated_amount, displayQIdx),
         strategic: 0, planned: 0, actual: pb.consumed_amount,
       });
       (pb.budget_lines || []).forEach((bl) => {
@@ -744,7 +754,7 @@ export const BudgetConsumptionDashboard: React.FC = () => {
           key: `__bl_${bl.id}__`, parentKey: `__p_${pb.product.id}__`, level: 2,
           name: bl.name, color: `${pColor}99`,
           tag: { label: 'BL', color: '#c2410c', bg: '#fff7ed' },
-          total: bl.allocated_amount, baseline: calcBaseline(bl.allocated_amount, currentQIdx),
+          total: bl.allocated_amount, baseline: calcBaseline(bl.allocated_amount, displayQIdx),
           strategic: 0, planned: 0, actual: bl.consumed_amount,
         });
         (bl.categories || []).forEach((cat) => {
@@ -752,7 +762,7 @@ export const BudgetConsumptionDashboard: React.FC = () => {
             key: `__cat_${cat.id}__`, parentKey: `__bl_${bl.id}__`, level: 3,
             name: `↳ ${cat.name}`,
             tag: { label: 'Category', color: '#374151', bg: '#f3f4f6' },
-            total: cat.allocated_amount, baseline: calcBaseline(cat.allocated_amount, currentQIdx),
+            total: cat.allocated_amount, baseline: calcBaseline(cat.allocated_amount, displayQIdx),
             strategic: 0, planned: 0, actual: cat.consumed_amount,
           });
         });
@@ -774,7 +784,7 @@ export const BudgetConsumptionDashboard: React.FC = () => {
   }
 
   return (
-    <div style={{ padding: '20px 24px', maxWidth: 1440, margin: '0 auto', fontFamily: 'inherit' }}>
+    <div style={{ padding: '24px', fontFamily: 'inherit' }}>
 
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
