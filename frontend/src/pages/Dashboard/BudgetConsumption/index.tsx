@@ -29,8 +29,9 @@ function fmt(n: number | null | undefined): string {
 
 function utilBadge(actual: number, total: number) {
   const pct = total > 0 ? Math.round((actual / total) * 100) : 0;
-  const color = pct > 80 ? '#ef4444' : pct >= 40 ? '#f59e0b' : '#22c55e';
-  const bg    = pct > 80 ? '#fef2f2' : pct >= 40 ? '#fffbeb' : '#f0fdf4';
+  // >100% = over-committed (red), 60-100% = healthy (green), <60% = under-committed (amber)
+  const color = pct > 100 ? '#ef4444' : pct >= 60 ? '#22c55e' : '#f59e0b';
+  const bg    = pct > 100 ? '#fef2f2' : pct >= 60 ? '#f0fdf4' : '#fffbeb';
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'flex-end' }}>
       <div style={{ width: 55, height: 5, background: '#e5e7eb', borderRadius: 3, overflow: 'hidden' }}>
@@ -170,10 +171,17 @@ const TreeTable: React.FC<{
   const expandAll = () => setExpanded(new Set(rows.filter(r => rows.some(c => c.parentKey === r.key)).map(r => r.key)));
   const collapseAll = () => setExpanded(new Set());
 
-  const visible = rows.filter(r => {
+  // Build a lookup map for O(1) parent access
+  const rowByKey = Object.fromEntries(rows.map(r => [r.key, r]));
+
+  const isVisible = (r: TreeRow): boolean => {
     if (r.parentKey === null) return true;
-    return expanded.has(r.parentKey);
-  });
+    if (!expanded.has(r.parentKey)) return false;
+    const parent = rowByKey[r.parentKey];
+    return parent ? isVisible(parent) : false;
+  };
+
+  const visible = rows.filter(isVisible);
 
   const hasChildren = (key: string) => rows.some(r => r.parentKey === key);
 
@@ -248,7 +256,7 @@ const TreeTable: React.FC<{
                 <td style={{ ...tdStyle, textAlign: 'right', fontFamily: 'monospace' }}>{r.strategic > 0 ? fmt(r.strategic) : <span style={{ color: '#9ca3af' }}>—</span>}</td>
                 <td style={{ ...tdStyle, textAlign: 'right', fontFamily: 'monospace' }}>{r.planned > 0 ? fmt(r.planned) : <span style={{ color: '#9ca3af' }}>—</span>}</td>
                 <td style={{ ...tdStyle, textAlign: 'right', fontFamily: 'monospace' }}>{r.actual > 0 ? fmt(r.actual) : <span style={{ color: '#9ca3af' }}>—</span>}</td>
-                <td style={{ ...tdStyle }}>{utilBadge(r.actual, r.total)}</td>
+                <td style={{ ...tdStyle }}>{utilBadge(r.strategic, r.baseline)}</td>
               </tr>
             ))}
           </tbody>
@@ -790,10 +798,18 @@ export const BudgetConsumptionDashboard: React.FC = () => {
   const treeRows: TreeRow[] = useMemo(() => {
     const rows: TreeRow[] = [];
     const currentQIdx = quarters.findIndex(q => q.status === 'current');
-    // Guard: if no current quarter found, use first future quarter
-    // to avoid NaN in baseline calculations
+
+    const lastPastIdx = (() => {
+      for (let i = quarters.length - 1; i >= 0; i--) {
+        if (quarters[i].status === 'past') return i;
+      }
+      return -1;
+    })();
+
     const safeQIdx = currentQIdx >= 0
       ? currentQIdx
+      : lastPastIdx >= 0
+      ? lastPastIdx
       : quarters.findIndex(q => q.status === 'future');
     const displayQIdx = safeQIdx >= 0 ? safeQIdx : 0;
 
@@ -802,8 +818,26 @@ export const BudgetConsumptionDashboard: React.FC = () => {
     const trainTotal    = totalProducts + totalOps;
 
     const trainActual   = products.reduce((s, pb) => s + pb.consumed_amount, 0) + trainLines.reduce((s, tl) => s + tl.consumed_amount, 0);
-    const trainStrat    = (filteredStrategicByQuarter[displayQIdx] as number) || 0;
-    const trainPlanned  = (plannedByQuarter[displayQIdx]  as number) || 0;
+    // Train strategic = sum across ALL features at displayQIdx (not chip-filtered)
+    const unitCostPerDay = 78 / 220;
+
+    const trainStrat = features.reduce((sum: number, f: any) => {
+      const qa = (f.quarterly_allocations || []).find(
+        (q: any) => q.quarter === displayQIdx + 1
+      );
+      if (!qa) return sum;
+      const ratio = f.net_sizing_ed > 0 ? qa.allocated_ed / f.net_sizing_ed : 0;
+      return sum + ratio * (f.total_cost_keur || 0);
+    }, 0);
+
+    // Train planned = sum across ALL jira_records at displayQIdx
+    const trainPlanned = features.reduce((sum: number, f: any) => {
+      return sum + (f.jira_records || [])
+        .filter((jr: any) => piQuarterMap[jr.pi_id] === displayQIdx)
+        .reduce((s: number, jr: any) =>
+          s + (Number(jr.planned_effort) || 0) * unitCostPerDay, 0
+        );
+    }, 0);
 
     rows.push({
       key: '__train__', parentKey: null, level: 0,
