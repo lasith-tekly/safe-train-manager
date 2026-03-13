@@ -540,21 +540,36 @@ export const BudgetConsumptionDashboard: React.FC = () => {
   // ── Baseline bar datasets: one Bar per product ────────────────────────────
   const baselineProducts = useMemo(() => {
     if (!showBaseline) return [];
-    return products
-      .filter(pb => viewLevel === 'train' || effectiveChips.has(pb.product.id) || viewLevel !== 'product')
-      .map(pb => ({
-        id: pb.product.id,
-        name: pb.product.short_code,
-        color: productColorMap[pb.product.id] || '#3b82f6',
-        data: [0, 1, 2, 3].map(i => calcBaseline(pb.allocated_amount, i)),
-      }));
-  }, [showBaseline, products, viewLevel, effectiveChips, productColorMap, calcBaseline]);
 
-  const opsBaseline = useMemo(() => {
-    if (!showOps || !showBaseline) return null;
-    const total = trainLines.reduce((s, tl) => s + tl.allocated_amount, 0);
-    return [0, 1, 2, 3].map(i => calcBaseline(total, i));
-  }, [showOps, showBaseline, trainLines, calcBaseline]);
+    const totalProductBudget = products.reduce(
+      (s, pb) => s + (pb.allocated_amount || 0), 0
+    );
+    const totalOps = showOps
+      ? trainLines.reduce((s, tl) => s + (tl.allocated_amount || 0), 0)
+      : 0;
+
+    return products
+      .filter(pb =>
+        viewLevel === 'train' ||
+        viewLevel !== 'product' ||
+        effectiveChips.has(pb.product.id)
+      )
+      .map(pb => {
+        const productBudget = pb.allocated_amount || 0;
+        const opsShare = totalProductBudget > 0
+          ? (productBudget / totalProductBudget) * totalOps
+          : 0;
+        const totalForBaseline = productBudget + opsShare;
+        return {
+          id: pb.product.id,
+          name: pb.product.short_code,
+          color: productColorMap[pb.product.id] || '#3b82f6',
+          data: [0, 1, 2, 3].map(i => calcBaseline(totalForBaseline, i)),
+          opsShare: Math.round(opsShare),
+        };
+      });
+  }, [showBaseline, showOps, products, trainLines, viewLevel,
+      effectiveChips, productColorMap, calcBaseline]);
 
   // ── Strategic by quarter — filtered by chip selection ─────────────────────
   const filteredStrategicByQuarter: (number | null)[] = useMemo(() => {
@@ -579,6 +594,28 @@ export const BudgetConsumptionDashboard: React.FC = () => {
         .flatMap((pb: any) => (pb.budget_lines || []).flatMap((bl: any) => bl.categories || []))
         .filter((cat: any) => effectiveChips.has(cat.id))
         .reduce((s: number, cat: any) => s + (cat.allocated_amount || 0), 0);
+    }
+
+    // Add OPS share when toggle ON (product view: proportional share)
+    if (showOps) {
+      const totalProductBudget = products.reduce(
+        (s, pb) => s + (pb.allocated_amount || 0), 0
+      );
+      const totalOps = trainLines.reduce(
+        (s, tl) => s + (tl.allocated_amount || 0), 0
+      );
+      if (viewLevel === 'train') {
+        // Already includes OPS in selectedBudget above — no change needed
+      } else if (viewLevel === 'product') {
+        const selectedProductBudget = products
+          .filter(pb => effectiveChips.has(pb.product.id))
+          .reduce((s, pb) => s + (pb.allocated_amount || 0), 0);
+        const opsShare = totalProductBudget > 0
+          ? (selectedProductBudget / totalProductBudget) * totalOps
+          : 0;
+        selectedBudget += opsShare;
+      }
+      // BL and category: OPS distribution at that granularity is too complex — leave as-is
     }
 
     // 2. Filter features to selected scope
@@ -646,7 +683,7 @@ export const BudgetConsumptionDashboard: React.FC = () => {
     return result;
   }, [
     viewLevel, effectiveChips, quarters, products, productBudgetDetails,
-    features, trainLines,
+    features, trainLines, showOps,
   ]);
 
   // ── Chart data ─────────────────────────────────────────────────────────────
@@ -662,9 +699,6 @@ export const BudgetConsumptionDashboard: React.FC = () => {
       baselineProducts.forEach(bp => {
         point[`_bl_${bp.id}`] = bp.data[idx] ?? null;
       });
-      // OPS baseline key
-      if (opsBaseline) point['_ops'] = opsBaseline[idx] ?? null;
-
       // Strategic committed/forecast split
       if (showStrategic) {
         const v = filteredStrategicByQuarter[idx];
@@ -687,7 +721,7 @@ export const BudgetConsumptionDashboard: React.FC = () => {
 
       return point;
     });
-  }, [quarters, baselineProducts, opsBaseline, filteredStrategicByQuarter, plannedByQuarter, actualByQuarter, showStrategic, showPlanned, showActual]);
+  }, [quarters, baselineProducts, filteredStrategicByQuarter, plannedByQuarter, actualByQuarter, showStrategic, showPlanned, showActual]);
 
   // ── Tree rows ──────────────────────────────────────────────────────────────
   const treeRows: TreeRow[] = useMemo(() => {
@@ -961,7 +995,7 @@ export const BudgetConsumptionDashboard: React.FC = () => {
             <div style={{ padding: '14px 20px', borderBottom: '1px solid #e8eaed', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
               <div>
                 <div style={{ fontSize: 14, fontWeight: 600 }}>Budget Consumption — Quarterly View</div>
-                <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>Bars = theoretical baseline · Lines = strategic / planned / actual consumption</div>
+                <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>{`Bars = theoretical baseline${showOps ? ' (incl. OPS share)' : ''} · Lines = strategic / planned / actual consumption`}</div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                 <OpsSwitch on={showOps} onToggle={() => setShowOps(v => !v)} />
@@ -1009,17 +1043,7 @@ export const BudgetConsumptionDashboard: React.FC = () => {
                       strokeWidth={1}
                     />
                   ))}
-                  {/* OPS baseline */}
-                  {showOps && showBaseline && opsBaseline && (
-                    <Bar
-                      dataKey="_ops"
-                      name="Train Operating Cost"
-                      stackId="baseline"
-                      fill={`${C_OPS}33`}
-                      stroke={`${C_OPS}88`}
-                      strokeWidth={1}
-                    />
-                  )}
+
 
                   {/* Strategic committed (solid) */}
                   {showStrategic && (
