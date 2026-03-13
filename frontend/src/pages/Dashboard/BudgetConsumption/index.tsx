@@ -537,85 +537,81 @@ export const BudgetConsumptionDashboard: React.FC = () => {
     return [];
   }, [viewLevel, products]);
 
-  // ── Baseline bar datasets: one Bar per product ────────────────────────────
-  const baselineProducts = useMemo(() => {
+  // ── Baseline bar datasets: granularity depends on viewLevel ─────────────
+  const baselineSeries = useMemo(() => {
     if (!showBaseline) return [];
 
-    return products
-      .filter(pb => {
-        if (viewLevel === 'train') return true;
+    const totalProductBudget = products.reduce(
+      (s, pb) => s + (pb.allocated_amount || 0), 0
+    );
+    const totalOps = showOps
+      ? trainLines.reduce((s, tl) => s + (tl.allocated_amount || 0), 0)
+      : 0;
 
-        if (viewLevel === 'product') {
-          return effectiveChips.has(pb.product.id);
+    const productOpsShare = (productBudget: number) =>
+      totalProductBudget > 0 ? (productBudget / totalProductBudget) * totalOps : 0;
+
+    // ── Train / Product view: one bar per product ───────────────────────────
+    if (viewLevel === 'train' || viewLevel === 'product') {
+      return products
+        .filter(pb =>
+          viewLevel === 'train' || effectiveChips.has(pb.product.id)
+        )
+        .map(pb => {
+          const budget = (pb.allocated_amount || 0)
+            + (showOps ? productOpsShare(pb.allocated_amount || 0) : 0);
+          return {
+            id: pb.product.id,
+            name: pb.product.short_code,
+            color: productColorMap[pb.product.id] || '#3b82f6',
+            data: [0, 1, 2, 3].map(i => calcBaseline(budget, i)),
+          };
+        });
+    }
+
+    // ── Budget Line view: one bar per selected budget line ──────────────────
+    if (viewLevel === 'budgetline') {
+      const series: { id: string; name: string; color: string; data: number[] }[] = [];
+      for (const pb of productBudgetDetails) {
+        const pColor = productColorMap[pb.product?.id] || '#3b82f6';
+        for (const bl of (pb.budget_lines || [])) {
+          if (!effectiveChips.has(bl.id)) continue;
+          series.push({
+            id: bl.id,
+            name: `${pb.product?.short_code} — ${bl.name}`,
+            color: pColor,
+            data: [0, 1, 2, 3].map(i => calcBaseline(bl.allocated_amount || 0, i)),
+          });
         }
+      }
+      return series;
+    }
 
-        if (viewLevel === 'budgetline') {
-          const detail = productBudgetDetails.find(
-            (d: any) => d.product?.id === pb.product.id
-          );
-          return (detail?.budget_lines || []).some(
-            (bl: any) => effectiveChips.has(bl.id)
-          );
+    // ── Category view: one bar per selected category ────────────────────────
+    if (viewLevel === 'category') {
+      const series: { id: string; name: string; color: string; data: number[] }[] = [];
+      for (const pb of productBudgetDetails) {
+        const pColor = productColorMap[pb.product?.id] || '#3b82f6';
+        for (const bl of (pb.budget_lines || [])) {
+          for (const cat of (bl.categories || [])) {
+            if (!effectiveChips.has(cat.id)) continue;
+            series.push({
+              id: cat.id,
+              name: `${pb.product?.short_code} — ${cat.name}`,
+              color: pColor,
+              data: [0, 1, 2, 3].map(i => calcBaseline(cat.allocated_amount || 0, i)),
+            });
+          }
         }
+      }
+      return series;
+    }
 
-        if (viewLevel === 'category') {
-          const detail = productBudgetDetails.find(
-            (d: any) => d.product?.id === pb.product.id
-          );
-          return (detail?.budget_lines || []).some((bl: any) =>
-            (bl.categories || []).some((cat: any) => effectiveChips.has(cat.id))
-          );
-        }
-
-        return false;
-      })
-      .map(pb => {
-        const totalProdBudget = products.reduce(
-          (s, p) => s + (p.allocated_amount || 0), 0
-        );
-        const opsTotal = showOps
-          ? trainLines.reduce((s, tl) => s + (tl.allocated_amount || 0), 0)
-          : 0;
-
-        // Determine which portion of this product's budget is selected
-        let selectedAmount = pb.allocated_amount || 0;
-
-        if (viewLevel === 'budgetline') {
-          const detail = productBudgetDetails.find(
-            (d: any) => d.product?.id === pb.product.id
-          );
-          selectedAmount = (detail?.budget_lines || [])
-            .filter((bl: any) => effectiveChips.has(bl.id))
-            .reduce((s: number, bl: any) => s + (bl.allocated_amount || 0), 0);
-        }
-
-        if (viewLevel === 'category') {
-          const detail = productBudgetDetails.find(
-            (d: any) => d.product?.id === pb.product.id
-          );
-          selectedAmount = (detail?.budget_lines || [])
-            .flatMap((bl: any) => bl.categories || [])
-            .filter((cat: any) => effectiveChips.has(cat.id))
-            .reduce((s: number, cat: any) => s + (cat.allocated_amount || 0), 0);
-        }
-
-        // OPS share proportional to full product budget (not just selected)
-        const opsShare = totalProdBudget > 0 && opsTotal > 0
-          ? ((pb.allocated_amount || 0) / totalProdBudget) * opsTotal
-          : 0;
-
-        const totalForBaseline = selectedAmount + (showOps ? opsShare : 0);
-
-        return {
-          id: pb.product.id,
-          name: pb.product.short_code,
-          color: productColorMap[pb.product.id] || '#3b82f6',
-          data: [0, 1, 2, 3].map(i => calcBaseline(totalForBaseline, i)),
-          opsShare: Math.round(opsShare),
-        };
-      });
-  }, [showBaseline, showOps, products, productBudgetDetails, trainLines,
-      viewLevel, effectiveChips, productColorMap, calcBaseline]);
+    return [];
+  }, [
+    showBaseline, showOps, viewLevel, products, productBudgetDetails,
+    trainLines, effectiveChips, productColorMap, calcBaseline,
+  ]);
 
   // ── Strategic by quarter — filtered by chip selection ─────────────────────
   const filteredStrategicByQuarter: (number | null)[] = useMemo(() => {
@@ -741,8 +737,8 @@ export const BudgetConsumptionDashboard: React.FC = () => {
     return qlabels.map((label, idx) => {
       const point: Record<string, number | null | string> = { quarter: label };
 
-      // Per-product baseline keys (consumed by Bar dataKey)
-      baselineProducts.forEach(bp => {
+      // Per-series baseline keys
+      baselineSeries.forEach(bp => {
         point[`_bl_${bp.id}`] = bp.data[idx] ?? null;
       });
       // Strategic committed/forecast split
@@ -767,7 +763,7 @@ export const BudgetConsumptionDashboard: React.FC = () => {
 
       return point;
     });
-  }, [quarters, baselineProducts, filteredStrategicByQuarter, plannedByQuarter, actualByQuarter, showStrategic, showPlanned, showActual]);
+  }, [quarters, baselineSeries, filteredStrategicByQuarter, plannedByQuarter, actualByQuarter, showStrategic, showPlanned, showActual]);
 
   // ── Tree rows ──────────────────────────────────────────────────────────────
   const treeRows: TreeRow[] = useMemo(() => {
@@ -1077,14 +1073,14 @@ export const BudgetConsumptionDashboard: React.FC = () => {
                   <Tooltip content={<CustomTooltip />} />
                   <Legend wrapperStyle={{ fontSize: 11 }} iconType="circle" />
 
-                  {/* Baseline bars per product — inject per-product data via data prop */}
-                  {baselineProducts.map((bp) => (
+                  {/* Baseline bars — granularity per viewLevel */}
+                  {baselineSeries.map((bp, bpIdx) => (
                     <Bar
                       key={`bl_${bp.id}`}
                       dataKey={`_bl_${bp.id}`}
                       name={`Baseline — ${bp.name}`}
                       stackId="baseline"
-                      fill={`${bp.color}44`}
+                      fill={`${bp.color}${bpIdx % 2 === 0 ? '44' : '66'}`}
                       stroke={`${bp.color}88`}
                       strokeWidth={1}
                     />
