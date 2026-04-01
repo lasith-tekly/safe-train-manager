@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Row, Col, Select, Skeleton, Empty, Table, Statistic, Tag, message, Button } from 'antd';
-import { TeamOutlined, UserOutlined, FieldTimeOutlined, RightOutlined, DownOutlined, DollarOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { FieldTimeOutlined, RightOutlined, DownOutlined, DollarOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import type { PI } from '../../../types';
 import styles from './TrainCapacity.module.css';
@@ -106,6 +106,7 @@ export const TrainCapacityDashboard: React.FC = () => {
   const [annualData, setAnnualData] = useState<AnnualCapacitySummary | null>(null);
   const [expandedRows, setExpandedRows] = useState<string[]>([]);
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
+  const [showInactiveTeams, setShowInactiveTeams] = useState(false);
 
   useEffect(() => {
     initialLoad();
@@ -237,7 +238,12 @@ export const TrainCapacityDashboard: React.FC = () => {
 
   const renderRoleSplitBar = (dev: number, pd: number, qa: number) => {
     const total = dev + pd + qa;
-    if (total === 0) return <div style={{ height: 20, background: '#f0f0f0', borderRadius: 4 }} />;
+    if (total === 0) return (
+      <div style={{ height: 20, background: '#f3f4f6', borderRadius: 4,
+        display: 'flex', alignItems: 'center', paddingLeft: 8 }}>
+        <span style={{ fontSize: 10, color: '#9ca3af' }}>No capacity</span>
+      </div>
+    );
 
     const segments = [
       { value: dev, color: '#13c2c2', label: 'Dev' },
@@ -246,22 +252,39 @@ export const TrainCapacityDashboard: React.FC = () => {
     ];
 
     return (
-      <div style={{ display: 'flex', height: 20, borderRadius: 4, overflow: 'hidden', minWidth: 300 }}>
-        {segments.map(({ value, color, label }) => {
-          if (value <= 0) return null;
-          const pct = (value / total) * 100;
-          return (
-            <div
-              key={label}
-              style={{ width: `${pct}%`, background: color, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', whiteSpace: 'nowrap' }}
-              title={`${label}: ${value.toFixed(1)} eD`}
-            >
-              <span style={{ fontSize: 10, color: '#fff', fontFamily: 'DM Mono, monospace', padding: '0 4px' }}>
-                {pct > 8 ? `${label} ${value.toFixed(1)}` : ''}
-              </span>
-            </div>
-          );
-        })}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 200 }}>
+        <div style={{ display: 'flex', height: 18, borderRadius: 4,
+          overflow: 'hidden', background: '#f3f4f6' }}>
+          {segments.map(({ value, color, label }) => {
+            const pct = (value / total) * 100;
+            return (
+              <div
+                key={label}
+                style={{
+                  width: `${pct}%`, background: color,
+                  display: 'flex', alignItems: 'center',
+                  justifyContent: 'center', overflow: 'hidden',
+                }}
+              >
+                {pct > 10 && (
+                  <span style={{ fontSize: 10, color: '#fff',
+                    fontFamily: 'DM Mono, monospace', whiteSpace: 'nowrap',
+                    padding: '0 3px' }}>
+                    {value.toFixed(0)}
+                  </span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          {segments.map(({ value, color, label }) => (
+            <span key={label} style={{ fontSize: 10,
+              fontFamily: 'DM Mono, monospace', color }}>
+              {label} {value.toFixed(0)}
+            </span>
+          ))}
+        </div>
       </div>
     );
   };
@@ -327,15 +350,25 @@ export const TrainCapacityDashboard: React.FC = () => {
         key: 'utilization',
         width: 110,
         align: 'center' as const,
-        render: (util: number) => (
-          <span style={{ 
-            fontFamily: 'DM Mono, monospace', 
-            fontWeight: 600,
-            color: getUtilizationColor(util)
-          }}>
-            {util.toFixed(1)}
-          </span>
-        )
+        render: (util: number, record: any) => {
+          const hasCapacity = (record.fte > 0 || record.pi_total_capacity > 0);
+          if (!hasCapacity) return <span style={{ color: '#d1d5db', fontFamily: 'DM Mono, monospace' }}>—</span>;
+          return (
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              background: getUtilizationBgColor(util),
+              padding: '3px 10px', borderRadius: 12,
+            }}>
+              <span style={{
+                fontFamily: 'DM Mono, monospace',
+                fontWeight: 700, fontSize: 13,
+                color: getUtilizationColor(util)
+              }}>
+                {util.toFixed(1)}%
+              </span>
+            </div>
+          );
+        }
       },
       {
         title: 'Dev / PD / QA',
@@ -471,7 +504,7 @@ export const TrainCapacityDashboard: React.FC = () => {
                     fontWeight: 600,
                     color: getUtilizationColor(util)
                   }}>
-                    {util.toFixed(1)}
+                    {util.toFixed(1)}%
                   </span>
                 </div>
               );
@@ -490,7 +523,7 @@ export const TrainCapacityDashboard: React.FC = () => {
                   fontWeight: 600,
                   color: getUtilizationColor(util)
                 }}>
-                  {util.toFixed(1)}
+                  {util.toFixed(1)}%
                 </span>
               </div>
             );
@@ -774,71 +807,68 @@ export const TrainCapacityDashboard: React.FC = () => {
           )}
 
           {/* Summary Cards - 6 cards */}
-          <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
-            <Col xs={12} sm={8} md={4}>
-              <Card>
-                <Statistic
-                  title="Active Teams"
-                  value={piData.teams.length}
-                  prefix={<TeamOutlined />}
-                />
-              </Card>
-            </Col>
-            <Col xs={12} sm={8} md={4}>
-              <Card>
-                <Statistic
-                  title="Total Members"
-                  value={piData.teams.reduce((sum, t) => sum + t.member_count, 0)}
-                  prefix={<UserOutlined />}
-                />
-              </Card>
-            </Col>
-            <Col xs={12} sm={8} md={4}>
-              <Card>
-                <Statistic
-                  title="Train Capacity"
-                  value={Math.round(piData.total_capacity)}
-                  suffix="eD"
-                  prefix={<FieldTimeOutlined />}
-                />
-              </Card>
-            </Col>
-            <Col xs={12} sm={8} md={4}>
-              <Card>
-                <Statistic
-                  title="Planned Effort"
-                  value={Math.round(piData.total_planned_effort)}
-                  suffix="eD"
-                  prefix={<CheckCircleOutlined />}
-                />
-              </Card>
-            </Col>
-            <Col xs={12} sm={8} md={4}>
-              <Card>
-                <Statistic
-                  title="Feature Capacity"
-                  value={Math.round(piData.total_feature_capacity)}
-                  suffix="eD"
-                  prefix={<DollarOutlined />}
-                  valueStyle={{ color: '#1890ff' }}
-                />
-              </Card>
-            </Col>
-            <Col xs={12} sm={8} md={4}>
-              <Card>
-                <Statistic
-                  title="Utilisation"
-                  value={`${piData.overall_utilization.toFixed(1)}%`}
-                  valueStyle={{ color: getUtilizationColor(piData.overall_utilization) }}
-                />
-              </Card>
-            </Col>
-          </Row>
+          <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+            {[
+              { label: 'Active Teams',    value: String(piData.teams.filter(t => t.fte > 0 || t.pi_total_capacity > 0).length), sub: `${piData.teams.length} total teams`, accent: '#1677ff' },
+              { label: 'Total Members',   value: String(piData.teams.reduce((sum, t) => sum + t.member_count, 0)), sub: `${piData.teams.reduce((sum, t) => sum + t.fte, 0).toFixed(1)} FTE`, accent: '#1677ff' },
+              { label: 'Train Capacity',  value: `${Math.round(piData.total_capacity)} eD`, sub: 'incl. IP iterations', accent: '#6366f1' },
+              { label: 'Planned Effort',  value: `${Math.round(piData.total_planned_effort)} eD`, sub: 'from Jira records', accent: '#f59e0b' },
+              { label: 'Feature Capacity', value: `${Math.round(piData.total_feature_capacity)} eD`, sub: 'excl. IP iterations', accent: '#06b6d4' },
+              { label: 'Utilisation',     value: `${piData.overall_utilization.toFixed(1)}%`, sub: 'planned ÷ feature cap', accent: getUtilizationColor(piData.overall_utilization), valueColor: getUtilizationColor(piData.overall_utilization) },
+            ].map(({ label, value, sub, accent, valueColor }) => (
+              <div key={label} style={{
+                background: '#fff', borderRadius: 8, padding: '14px 18px',
+                border: '1px solid #e8eaed', boxShadow: '0 1px 3px rgba(0,0,0,.06)',
+                flex: 1, minWidth: 160, position: 'relative', overflow: 'hidden',
+              }}>
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0,
+                  height: 3, background: accent, borderRadius: '8px 8px 0 0' }} />
+                <div style={{ fontSize: 10, fontWeight: 600, color: '#9ca3af',
+                  textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: 6 }}>
+                  {label}
+                </div>
+                <div style={{ fontSize: 26, fontWeight: 700, fontFamily: 'DM Mono, monospace',
+                  color: valueColor || '#111827', lineHeight: 1.1 }}>
+                  {value}
+                </div>
+                <div style={{ fontSize: 11, color: '#6b7280', marginTop: 4 }}>{sub}</div>
+              </div>
+            ))}
+          </div>
 
           {/* Team Capacity Table */}
-          <Card title="Team Capacity Overview" style={{ marginBottom: 16 }}>
+          <Card
+            style={{ marginBottom: 16 }}
+            title={
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ fontWeight: 600, fontSize: 14 }}>Team Capacity Overview</div>
+                <button
+                  onClick={() => setShowInactiveTeams(v => !v)}
+                  style={{
+                    background: 'none', border: '1px solid #e5e7eb',
+                    borderRadius: 6, cursor: 'pointer', padding: '4px 12px',
+                    color: '#6b7280', fontSize: 12, display: 'flex',
+                    alignItems: 'center', gap: 6,
+                  }}
+                >
+                  <span style={{
+                    width: 8, height: 8, borderRadius: '50%',
+                    background: showInactiveTeams ? '#22c55e' : '#d1d5db',
+                    display: 'inline-block',
+                  }} />
+                  {showInactiveTeams ? 'Hiding inactive' : 'Show inactive teams'}
+                </button>
+              </div>
+            }
+          >
             <Table
-              dataSource={[...piData.teams, { ...piData.teams[0], isTotal: true, team_id: 'total', team_name: 'TOTAL', team_code: '', member_count: piData.teams.reduce((s, t) => s + t.member_count, 0), fte: piData.teams.reduce((s, t) => s + t.fte, 0), pi_total_capacity: piData.total_capacity, pi_feature_capacity: piData.total_feature_capacity, pi_planned_effort: piData.total_planned_effort, pi_utilization: piData.overall_utilization, dev_capacity: piData.teams.reduce((s, t) => s + t.dev_capacity, 0), pd_capacity: piData.teams.reduce((s, t) => s + t.pd_capacity, 0), qa_capacity: piData.teams.reduce((s, t) => s + t.qa_capacity, 0) }]}
+              dataSource={[
+                ...(showInactiveTeams
+                  ? piData.teams
+                  : piData.teams.filter(t => t.fte > 0 || t.pi_total_capacity > 0)
+                ).map(t => ({ ...t, key: t.team_id })),
+                { ...piData.teams[0], isTotal: true, team_id: 'total', team_name: 'TOTAL', team_code: '', member_count: piData.teams.reduce((s, t) => s + t.member_count, 0), fte: piData.teams.reduce((s, t) => s + t.fte, 0), pi_total_capacity: piData.total_capacity, pi_feature_capacity: piData.total_feature_capacity, pi_planned_effort: piData.total_planned_effort, pi_utilization: piData.overall_utilization, dev_capacity: piData.teams.reduce((s, t) => s + t.dev_capacity, 0), pd_capacity: piData.teams.reduce((s, t) => s + t.pd_capacity, 0), qa_capacity: piData.teams.reduce((s, t) => s + t.qa_capacity, 0) },
+              ]}
               columns={buildPIViewColumns()}
               rowKey="team_id"
               pagination={false}
