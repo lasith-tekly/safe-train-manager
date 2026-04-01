@@ -461,14 +461,16 @@ export const BudgetConsumptionDashboard: React.FC = () => {
   const handleLevelChange = (lvl: ViewLevel) => {
     setViewLevel(lvl);
     setSelectedChips(new Set());
-    if (lvl === 'budgetline' || lvl === 'category') {
-      // Auto-select first product to avoid cluttered "all products" view
+    if (lvl === 'budgetline') {
+      // Auto-select first product so BL chips are scoped
       const firstProduct = products[0];
-      if (firstProduct) {
-        setContextFilter(firstProduct.product.id);
-      } else {
-        setContextFilter('all');
-      }
+      setContextFilter(firstProduct ? firstProduct.product.id : 'all');
+    } else if (lvl === 'category') {
+      // Auto-select first budget line so category chips are scoped
+      const firstBL = productBudgetDetails
+        .flatMap((pb: any) => pb.budget_lines || [])
+        .find((bl: any) => bl.id);
+      setContextFilter(firstBL ? firstBL.id : 'all');
     } else {
       setContextFilter('all');
     }
@@ -558,13 +560,16 @@ export const BudgetConsumptionDashboard: React.FC = () => {
     if (viewLevel === 'category') {
       return [
         { value: 'all', label: 'All Budget Lines' },
-        ...products.flatMap(pb =>
-          (pb.budget_lines || []).map(bl => ({ value: bl.id, label: `${pb.product.short_code} — ${bl.name}` }))
+        ...productBudgetDetails.flatMap((pb: any) =>
+          (pb.budget_lines || []).map((bl: any) => ({
+            value: bl.id,
+            label: `${pb.product?.short_code} — ${bl.name}`,
+          }))
         ),
       ];
     }
     return [];
-  }, [viewLevel, products]);
+  }, [viewLevel, products, productBudgetDetails]);
 
   // ── Baseline bar datasets: granularity depends on viewLevel ─────────────
   const baselineSeries = useMemo(() => {

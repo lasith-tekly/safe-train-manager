@@ -404,34 +404,54 @@ export function useBudgetConsumption() {
       trainLines.reduce((s, tl) => s + tl.allocated_amount, 0);
 
     const currentQIdx = quarters.findIndex((q) => q.status === 'current');
-    const currentQIters = currentQIdx >= 0 ? quarters[currentQIdx].iters : 0;
+
+    // If no current quarter, fall back to last past quarter
+    const lastPastIdx = (() => {
+      for (let i = quarters.length - 1; i >= 0; i--) {
+        if (quarters[i].status === 'past') return i;
+      }
+      return -1;
+    })();
+
+    const displayQIdx = currentQIdx >= 0
+      ? currentQIdx
+      : lastPastIdx >= 0
+      ? lastPastIdx
+      : quarters.findIndex(q => q.status === 'future');
+
+    const safeQIdx = displayQIdx >= 0 ? displayQIdx : 0;
+    const displayQ = quarters[safeQIdx];
+    const displayQIters = displayQ?.iters ?? 0;
 
     const baselineCurrent =
-      currentQIdx >= 0 && totalIterations > 0
-        ? Math.round((totalBudget * currentQIters) / totalIterations)
+      displayQ && totalIterations > 0
+        ? Math.round((totalBudget * displayQIters) / totalIterations)
         : 0;
 
     const strategicCurrent =
-      currentQIdx >= 0 && strategicByQuarter[currentQIdx] != null
-        ? (strategicByQuarter[currentQIdx] as number)
+      strategicByQuarter[safeQIdx] != null
+        ? (strategicByQuarter[safeQIdx] as number)
         : 0;
 
     const plannedCurrent =
-      currentQIdx >= 0 && plannedByQuarter[currentQIdx] != null
-        ? (plannedByQuarter[currentQIdx] as number)
+      plannedByQuarter[safeQIdx] != null
+        ? (plannedByQuarter[safeQIdx] as number)
         : 0;
 
     const actualCurrent =
-      currentQIdx >= 0 && actualByQuarter[currentQIdx] != null
-        ? (actualByQuarter[currentQIdx] as number)
+      actualByQuarter[safeQIdx] != null
+        ? (actualByQuarter[safeQIdx] as number)
         : 0;
 
-    const currentQ = currentQIdx >= 0 ? quarters[currentQIdx] : null;
+    const currentQ = displayQ ?? null;
+    const isPast = currentQIdx < 0 && lastPastIdx >= 0;
 
     return {
       totalBudget,
       baselineCurrent,
-      baselineLabel: currentQ ? `${currentQ.iters} iter of ${totalIterations} total` : '',
+      baselineLabel: currentQ
+        ? `${displayQIters} iter of ${totalIterations} total${isPast ? ' (last past Q)' : ''}`
+        : '',
       currentQLabel: currentQ ? currentQ.label : '',
       strategicCurrent,
       plannedCurrent,
