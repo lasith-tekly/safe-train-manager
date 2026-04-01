@@ -51,8 +51,6 @@ const menuItems: MenuItem[] = [
   getItem('Dashboard', '/dashboard', <DashboardOutlined />, [
     // getItem('Overview', '/'),  // Hidden - not yet implemented
     getItem('Train Capacity', '/train-capacity', <FundOutlined />),
-    getItem('Team Capacity', '/team-capacity', <TeamOutlined />),
-    getItem('Budget Dashboard', '/budget-dashboard', <DollarOutlined />),
     getItem('Budget Consumption', '/budget-consumption', <BarChartOutlined />),
   ]),
   getItem('Products', '/products', <ProductOutlined />, [
@@ -110,8 +108,6 @@ export const SideNavLayout: React.FC<SideNavLayoutProps> = ({ children }) => {
     if (path === '/') return ['/'];
     if (path === '/capacity') return ['/capacity'];
     if (path === '/train-capacity') return ['/train-capacity'];
-    if (path === '/team-capacity') return ['/team-capacity'];
-    if (path === '/budget-dashboard') return ['/budget-dashboard'];
     
     // Other exact matches
     if (path === '/reports') return ['/reports'];
@@ -145,7 +141,7 @@ export const SideNavLayout: React.FC<SideNavLayoutProps> = ({ children }) => {
     const openKeys: string[] = [];
     
     // Dashboard section
-    if (path === '/' || path === '/capacity' || path === '/train-capacity' || path === '/team-capacity') {
+    if (path === '/' || path === '/capacity' || path === '/train-capacity') {
       openKeys.push('/dashboard');
     }
     if (path.startsWith('/products')) {

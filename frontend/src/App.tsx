@@ -4,8 +4,6 @@ import { Layout } from './components/Layout';
 import { DashboardPage } from './pages/Dashboard';
 import CapacityView from './pages/Dashboard/CapacityView';
 import { TrainCapacityDashboard } from './pages/Dashboard/TrainCapacity';
-import { TeamCapacityDashboardPage } from './pages/Dashboard/TeamCapacity';
-import { BudgetDashboard } from './pages/Dashboard/BudgetDashboard';
 import { BudgetConsumptionDashboard } from './pages/Dashboard/BudgetConsumption';
 import { ProductsPage } from './pages/Products';
 import { FeaturesPage } from './pages/Features';
@@ -29,8 +27,6 @@ const App: React.FC = () => {
           <Route path="/" element={<DashboardPage />} />
           <Route path="/capacity" element={<CapacityView />} />
           <Route path="/train-capacity" element={<TrainCapacityDashboard />} />
-          <Route path="/team-capacity" element={<TeamCapacityDashboardPage />} />
-          <Route path="/budget-dashboard" element={<BudgetDashboard />} />
           <Route path="/budget-consumption" element={<BudgetConsumptionDashboard />} />
           
           {/* Products Section */}
