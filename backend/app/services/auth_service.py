@@ -8,7 +8,7 @@ from app.models.auth import User, UserTeamAssignment
 
 SECRET_KEY = "amadeus-elevate-secret-2026"  # move to env var later
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 15
+ACCESS_TOKEN_EXPIRE_MINUTES = 480  # 8 hours for dev
 REFRESH_TOKEN_EXPIRE_DAYS = 7
 
 

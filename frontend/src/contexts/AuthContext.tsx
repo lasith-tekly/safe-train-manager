@@ -92,10 +92,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (me) setUser(me);
   };
 
-  const logout = () => {
+  const logout = useCallback(() => {
     clearAuth();
     window.location.href = '/login';
-  };
+  }, []);
+
+  // Axios interceptor — auto-refresh on 401
+  useEffect(() => {
+    const interceptor = axios.interceptors.response.use(
+      res => res,
+      async err => {
+        const originalRequest = err.config;
+        if (err.response?.status === 401 && !originalRequest._retry) {
+          originalRequest._retry = true;
+          try {
+            const refresh = localStorage.getItem('amadeus_refresh_token');
+            if (!refresh) { logout(); return Promise.reject(err); }
+            const res = await axios.post(
+              'http://localhost:8000/api/auth/refresh',
+              { refresh_token: refresh }
+            );
+            const newToken = res.data.access_token;
+            localStorage.setItem('amadeus_access_token', newToken);
+            localStorage.setItem('amadeus_refresh_token',
+              res.data.refresh_token);
+            axios.defaults.headers.common['Authorization'] =
+              `Bearer ${newToken}`;
+            originalRequest.headers['Authorization'] =
+              `Bearer ${newToken}`;
+            return axios(originalRequest);
+          } catch {
+            logout();
+            return Promise.reject(err);
+          }
+        }
+        return Promise.reject(err);
+      }
+    );
+    return () => axios.interceptors.response.eject(interceptor);
+  }, [logout]);
 
   const isSuperAdmin = user?.role === 'superadmin';
   const isAdmin    = user?.role === 'admin' || isSuperAdmin;
