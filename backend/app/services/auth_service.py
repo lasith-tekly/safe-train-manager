@@ -20,10 +20,12 @@ def verify_password(password: str, password_hash: str) -> bool:
     return bcrypt.checkpw(password.encode(), password_hash.encode())
 
 
-def create_access_token(user_id: str, role: str) -> str:
+def create_access_token(user_id: str, role: str,
+                         train_id: str | None = None) -> str:
     expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     return jwt.encode(
-        {"sub": user_id, "role": role, "exp": expire, "type": "access"},
+        {"sub": user_id, "role": role, "train_id": train_id,
+         "exp": expire, "type": "access"},
         SECRET_KEY, algorithm=ALGORITHM
     )
 
@@ -61,15 +63,16 @@ def get_user_team_ids(db: Session, user_id: str) -> list[str]:
 
 
 def seed_admin_user(db: Session):
-    """Create default admin user if no users exist."""
+    """Create default superadmin if no users exist."""
     if db.query(User).count() == 0:
         admin = User(
             id=str(uuid.uuid4()),
             username="admin",
             email="admin@amadeus.com",
             password_hash=hash_password("Amadeus@2026"),
-            role="admin",
+            role="superadmin",
             is_active=True,
+            train_id=None,  # superadmin sees all trains
         )
         db.add(admin)
         db.commit()

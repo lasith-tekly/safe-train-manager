@@ -2,6 +2,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+from typing import Optional
 from app.database import get_db
 from app.services import auth_service
 from app.dependencies.auth import get_current_user
@@ -30,6 +31,7 @@ class UserResponse(BaseModel):
     username: str
     email: str
     role: str
+    train_id: Optional[str]
     team_ids: list[str]
 
 
@@ -42,7 +44,8 @@ def login(req: LoginRequest, db: Session = Depends(get_db)):
     user.last_login = datetime.utcnow()
     db.commit()
     return TokenResponse(
-        access_token=auth_service.create_access_token(user.id, user.role),
+        access_token=auth_service.create_access_token(
+            user.id, user.role, user.train_id),
         refresh_token=auth_service.create_refresh_token(user.id),
     )
 
@@ -58,7 +61,8 @@ def refresh(req: RefreshRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="User not found or inactive")
     return TokenResponse(
-        access_token=auth_service.create_access_token(user.id, user.role),
+        access_token=auth_service.create_access_token(
+            user.id, user.role, user.train_id),
         refresh_token=auth_service.create_refresh_token(user.id),
     )
 
@@ -72,6 +76,7 @@ def me(current_user: User = Depends(get_current_user),
         username=current_user.username,
         email=current_user.email,
         role=current_user.role,
+        train_id=current_user.train_id,
         team_ids=team_ids,
     )
 

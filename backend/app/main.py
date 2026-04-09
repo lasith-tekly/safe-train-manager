@@ -33,7 +33,9 @@ from app.routes.team_planning import router as team_planning_router
 from app.routes.pm_review import router as pm_review_router
 from app.routes.auth import router as auth_router
 from app.routes.users import router as users_router
+from app.routes.trains import router as trains_router
 from app.models.auth import User, UserTeamAssignment  # noqa: F401 — ensures tables registered with Base
+from app.models.train import Train  # noqa: F401
 from app.services.auth_service import seed_admin_user
 from app.database import engine, Base
 
@@ -97,6 +99,7 @@ app.include_router(team_planning_router)
 app.include_router(pm_review_router)
 app.include_router(auth_router)
 app.include_router(users_router)
+app.include_router(trains_router)
 
 
 @app.on_event("startup")
