@@ -46,7 +46,7 @@ function getItem(
   } as MenuItem;
 }
 
-function buildMenuItems(isSuperAdmin: boolean): MenuItem[] {
+function buildMenuItems(isSuperAdmin: boolean, isReadOnly: boolean): MenuItem[] {
   return [
     getItem('Dashboard', '/dashboard', <DashboardOutlined />, [
       // getItem('Overview', '/'),  // Hidden - not yet implemented
@@ -61,22 +61,24 @@ function buildMenuItems(isSuperAdmin: boolean): MenuItem[] {
     getItem('PI Calendar', '/pi-calendar', <CalendarOutlined />),
     getItem('Teams', '/teams', <TeamOutlined />),
     // getItem('Reports', '/reports', <BarChartOutlined />),  // Hidden - not yet implemented
-    getItem('Settings', '/settings', <SettingOutlined />, [
-      getItem('Working Days', '/settings/working-days', <ScheduleOutlined />),
-      getItem('Budget Configuration', '/settings/budget-configuration', <DollarOutlined />),
-      getItem('Train Configuration', '/settings/train-config', <DollarOutlined />),
-      getItem('Components', '/settings/components', <BuildOutlined />),
-      getItem('Train Teams', '/settings/train-teams', <TeamOutlined />),
-      getItem('Site Management', '/settings/sites', <GlobalOutlined />, [
-        getItem('Countries & Sites', '/settings/sites/locations'),
-        getItem('Holidays', '/settings/sites/holidays'),
+    ...(!isReadOnly ? [
+      getItem('Settings', '/settings', <SettingOutlined />, [
+        getItem('Working Days', '/settings/working-days', <ScheduleOutlined />),
+        getItem('Budget Configuration', '/settings/budget-configuration', <DollarOutlined />),
+        getItem('Train Configuration', '/settings/train-config', <DollarOutlined />),
+        getItem('Components', '/settings/components', <BuildOutlined />),
+        getItem('Train Teams', '/settings/train-teams', <TeamOutlined />),
+        getItem('Site Management', '/settings/sites', <GlobalOutlined />, [
+          getItem('Countries & Sites', '/settings/sites/locations'),
+          getItem('Holidays', '/settings/sites/holidays'),
+        ]),
+        // Superadmin only
+        ...(isSuperAdmin ? [
+          getItem('Train Management', '/settings/trains', <FundOutlined />),
+          getItem('User Management', '/settings/users', <TeamOutlined />),
+        ] : []),
       ]),
-      // Superadmin only
-      ...(isSuperAdmin ? [
-        getItem('Train Management', '/settings/trains', <FundOutlined />),
-        getItem('User Management', '/settings/users', <TeamOutlined />),
-      ] : []),
-    ]),
+    ] : []),
   ];
 }
 
@@ -85,8 +87,8 @@ export const SideNavLayout: React.FC<SideNavLayoutProps> = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, logout, isAdmin, isSuperAdmin } = useAuth();
-  const menuItems = buildMenuItems(isSuperAdmin);
+  const { user, logout, isAdmin, isSuperAdmin, isReadOnly } = useAuth();
+  const menuItems = buildMenuItems(isSuperAdmin, isReadOnly);
 
   const getSelectedKeys = (): string[] => {
     const path = location.pathname;

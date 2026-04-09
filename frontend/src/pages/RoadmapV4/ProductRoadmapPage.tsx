@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Table, Space, Select, Input, Tag, message, Card, Modal, Typography, Tooltip } from 'antd';
 import { PlusOutlined, SearchOutlined, DeleteOutlined, EditOutlined, ArrowLeftOutlined, RocketOutlined, InfoCircleOutlined } from '@ant-design/icons';
@@ -23,6 +24,7 @@ const { Title } = Typography;
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
 
 const ProductRoadmapPage: React.FC = () => {
+  const { canEdit } = useAuth();
   const { productId } = useParams<{ productId: string }>();
   const navigate = useNavigate();
   const [features, setFeatures] = useState<RoadmapFeature[]>([]);
@@ -558,27 +560,33 @@ const ProductRoadmapPage: React.FC = () => {
       width: 180,
       render: (_: any, record: RoadmapFeature) => (
         <Space>
-          <Button
-            type="link"
-            icon={<RocketOutlined />}
-            onClick={() => handlePlanExecution(record)}
-            size="small"
-          >
-            Execute
-          </Button>
-          <Button
-            type="text"
-            icon={<EditOutlined />}
-            onClick={() => handleEditFeature(record)}
-            size="small"
-          />
-          <Button
-            type="text"
-            danger
-            icon={<DeleteOutlined />}
-            onClick={() => handleDeleteFeature(record)}
-            size="small"
-          />
+          {canEdit && (
+            <Button
+              type="link"
+              icon={<RocketOutlined />}
+              onClick={() => handlePlanExecution(record)}
+              size="small"
+            >
+              Execute
+            </Button>
+          )}
+          {canEdit && (
+            <Button
+              type="text"
+              icon={<EditOutlined />}
+              onClick={() => handleEditFeature(record)}
+              size="small"
+            />
+          )}
+          {canEdit && (
+            <Button
+              type="text"
+              danger
+              icon={<DeleteOutlined />}
+              onClick={() => handleDeleteFeature(record)}
+              size="small"
+            />
+          )}
         </Space>
       ),
     },
@@ -602,14 +610,15 @@ const ProductRoadmapPage: React.FC = () => {
               <Title level={4} style={{ margin: 0, lineHeight: 1.2 }}>{product?.name || 'Product'}</Title>
               <span style={{ color: '#888', fontSize: 14, lineHeight: 1.2 }}>Roadmap Planning</span>
             </div>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={handleCreateFeature}
-              disabled={isReadOnly}
-            >
-              Add Feature
-            </Button>
+            {canEdit && (
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={handleCreateFeature}
+              >
+                Add Feature
+              </Button>
+            )}
           </div>
         </Card>
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../../contexts/AuthContext';
 import { Row, Col, Button, message, Skeleton } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { ProductCard } from './ProductCard';
@@ -9,7 +10,8 @@ import type { Product, ProductCreate, ProductUpdate } from '../../../types';
 import styles from './ProductsTab.module.css';
 
 export const ProductsTab: React.FC = () => {
-  const [products, setProducts] = useState<Product[]>([]);
+  const { canEdit } = useAuth();
+  const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true);
   const [showPanel, setShowPanel] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -103,7 +105,7 @@ export const ProductsTab: React.FC = () => {
   if (!loading && products.length === 0) {
     return (
       <>
-        <EmptyState onAdd={handleAdd} />
+        <EmptyState onAdd={canEdit ? handleAdd : undefined} />
         <ProductFormPanel
           visible={showPanel}
           product={editingProduct}
@@ -118,13 +120,15 @@ export const ProductsTab: React.FC = () => {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={handleAdd}
-        >
-          Add Product
-        </Button>
+        {canEdit && (
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={handleAdd}
+          >
+            Add Product
+          </Button>
+        )}
       </div>
 
       <Row gutter={[24, 24]}>

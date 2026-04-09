@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../../contexts/AuthContext';
 import {
   Card,
   Table,
@@ -107,6 +108,7 @@ interface IterationFormData {
 }
 
 export const PICalendarTab: React.FC = () => {
+  const { canEdit } = useAuth();
   const [pis, setPIs] = useState<PI[]>([]);
   const [holidays, setHolidays] = useState<Holiday[]>([]);
   const [loading, setLoading] = useState(true);
@@ -613,22 +615,28 @@ export const PICalendarTab: React.FC = () => {
       title: 'Actions',
       key: 'actions',
       width: 100,
-      render: (_: unknown, record: PI) => (
-        <Space>
-          <Tooltip title="Edit iterations">
-            <Button size="small" icon={<EditOutlined />} onClick={() => openEditModal(record)} />
-          </Tooltip>
-          <Popconfirm
-            title="Delete this PI?"
-            description="All iterations will be deleted."
-            onConfirm={() => handleDelete(record)}
-            okText="Delete"
-            cancelText="Cancel"
-          >
-            <Button size="small" danger icon={<DeleteOutlined />} />
-          </Popconfirm>
-        </Space>
-      )
+      render: (_: unknown, record: PI) => {
+        return (
+          <Space>
+            {canEdit && (
+              <Tooltip title="Edit iterations">
+                <Button size="small" icon={<EditOutlined />} onClick={() => openEditModal(record)} />
+              </Tooltip>
+            )}
+            {canEdit && (
+              <Popconfirm
+                title="Delete this PI?"
+                description="All iterations will be deleted."
+                onConfirm={() => handleDelete(record)}
+                okText="Delete"
+                cancelText="Cancel"
+              >
+                <Button size="small" danger icon={<DeleteOutlined />} />
+              </Popconfirm>
+            )}
+          </Space>
+        );
+      }
     }
   ];
 
@@ -652,30 +660,32 @@ export const PICalendarTab: React.FC = () => {
             style={{ width: 100 }}
           />
         </Space>
-        <Space>
-          <Button
-            icon={<PlusOutlined />}
-            onClick={openCreateModal}
-          >
-            Add PI
-          </Button>
-          <Button
-            type="primary"
-            icon={<ThunderboltOutlined />}
-            onClick={() => setShowGenerateModal(true)}
-            disabled={pis.length > 0}
-          >
-            Generate PIs
-          </Button>
-          <Button
-            type={isCalendarLocked ? 'default' : 'primary'}
-            onClick={handleToggleLock}
-            disabled={pis.length === 0}
-            style={isCalendarLocked ? {} : (pis.length > 0 ? { background: '#52c41a', borderColor: '#52c41a' } : {})}
-          >
-            {isCalendarLocked ? '🔓 Unlock Calendar' : '🔒 Lock Calendar'}
-          </Button>
-        </Space>
+        {canEdit && (
+          <Space>
+            <Button
+              icon={<PlusOutlined />}
+              onClick={openCreateModal}
+            >
+              Add PI
+            </Button>
+            <Button
+              type="primary"
+              icon={<ThunderboltOutlined />}
+              onClick={() => setShowGenerateModal(true)}
+              disabled={pis.length > 0}
+            >
+              Generate PIs
+            </Button>
+            <Button
+              type={isCalendarLocked ? 'default' : 'primary'}
+              onClick={handleToggleLock}
+              disabled={pis.length === 0}
+              style={isCalendarLocked ? {} : (pis.length > 0 ? { background: '#52c41a', borderColor: '#52c41a' } : {})}
+            >
+              {isCalendarLocked ? '🔓 Unlock Calendar' : '🔒 Lock Calendar'}
+            </Button>
+          </Space>
+        )}
       </div>
 
       <Row gutter={16} className={styles.statsRow}>
@@ -1050,31 +1060,33 @@ export const PICalendarTab: React.FC = () => {
                   width: 50,
                   render: (_: unknown, record: unknown) => {
                     const iter = record as { id: string };
-                    return (
+                    return canEdit ? (
                       <Popconfirm
                         title="Delete this iteration?"
                         onConfirm={() => handleDeleteIterationFromPI(iter.id)}
                       >
                         <Button size="small" danger icon={<DeleteOutlined />} />
                       </Popconfirm>
-                    );
+                    ) : null;
                   }
                 }
               ]}
             />
 
-            <div style={{ marginTop: 12 }}>
-              <Space>
-                <Button icon={<PlusOutlined />} onClick={() => handleAddIterationToPI(false)}>
-                  Add Iteration
-                </Button>
-                {!hasIPIteration() && (
-                  <Button icon={<PlusOutlined />} onClick={() => handleAddIterationToPI(true)}>
-                    Add IP Iteration
+            {canEdit && (
+              <div style={{ marginTop: 12 }}>
+                <Space>
+                  <Button icon={<PlusOutlined />} onClick={() => handleAddIterationToPI(false)}>
+                    Add Iteration
                   </Button>
-                )}
-              </Space>
-            </div>
+                  {!hasIPIteration() && (
+                    <Button icon={<PlusOutlined />} onClick={() => handleAddIterationToPI(true)}>
+                      Add IP Iteration
+                    </Button>
+                  )}
+                </Space>
+              </div>
+            )}
           </>
         )}
       </Modal>

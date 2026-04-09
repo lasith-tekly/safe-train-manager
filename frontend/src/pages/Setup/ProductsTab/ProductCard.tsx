@@ -1,5 +1,6 @@
 import React from 'react';
 import { Card, Button, Space, Popconfirm } from 'antd';
+import { useAuth } from '../../../contexts/AuthContext';
 import { EditOutlined, DeleteOutlined, TeamOutlined } from '@ant-design/icons';
 import { StatusBadge } from '../../../components/StatusBadge';
 import type { Product } from '../../../types';
@@ -16,31 +17,34 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   onEdit,
   onDelete,
 }) => {
+  const { canEdit } = useAuth();
   return (
     <Card
       className={styles.card}
       hoverable
       actions={[
-        <Button
-          key="edit"
-          type="text"
-          icon={<EditOutlined />}
-          onClick={() => onEdit(product)}
-        >
-          Edit
-        </Button>,
-        <Popconfirm
-          key="delete"
-          title="Delete Product"
-          description="Are you sure you want to delete this product?"
-          onConfirm={() => onDelete(product)}
-          okText="Yes"
-          cancelText="No"
-        >
-          <Button type="text" danger icon={<DeleteOutlined />}>
-            Delete
-          </Button>
-        </Popconfirm>,
+        ...(canEdit ? [
+          <Button
+            key="edit"
+            type="text"
+            icon={<EditOutlined />}
+            onClick={() => onEdit(product)}
+          >
+            Edit
+          </Button>,
+          <Popconfirm
+            key="delete"
+            title="Delete Product"
+            description="Are you sure you want to delete this product?"
+            onConfirm={() => onDelete(product)}
+            okText="Yes"
+            cancelText="No"
+          >
+            <Button type="text" danger icon={<DeleteOutlined />}>
+              Delete
+            </Button>
+          </Popconfirm>,
+        ] : []),
       ]}
     >
       <div className={styles.header}>

@@ -4,7 +4,7 @@ import { PlusOutlined, AppstoreOutlined } from '@ant-design/icons';
 import styles from './EmptyState.module.css';
 
 interface EmptyStateProps {
-  onAdd: () => void;
+  onAdd?: () => void;
 }
 
 export const EmptyState: React.FC<EmptyStateProps> = ({ onAdd }) => {
@@ -22,9 +22,11 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ onAdd }) => {
           </div>
         }
       >
-        <Button type="primary" icon={<PlusOutlined />} onClick={onAdd}>
-          Add Product
-        </Button>
+        {onAdd && (
+          <Button type="primary" icon={<PlusOutlined />} onClick={onAdd}>
+            Add Product
+          </Button>
+        )}
       </Empty>
     </div>
   );

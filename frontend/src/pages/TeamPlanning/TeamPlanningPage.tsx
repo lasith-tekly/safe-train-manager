@@ -11,6 +11,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
 import { Card, message, Spin, Alert, Typography, Row, Col, Select, Empty, Button, Modal, Tooltip, Tag } from 'antd';
 import { TeamOutlined, InfoCircleOutlined, CheckCircleOutlined, AuditOutlined } from '@ant-design/icons';
 import axios from 'axios';
@@ -38,6 +39,7 @@ interface PI {
 }
 
 const TeamPlanningPage: React.FC = () => {
+  const { canEdit } = useAuth();
   const [selectedTeamId, setSelectedTeamId] = useState<string>('');
   const [selectedPiId, setSelectedPiId] = useState<string>('');
   const [teams, setTeams] = useState<Team[]>([]);
@@ -449,7 +451,7 @@ const TeamPlanningPage: React.FC = () => {
                 
                 <div style={{ display: 'flex', gap: 8 }}>
                   {/* Review Button for PM */}
-                  {planStatus === 'committed' && (
+                  {canEdit && planStatus === 'committed' && (
                     <Button
                       type="primary"
                       icon={<AuditOutlined />}
@@ -461,7 +463,7 @@ const TeamPlanningPage: React.FC = () => {
                   )}
                   
                   {/* Commit/Re-submit Button for PO */}
-                  {(planStatus === 'draft' || planStatus === 'rejected') && (
+                  {canEdit && (planStatus === 'draft' || planStatus === 'rejected') && (
                     <Tooltip title={!canCommit ? commitTooltip : ''}>
                       <Button
                         type="primary"
