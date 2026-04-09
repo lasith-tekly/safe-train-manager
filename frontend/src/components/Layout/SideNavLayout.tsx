@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Layout, Menu, Typography, Avatar, Dropdown, Tooltip } from 'antd';
+import { Layout, Menu, Typography, Tooltip } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom';
 import type { MenuProps } from 'antd';
 import {
@@ -15,14 +15,13 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   BellOutlined,
-  UserOutlined,
-  LogoutOutlined,
   ProductOutlined,
   FundOutlined,
   ProjectOutlined,
   UnorderedListOutlined,
 } from '@ant-design/icons';
 import styles from './SideNavLayout.module.css';
+import { useAuth } from '../../contexts/AuthContext';
 
 const { Sider, Header, Content } = Layout;
 const { Text } = Typography;
@@ -74,32 +73,12 @@ const menuItems: MenuItem[] = [
   ]),
 ];
 
-const userMenuItems: MenuProps['items'] = [
-  {
-    key: 'profile',
-    icon: <UserOutlined />,
-    label: 'Profile',
-  },
-  {
-    key: 'settings',
-    icon: <SettingOutlined />,
-    label: 'Settings',
-  },
-  {
-    type: 'divider',
-  },
-  {
-    key: 'logout',
-    icon: <LogoutOutlined />,
-    label: 'Logout',
-    danger: true,
-  },
-];
 
 export const SideNavLayout: React.FC<SideNavLayoutProps> = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, logout, isAdmin } = useAuth();
 
   const getSelectedKeys = (): string[] => {
     const path = location.pathname;
@@ -162,12 +141,6 @@ export const SideNavLayout: React.FC<SideNavLayoutProps> = ({ children }) => {
     navigate(e.key);
   };
 
-  const handleUserMenuClick: MenuProps['onClick'] = (e) => {
-    if (e.key === 'logout') {
-      // Handle logout
-      console.log('Logout clicked');
-    }
-  };
 
   return (
     <Layout className={styles.layout}>
@@ -226,17 +199,33 @@ export const SideNavLayout: React.FC<SideNavLayoutProps> = ({ children }) => {
               </div>
             </Tooltip>
 
-            {/* User Menu */}
-            <Dropdown
-              menu={{ items: userMenuItems, onClick: handleUserMenuClick }}
-              trigger={['click']}
-              placement="bottomRight"
-            >
-              <div className={styles.userMenu}>
-                <Avatar size="small" icon={<UserOutlined />} className={styles.avatar} />
-                <Text className={styles.userName}>RTE User</Text>
-              </div>
-            </Dropdown>
+            {/* Role badge + username + logout */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <span style={{
+                fontSize: 10, fontWeight: 700, padding: '2px 8px',
+                borderRadius: 10, textTransform: 'uppercase', letterSpacing: '.05em',
+                background: isAdmin ? '#eff6ff' : '#f0fdf4',
+                color: isAdmin ? '#1677ff' : '#16a34a',
+                border: `1px solid ${isAdmin ? '#bfdbfe' : '#bbf7d0'}`,
+              }}>
+                {user?.role || 'guest'}
+              </span>
+
+              <span style={{ fontSize: 13, fontWeight: 500, color: '#374151' }}>
+                {user?.username || 'User'}
+              </span>
+
+              <button
+                onClick={logout}
+                style={{
+                  background: 'none', border: '1px solid #e5e7eb',
+                  borderRadius: 6, cursor: 'pointer', padding: '4px 10px',
+                  fontSize: 12, color: '#6b7280',
+                }}
+              >
+                Sign out
+              </button>
+            </div>
           </div>
         </Header>
 
