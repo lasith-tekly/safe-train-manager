@@ -12,6 +12,8 @@ import { FeaturesPage } from './pages/Features';
 import { PICalendarPage } from './pages/PICalendar';
 import { TeamsPage } from './pages/Teams';
 import { SettingsPage } from './pages/Settings';
+import UserManagementPage from './pages/Settings/UserManagement';
+import TrainManagementPage from './pages/Settings/TrainManagement';
 import RoadmapV4Page from './pages/RoadmapV4';
 import ProductsOverviewPage from './pages/RoadmapV4/ProductsOverviewPage';
 import ProductRoadmapPage from './pages/RoadmapV4/ProductRoadmapPage';
@@ -69,6 +71,8 @@ const App: React.FC = () => {
                 <Route path="/settings/budget-configuration" element={<SettingsPage />} />
                 <Route path="/settings/train-config" element={<SettingsPage />} />
                 <Route path="/settings/train-teams" element={<SettingsPage />} />
+                <Route path="/settings/users" element={<UserManagementPage />} />
+                <Route path="/settings/trains" element={<TrainManagementPage />} />
                 <Route path="/settings/sites" element={<Navigate to="/settings/sites/locations" replace />} />
                 <Route path="/settings/sites/locations" element={<SettingsPage />} />
                 <Route path="/settings/sites/holidays" element={<SettingsPage />} />

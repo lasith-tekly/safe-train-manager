@@ -46,39 +46,47 @@ function getItem(
   } as MenuItem;
 }
 
-const menuItems: MenuItem[] = [
-  getItem('Dashboard', '/dashboard', <DashboardOutlined />, [
-    // getItem('Overview', '/'),  // Hidden - not yet implemented
-    getItem('Train Capacity', '/train-capacity', <FundOutlined />),
-    getItem('Budget Consumption', '/budget-consumption', <BarChartOutlined />),
-  ]),
-  getItem('Products', '/products', <ProductOutlined />, [
-    getItem('Product List', '/products/list', <UnorderedListOutlined />),
-    getItem('Roadmap Planning', '/roadmap', <ProjectOutlined />),
-    getItem('Team Planning', '/team-planning', <ScheduleOutlined />),
-  ]),
-  getItem('PI Calendar', '/pi-calendar', <CalendarOutlined />),
-  getItem('Teams', '/teams', <TeamOutlined />),
-  // getItem('Reports', '/reports', <BarChartOutlined />),  // Hidden - not yet implemented
-  getItem('Settings', '/settings', <SettingOutlined />, [
-    getItem('Working Days', '/settings/working-days', <ScheduleOutlined />),
-    getItem('Budget Configuration', '/settings/budget-configuration', <DollarOutlined />),
-    getItem('Train Configuration', '/settings/train-config', <DollarOutlined />),
-    getItem('Components', '/settings/components', <BuildOutlined />),
-    getItem('Train Teams', '/settings/train-teams', <TeamOutlined />),
-    getItem('Site Management', '/settings/sites', <GlobalOutlined />, [
-      getItem('Countries & Sites', '/settings/sites/locations'),
-      getItem('Holidays', '/settings/sites/holidays'),
+function buildMenuItems(isSuperAdmin: boolean): MenuItem[] {
+  return [
+    getItem('Dashboard', '/dashboard', <DashboardOutlined />, [
+      // getItem('Overview', '/'),  // Hidden - not yet implemented
+      getItem('Train Capacity', '/train-capacity', <FundOutlined />),
+      getItem('Budget Consumption', '/budget-consumption', <BarChartOutlined />),
     ]),
-  ]),
-];
+    getItem('Products', '/products', <ProductOutlined />, [
+      getItem('Product List', '/products/list', <UnorderedListOutlined />),
+      getItem('Roadmap Planning', '/roadmap', <ProjectOutlined />),
+      getItem('Team Planning', '/team-planning', <ScheduleOutlined />),
+    ]),
+    getItem('PI Calendar', '/pi-calendar', <CalendarOutlined />),
+    getItem('Teams', '/teams', <TeamOutlined />),
+    // getItem('Reports', '/reports', <BarChartOutlined />),  // Hidden - not yet implemented
+    getItem('Settings', '/settings', <SettingOutlined />, [
+      getItem('Working Days', '/settings/working-days', <ScheduleOutlined />),
+      getItem('Budget Configuration', '/settings/budget-configuration', <DollarOutlined />),
+      getItem('Train Configuration', '/settings/train-config', <DollarOutlined />),
+      getItem('Components', '/settings/components', <BuildOutlined />),
+      getItem('Train Teams', '/settings/train-teams', <TeamOutlined />),
+      getItem('Site Management', '/settings/sites', <GlobalOutlined />, [
+        getItem('Countries & Sites', '/settings/sites/locations'),
+        getItem('Holidays', '/settings/sites/holidays'),
+      ]),
+      // Superadmin only
+      ...(isSuperAdmin ? [
+        getItem('Train Management', '/settings/trains', <FundOutlined />),
+        getItem('User Management', '/settings/users', <TeamOutlined />),
+      ] : []),
+    ]),
+  ];
+}
 
 
 export const SideNavLayout: React.FC<SideNavLayoutProps> = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, logout, isAdmin } = useAuth();
+  const { user, logout, isAdmin, isSuperAdmin } = useAuth();
+  const menuItems = buildMenuItems(isSuperAdmin);
 
   const getSelectedKeys = (): string[] => {
     const path = location.pathname;
@@ -109,6 +117,8 @@ export const SideNavLayout: React.FC<SideNavLayoutProps> = ({ children }) => {
     if (path === '/settings/budgets') return ['/settings/budgets'];
     if (path === '/settings/train-config') return ['/settings/train-config'];
     if (path === '/settings/train-teams') return ['/settings/train-teams'];
+    if (path === '/settings/trains') return ['/settings/trains'];
+    if (path === '/settings/users') return ['/settings/users'];
     if (path === '/settings/sites/locations') return ['/settings/sites/locations'];
     if (path === '/settings/sites/holidays') return ['/settings/sites/holidays'];
     

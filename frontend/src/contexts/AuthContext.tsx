@@ -7,7 +7,7 @@ export interface AuthUser {
   id: string;
   username: string;
   email: string;
-  role: 'admin' | 'po' | 'readonly';
+  role: 'superadmin' | 'admin' | 'po' | 'readonly';
   team_ids: string[];
 }
 
@@ -18,6 +18,7 @@ interface AuthContextType {
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
   isAdmin: boolean;
+  isSuperAdmin: boolean;
   isPO: boolean;
   isReadOnly: boolean;
   canEdit: boolean;          // admin or po
@@ -96,7 +97,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     window.location.href = '/login';
   };
 
-  const isAdmin    = user?.role === 'admin';
+  const isSuperAdmin = user?.role === 'superadmin';
+  const isAdmin    = user?.role === 'admin' || isSuperAdmin;
   const isPO       = user?.role === 'po';
   const isReadOnly = user?.role === 'readonly';
   const canEdit    = isAdmin || isPO;
@@ -112,7 +114,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       user, isLoading,
       isAuthenticated: !!user,
       login, logout,
-      isAdmin, isPO, isReadOnly,
+      isAdmin, isSuperAdmin, isPO, isReadOnly,
       canEdit, canManageUsers,
       isAssignedTeam,
     }}>
