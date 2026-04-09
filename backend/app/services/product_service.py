@@ -138,14 +138,14 @@ class ProductService:
         
         Instead, use archive/inactive status.
         """
-        from app.models.roadmap import Roadmap
+        from app.models.roadmap_v4 import RoadmapFeature
         from app.models.budget_new import ProductBudget
         
         product_id_str = str(product_id)
         
         # Check for roadmaps
-        roadmap_count = db.query(Roadmap).filter(
-            Roadmap.product_id == product_id_str
+        roadmap_count = db.query(RoadmapFeature).filter(
+            RoadmapFeature.product_id == product_id_str
         ).count()
         
         if roadmap_count > 0:
