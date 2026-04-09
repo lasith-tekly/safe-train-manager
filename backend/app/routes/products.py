@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 
 from app.database import get_db
+from app.dependencies.auth import get_train_context
 from app.models.product import Product, ProductStatus
 from app.schemas.product import (
     ProductCreate,
@@ -20,7 +21,8 @@ router = APIRouter(prefix="/api/products", tags=["products"])
 def list_products(
     status: Optional[str] = Query(None, description="Filter by status (active/inactive)"),
     search: Optional[str] = Query(None, description="Search by name or short code"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    train_id: Optional[str] = Depends(get_train_context),
 ):
     """
     List all products with optional filtering.
@@ -28,7 +30,8 @@ def list_products(
     - **status**: Filter by 'active' or 'inactive'
     - **search**: Search in name or short_code
     """
-    products, total = ProductService.get_all(db, status=status, search=search)
+    products, total = ProductService.get_all(
+        db, status=status, search=search, train_id=train_id)
     return ProductListResponse(data=products, total=total)
 
 

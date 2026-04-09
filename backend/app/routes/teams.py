@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 
 from app.database import get_db
+from app.dependencies.auth import get_train_context
 from app.models.team import Team, TeamStatus
 from app.schemas.team import (
     TeamCreate,
@@ -25,10 +26,12 @@ def list_teams(
     search: Optional[str] = Query(None, description="Search by name"),
     year: Optional[int] = Query(None, description="Year for capacity data"),
     pi_id: Optional[str] = Query(None, description="PI ID for member count filtering"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    train_id: Optional[str] = Depends(get_train_context),
 ):
     """List all teams with optional filtering."""
-    teams, total = TeamService.get_all(db, status=status, search=search, year=year, pi_id=pi_id)
+    teams, total = TeamService.get_all(
+        db, status=status, search=search, year=year, pi_id=pi_id, train_id=train_id)
     return TeamListResponse(data=teams, total=total)
 
 

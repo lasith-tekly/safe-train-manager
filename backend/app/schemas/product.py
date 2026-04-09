@@ -38,7 +38,7 @@ class ProductBase(BaseModel):
 
 class ProductCreate(ProductBase):
     """Schema for creating a product."""
-    pass
+    train_id: Optional[str] = None
 
 
 class ProductUpdate(BaseModel):
@@ -85,6 +85,7 @@ class ProductResponse(BaseModel):
     short_code: str
     description: Optional[str] = None
     status: str
+    train_id: Optional[str] = None
     team_count: int = 0
     created_at: datetime
     updated_at: Optional[datetime] = None

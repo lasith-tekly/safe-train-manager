@@ -1,4 +1,5 @@
 from fastapi import Depends, HTTPException, status
+from typing import Optional
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from app.database import get_db
@@ -47,3 +48,15 @@ def check_team_access(team_id: str, current_user: User, db: Session):
     if team_id not in assigned:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="You are not assigned to this team")
+
+
+def get_train_context(
+    current_user: User = Depends(get_current_user)
+) -> Optional[str]:
+    """
+    Returns train_id for non-superadmin users.
+    Returns None for superadmin (no filtering applied).
+    """
+    if current_user.role == "superadmin":
+        return None
+    return current_user.train_id

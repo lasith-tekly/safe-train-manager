@@ -42,10 +42,14 @@ class TeamService:
         status: Optional[str] = None,
         search: Optional[str] = None,
         year: Optional[int] = None,
-        pi_id: Optional[str] = None
+        pi_id: Optional[str] = None,
+        train_id: Optional[str] = None
     ) -> Tuple[List[TeamResponse], int]:
         """Get all teams with optional filtering."""
         query = db.query(Team)
+
+        if train_id is not None:
+            query = query.filter(Team.train_id == train_id)
 
         if status and status != 'all':
             query = query.filter(Team.status == status)

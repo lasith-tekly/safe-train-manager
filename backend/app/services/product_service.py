@@ -14,10 +14,14 @@ class ProductService:
     def get_all(
         db: Session,
         status: Optional[str] = None,
-        search: Optional[str] = None
+        search: Optional[str] = None,
+        train_id: Optional[str] = None
     ) -> Tuple[List[ProductResponse], int]:
         """Get all products with optional filtering."""
         query = db.query(Product)
+
+        if train_id is not None:
+            query = query.filter(Product.train_id == train_id)
 
         if status:
             query = query.filter(Product.status == status)
@@ -78,7 +82,8 @@ class ProductService:
             name=data.name.strip(),
             short_code=data.short_code.upper().strip(),
             description=data.description,
-            status=ProductStatus(data.status)
+            status=ProductStatus(data.status),
+            train_id=data.train_id if hasattr(data, 'train_id') else None
         )
         db.add(product)
         db.commit()
