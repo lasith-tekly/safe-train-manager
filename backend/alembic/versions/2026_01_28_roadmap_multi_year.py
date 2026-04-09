@@ -15,7 +15,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = 'roadmap_multi_year_v2'
+revision = '2026_01_28_roadmap_multi_year'
 down_revision = None  # Update this with actual previous revision
 branch_labels = None
 depends_on = None

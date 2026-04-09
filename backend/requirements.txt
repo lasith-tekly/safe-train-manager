@@ -9,3 +9,5 @@ python-multipart==0.0.6
 pytest==7.4.4
 httpx==0.26.0
 # httpx is used for JIRA integration
+python-jose[cryptography]==3.3.0
+bcrypt==4.1.2

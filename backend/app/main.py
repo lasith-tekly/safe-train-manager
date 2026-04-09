@@ -31,6 +31,10 @@ from app.routes.deviation import router as deviation_router
 from app.routes.alignment import router as alignment_router
 from app.routes.team_planning import router as team_planning_router
 from app.routes.pm_review import router as pm_review_router
+from app.routes.auth import router as auth_router
+from app.routes.users import router as users_router
+from app.models.auth import User, UserTeamAssignment  # noqa: F401 — ensures tables registered with Base
+from app.services.auth_service import seed_admin_user
 from app.database import engine, Base
 
 # Create tables - DISABLED: Using SQL migrations instead
@@ -91,6 +95,18 @@ app.include_router(deviation_router)
 app.include_router(alignment_router)
 app.include_router(team_planning_router)
 app.include_router(pm_review_router)
+app.include_router(auth_router)
+app.include_router(users_router)
+
+
+@app.on_event("startup")
+def on_startup():
+    from app.database import SessionLocal
+    db = SessionLocal()
+    try:
+        seed_admin_user(db)
+    finally:
+        db.close()
 
 
 @app.get("/health", tags=["health"])

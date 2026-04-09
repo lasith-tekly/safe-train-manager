@@ -23,6 +23,7 @@ from app.models.roadmap_v4 import RoadmapFeature, FeatureTeam, FeatureQuarterlyA
 from app.models.feature_budget_allocation import FeatureBudgetLineAllocation
 from app.models.roadmap_version import RoadmapVersion
 from app.models.record_history import RecordHistory
+from app.models.auth import User, UserTeamAssignment
 
 __all__ = [
     "Product",
@@ -73,4 +74,6 @@ __all__ = [
     "JiraQuarterlyAllocation",
     "RoadmapVersion",
     "RecordHistory",
+    "User",
+    "UserTeamAssignment",
 ]
