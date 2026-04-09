@@ -7,6 +7,7 @@ from app.services.auth_service import decode_token, get_user_by_id
 from app.models.auth import User
 
 bearer_scheme = HTTPBearer()
+bearer_scheme_optional = HTTPBearer(auto_error=False)
 
 
 def get_current_user(
@@ -50,13 +51,23 @@ def check_team_access(team_id: str, current_user: User, db: Session):
                             detail="You are not assigned to this team")
 
 
+def get_optional_user(
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme_optional),
+    db: Session = Depends(get_db)
+) -> Optional[User]:
+    if not credentials:
+        return None
+    payload = decode_token(credentials.credentials)
+    if not payload or payload.get("type") != "access":
+        return None
+    return get_user_by_id(db, payload["sub"])
+
+
 def get_train_context(
-    current_user: User = Depends(get_current_user)
+    current_user: Optional[User] = Depends(get_optional_user)
 ) -> Optional[str]:
-    """
-    Returns train_id for non-superadmin users.
-    Returns None for superadmin (no filtering applied).
-    """
+    if not current_user:
+        return None  # No auth — superadmin-like, no filter
     if current_user.role == "superadmin":
         return None
     return current_user.train_id
