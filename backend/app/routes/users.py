@@ -1,6 +1,6 @@
 import uuid
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
 from typing import Optional
 from app.database import get_db
@@ -13,15 +13,17 @@ router = APIRouter(prefix="/api/users", tags=["users"])
 
 class CreateUserRequest(BaseModel):
     username: str
-    email: str
+    email: EmailStr
     password: str
-    role: str  # admin / po / readonly
+    role: str  # superadmin / admin / po / readonly
+    train_id: Optional[str] = None
     team_ids: list[str] = []
 
 
 class UpdateUserRequest(BaseModel):
-    email: Optional[str] = None
+    email: Optional[EmailStr] = None
     role: Optional[str] = None
+    train_id: Optional[str] = None
     is_active: Optional[bool] = None
     team_ids: Optional[list[str]] = None
     password: Optional[str] = None
@@ -32,6 +34,7 @@ class UserOut(BaseModel):
     username: str
     email: str
     role: str
+    train_id: Optional[str]
     is_active: bool
     team_ids: list[str]
     last_login: Optional[str]
@@ -44,6 +47,7 @@ def _user_out(user: User, db: Session) -> UserOut:
         username=user.username,
         email=user.email,
         role=user.role,
+        train_id=user.train_id,
         is_active=user.is_active,
         team_ids=get_user_team_ids(db, user.id),
         last_login=user.last_login.isoformat() if user.last_login else None,
@@ -58,16 +62,19 @@ def list_users(db: Session = Depends(get_db)):
 
 @router.post("", dependencies=[Depends(require_admin)])
 def create_user(req: CreateUserRequest, db: Session = Depends(get_db)):
-    if req.role not in ("admin", "po", "readonly"):
+    if req.role not in ("superadmin", "admin", "po", "readonly"):
         raise HTTPException(status_code=400, detail="Invalid role")
     if db.query(User).filter(User.username == req.username).first():
         raise HTTPException(status_code=400, detail="Username already exists")
+    if db.query(User).filter(User.email == req.email).first():
+        raise HTTPException(status_code=400, detail="Email already exists")
     user = User(
         id=str(uuid.uuid4()),
         username=req.username,
         email=req.email,
         password_hash=hash_password(req.password),
         role=req.role,
+        train_id=req.train_id,
     )
     db.add(user)
     db.flush()
@@ -89,6 +96,7 @@ def update_user(user_id: str, req: UpdateUserRequest,
         raise HTTPException(status_code=404, detail="User not found")
     if req.email is not None: user.email = req.email
     if req.role is not None: user.role = req.role
+    if req.train_id is not None: user.train_id = req.train_id
     if req.is_active is not None: user.is_active = req.is_active
     if req.password is not None: user.password_hash = hash_password(req.password)
     if req.team_ids is not None:
