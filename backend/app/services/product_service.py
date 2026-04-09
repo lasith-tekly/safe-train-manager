@@ -48,6 +48,7 @@ class ProductService:
                 short_code=product.short_code,
                 description=product.description,
                 status=product.status.value if isinstance(product.status, ProductStatus) else product.status,
+                train_id=product.train_id,
                 team_count=team_count,
                 created_at=product.created_at,
                 updated_at=product.updated_at

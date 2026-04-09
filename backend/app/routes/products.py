@@ -98,6 +98,7 @@ def create_product(
         short_code=product.short_code,
         description=product.description,
         status=product.status.value if isinstance(product.status, ProductStatus) else product.status,
+        train_id=product.train_id,
         team_count=0,
         created_at=product.created_at,
         updated_at=product.updated_at
