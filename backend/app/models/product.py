@@ -1,7 +1,7 @@
 import uuid
 import enum
 from datetime import datetime
-from sqlalchemy import Column, String, Text, DateTime, Enum as SQLEnum
+from sqlalchemy import Column, String, Text, DateTime, ForeignKey, Enum as SQLEnum
 from sqlalchemy.orm import relationship
 
 from app.database import Base
@@ -28,6 +28,8 @@ class Product(Base):
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
     updated_at = Column(DateTime, nullable=True, onupdate=datetime.utcnow)
     created_by = Column(String(36), nullable=True)
+    train_id = Column(String(36), ForeignKey("trains.id", ondelete="SET NULL"),
+                      nullable=True, index=True)
 
     # Relationships
     roadmap_versions = relationship(
