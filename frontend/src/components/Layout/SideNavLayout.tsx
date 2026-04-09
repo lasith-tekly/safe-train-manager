@@ -216,8 +216,9 @@ export const SideNavLayout: React.FC<SideNavLayoutProps> = ({ children }) => {
                 fontSize: 10, fontWeight: 700,
                 padding: '3px 10px', borderRadius: 20,
                 textTransform: 'uppercase', letterSpacing: '.06em',
-                background: isAdmin ? '#1677ff' : '#16a34a',
-                color: '#fff',
+                background: isAdmin ? '#e6f4ff' : '#f6ffed',
+                color: isAdmin ? '#1677ff' : '#16a34a',
+                border: `1px solid ${isAdmin ? '#91caff' : '#b7eb8f'}`,
                 boxShadow: '0 1px 4px rgba(0,0,0,0.18)',
               }}>
                 {user?.role || 'guest'}
@@ -225,24 +226,23 @@ export const SideNavLayout: React.FC<SideNavLayoutProps> = ({ children }) => {
 
               {/* Username — white on dark header */}
               <span style={{
-                fontSize: 13, fontWeight: 500, color: '#fff',
-                opacity: 0.9,
+                fontSize: 13, fontWeight: 500, color: '#374151',
               }}>
                 {user?.username || 'User'}
               </span>
 
               {/* Divider */}
-              <span style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.2)' }} />
+              <span style={{ width: 1, height: 16, background: '#e5e7eb' }} />
 
               {/* Sign out — ghost button for dark bg */}
               <button
                 onClick={logout}
                 style={{
-                  background: 'rgba(255,255,255,0.1)',
-                  border: '1px solid rgba(255,255,255,0.25)',
+                  background: 'none',
+                  border: '1px solid #e5e7eb',
                   borderRadius: 6, cursor: 'pointer',
                   padding: '4px 12px', fontSize: 12,
-                  color: '#fff', opacity: 0.85,
+                  color: '#6b7280', opacity: 1,
                   transition: 'all .15s',
                 }}
                 onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
