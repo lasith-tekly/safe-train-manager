@@ -6,7 +6,7 @@ from app.routes.products import router as products_router
 from app.routes.teams import router as teams_router
 # from app.routes.features import router as features_router  # Old - removed for V4
 from app.routes.jira import router as jira_router
-from app.routes.dashboard import router as dashboard_router
+# from app.routes.dashboard import router as dashboard_router  # Legacy — disabled
 from app.routes.global_settings import router as global_settings_router
 from app.routes.team_members import router as team_members_router
 from app.routes.pis import router as pis_router
@@ -73,7 +73,7 @@ app.include_router(teams_router)
 app.include_router(team_members_router)
 # app.include_router(features_router)  # Old - removed for V4
 app.include_router(jira_router)
-app.include_router(dashboard_router)
+# app.include_router(dashboard_router)  # Legacy — disabled
 app.include_router(global_settings_router)
 app.include_router(pis_router)
 app.include_router(holidays_router)
