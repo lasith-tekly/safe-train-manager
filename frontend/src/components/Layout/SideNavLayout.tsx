@@ -87,7 +87,7 @@ export const SideNavLayout: React.FC<SideNavLayoutProps> = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, logout, isAdmin, isSuperAdmin, isReadOnly } = useAuth();
+  const { user, logout, isAdmin, isSuperAdmin, isReadOnly, isPO } = useAuth();
   const menuItems = buildMenuItems(isSuperAdmin, isReadOnly);
 
   const getSelectedKeys = (): string[] => {
@@ -211,44 +211,55 @@ export const SideNavLayout: React.FC<SideNavLayoutProps> = ({ children }) => {
               </div>
             </Tooltip>
 
-            {/* Role badge + username + logout */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              {/* Role pill — bright colours visible on dark header */}
-              <span style={{
-                fontSize: 10, fontWeight: 700,
-                padding: '3px 10px', borderRadius: 20,
-                textTransform: 'uppercase', letterSpacing: '.06em',
-                background: isAdmin ? '#e6f4ff' : '#f6ffed',
-                color: isAdmin ? '#1677ff' : '#16a34a',
-                border: `1px solid ${isAdmin ? '#91caff' : '#b7eb8f'}`,
-                boxShadow: '0 1px 4px rgba(0,0,0,0.18)',
+            {/* User info + logout */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+
+              {/* Avatar circle with initials */}
+              <div style={{
+                width: 32, height: 32, borderRadius: '50%',
+                background: isSuperAdmin ? '#1677ff' :
+                            isAdmin ? '#1677ff' :
+                            isPO ? '#16a34a' : '#6b7280',
+                display: 'flex', alignItems: 'center',
+                justifyContent: 'center', flexShrink: 0,
               }}>
-                {user?.role || 'guest'}
-              </span>
+                <span style={{
+                  color: '#fff', fontSize: 12, fontWeight: 700,
+                  textTransform: 'uppercase',
+                }}>
+                  {(user?.username || 'U').slice(0, 2)}
+                </span>
+              </div>
 
-              {/* Username — white on dark header */}
-              <span style={{
-                fontSize: 13, fontWeight: 500, color: '#374151',
-              }}>
-                {user?.username || 'User'}
-              </span>
+              {/* Username + role label stacked */}
+              <div style={{ display: 'flex', flexDirection: 'column',
+                lineHeight: 1.2 }}>
+                <span style={{ fontSize: 13, fontWeight: 600,
+                  color: '#111827' }}>
+                  {user?.username || 'User'}
+                </span>
+                <span style={{ fontSize: 10, color: '#9ca3af',
+                  textTransform: 'capitalize', letterSpacing: '.02em' }}>
+                  {user?.role || 'guest'}
+                </span>
+              </div>
 
-              {/* Divider */}
-              <span style={{ width: 1, height: 16, background: '#e5e7eb' }} />
+              {/* Thin divider */}
+              <span style={{ width: 1, height: 20,
+                background: '#e5e7eb', margin: '0 4px' }} />
 
-              {/* Sign out — ghost button for dark bg */}
+              {/* Sign out — text link style */}
               <button
                 onClick={logout}
                 style={{
-                  background: 'none',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: 6, cursor: 'pointer',
-                  padding: '4px 12px', fontSize: 12,
-                  color: '#6b7280', opacity: 1,
-                  transition: 'all .15s',
+                  background: 'none', border: 'none',
+                  cursor: 'pointer', padding: '4px 6px',
+                  fontSize: 12, color: '#6b7280',
+                  borderRadius: 4, transition: 'color .15s',
                 }}
-                onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
-                onMouseLeave={e => (e.currentTarget.style.opacity = '0.85')}
+                onMouseEnter={e => (e.currentTarget.style.color = '#ef4444')}
+                onMouseLeave={e => (e.currentTarget.style.color = '#6b7280')}
+                title="Sign out"
               >
                 Sign out
               </button>
