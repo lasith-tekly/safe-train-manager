@@ -3,6 +3,13 @@ import axios from 'axios';
 
 const API = 'http://localhost:8000';
 
+// Set axios header synchronously on module load
+// This runs before any React rendering or React Query calls
+const storedToken = localStorage.getItem('amadeus_access_token');
+if (storedToken) {
+  axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+}
+
 export interface AuthUser {
   id: string;
   username: string;
