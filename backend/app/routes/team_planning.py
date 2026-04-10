@@ -24,6 +24,7 @@ from app.schemas.team_planning import (
     AcknowledgeOrphanRequest
 )
 from app.services.team_planning_service import TeamPlanningService
+from app.dependencies.auth import get_current_user
 
 router = APIRouter(prefix="/api", tags=["Team Planning"])
 
@@ -44,7 +45,8 @@ def _normalize_optional_version_id(version_id: Optional[str]) -> Optional[str]:
 def get_team_planning(
     team_id: str,
     pi_id: str = Query(..., description="PI UUID"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user),
 ):
     """
     Get team's planning items for a PI.
@@ -57,6 +59,10 @@ def get_team_planning(
     
     Automatically creates or uses single draft plan for this team+PI.
     """
+    # PO can only access their assigned teams
+    from app.dependencies.auth import check_team_access
+    check_team_access(team_id, current_user, db)
+
     try:
         print(f"DEBUG planning: team={team_id}, pi={pi_id}")
         
