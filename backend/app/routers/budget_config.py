@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.services.budget_config_service import BudgetConfigService
+from app.dependencies.auth import get_train_context
 from app.models.feature_budget_allocation import FeatureBudgetLineAllocation
 from app.models.roadmap_v4 import RoadmapFeature
 from app.schemas.budget_config import (
@@ -50,7 +51,10 @@ def _calculate_consumed_amount(db: Session, product_budget) -> float:
 # ============= Fiscal Year Endpoints =============
 
 @router.get("/fiscal-years", response_model=FiscalYearListResponse)
-def get_fiscal_years(db: Session = Depends(get_db)):
+def get_fiscal_years(
+    db: Session = Depends(get_db),
+    train_id: Optional[str] = Depends(get_train_context),
+):
     """Get all fiscal years."""
     fiscal_years = BudgetConfigService.get_fiscal_years(db)
     return FiscalYearListResponse(data=fiscal_years)

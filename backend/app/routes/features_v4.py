@@ -21,6 +21,8 @@ from app.services.calculation_service import CalculationService
 from app.services.validation_service_v4 import ValidationServiceV4
 from app.models.global_settings import GlobalSettings
 from app.models.roadmap_v4 import RoadmapFeature
+from app.dependencies.auth import get_train_context
+from app.models.product import Product
 
 router = APIRouter(prefix="/api/features", tags=["Features V4"])
 
@@ -128,15 +130,36 @@ def list_features(
     status: Optional[str] = Query(None),
     page: int = Query(1, ge=1),
     page_size: int = Query(50, ge=1, le=100),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    train_id: Optional[str] = Depends(get_train_context),
 ):
     """List features with filters and pagination"""
+    # If train_id scoping needed and no product_id specified,
+    # get all product_ids for this train first
+    train_product_ids: Optional[List[str]] = None
+    if train_id is not None and not product_id:
+        train_products = db.query(Product.id).filter(
+            Product.train_id == train_id
+        ).all()
+        train_product_ids = [str(p.id) for p in train_products]
+        if not train_product_ids:
+            return FeatureListResponse(data=[], total=0, page=page,
+                                       page_size=page_size)
+
     service = FeatureServiceV4(db)
     result = service.list_features(product_id, budget_line_id, year, status, page, page_size)
-    
+
+    # Post-filter by train if needed
+    if train_id is not None and train_product_ids is not None and result.get('data'):
+        result['data'] = [
+            f for f in result['data']
+            if str(f.product_id) in train_product_ids
+        ]
+        result['total'] = len(result['data'])
+
     # Serialize all features with budget line names
     serialized_features = [serialize_feature(feature) for feature in result['data']]
-    
+
     return {
         "data": serialized_features,
         "total": result['total'],
