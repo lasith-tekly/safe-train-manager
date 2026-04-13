@@ -24,7 +24,6 @@ import {
 import {
   PlusOutlined,
   SaveOutlined,
-  DeleteOutlined,
   EditOutlined,
   CloseOutlined,
   UserOutlined,
@@ -32,7 +31,7 @@ import {
   UserAddOutlined
 } from '@ant-design/icons';
 import type { Team, TeamMember, TeamMemberCreate, TeamMemberUpdate, MemberRole } from '../../../types';
-import { getTeamMembers, createTeamMember, updateTeamMember, deleteTeamMember, getPIs } from '../../../services/api';
+import { getTeamMembers, createTeamMember, updateTeamMember, getPIs } from '../../../services/api';
 import axios from 'axios';
 
 const { Text } = Typography;
@@ -194,19 +193,6 @@ export const ManageTeamPanel: React.FC<ManageTeamPanelProps> = ({
     }
   };
 
-  const handleDeleteMember = async (memberId: string) => {
-    if (!team) return;
-    
-    try {
-      await deleteTeamMember(team.id, memberId);
-      message.success('Member removed');
-      loadMembers();
-      onUpdate?.();
-    } catch (error) {
-      message.error('Failed to remove member');
-    }
-  };
-
   const handleSoftRemoveMember = async (memberId: string) => {
     if (!team || !selectedPiId) return;
 
@@ -253,16 +239,6 @@ export const ManageTeamPanel: React.FC<ManageTeamPanelProps> = ({
     (m as any).left_after_pi_id !== null &&
     (m as any).left_after_pi_id !== undefined
   );
-
-  // 3. Members not yet joined (completely hidden from this PI view)
-  // These have effective_from_pi_id set to a FUTURE PI
-  // Backend returns is_active: false for them
-  // We don't show them at all in past PIs
-  const notYetJoined = members.filter(m =>
-    (m as any).is_active === false &&
-    !(m as any).left_after_pi_id
-  );
-  // notYetJoined → not rendered anywhere in this PI view
 
   const getRoleCounts = () => {
     const counts: Record<string, number> = {};

@@ -22,7 +22,7 @@ import {
   Space
 } from 'antd';
 import { SaveOutlined, UserOutlined, WarningOutlined } from '@ant-design/icons';
-import type { Team, PI, MemberPIAllocation, MemberPIAllocationCreate, IterationMemberLeave, MemberIterationProductivity, MemberIterationProductivityCreate, TeamMember } from '../../../types';
+import type { Team, PI, MemberPIAllocation, MemberPIAllocationCreate, IterationMemberLeave, MemberIterationProductivity, MemberIterationProductivityCreate } from '../../../types';
 import { getTeamPIAllocations, bulkCreatePIAllocations, getPIs, getComponentHats, getTeamIterationLeave, createIterationMemberLeave, updateIterationMemberLeave, getTeamIterationProductivity, bulkCreateIterationProductivity, getTeamMembers } from '../../../services/api';
 
 const { Text, Title } = Typography;

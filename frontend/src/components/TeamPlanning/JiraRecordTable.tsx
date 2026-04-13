@@ -516,11 +516,6 @@ export const JiraRecordTable: React.FC<JiraRecordTableProps> = ({ items, disable
     },
   ];
   
-  const needsBreakdownCount = items.filter(
-    i => (i.status === 'accepted' || i.status === 'modified') && 
-    (i.dev_effort === 0 && i.pd_effort === 0 && i.qa_effort === 0)
-  ).length;
-  
   return (
     <>
       {/* Warning banner when editing after approval */}
