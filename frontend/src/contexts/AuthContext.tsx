@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-
-const API = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+import { API_BASE } from '../config/api';
 
 // Set axios header synchronously on module load
 // This runs before any React rendering or React Query calls
@@ -53,7 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const fetchMe = useCallback(async (token: string): Promise<AuthUser | null> => {
     try {
       setAuthHeader(token);
-      const res = await axios.get(`${API}/api/auth/me`);
+      const res = await axios.get(`${API_BASE}/api/auth/me`);
       return res.data;
     } catch {
       return null;
@@ -73,7 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const refresh = localStorage.getItem('amadeus_refresh_token');
         if (refresh) {
           try {
-            const res = await axios.post(`${API}/api/auth/refresh`,
+            const res = await axios.post(`${API_BASE}/api/auth/refresh`,
               { refresh_token: refresh });
             const newToken = res.data.access_token;
             localStorage.setItem('amadeus_access_token', newToken);
@@ -90,7 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [fetchMe]);
 
   const login = async (username: string, password: string) => {
-    const res = await axios.post(`${API}/api/auth/login`, { username, password });
+    const res = await axios.post(`${API_BASE}/api/auth/login`, { username, password });
     const { access_token, refresh_token } = res.data;
     localStorage.setItem('amadeus_access_token', access_token);
     localStorage.setItem('amadeus_refresh_token', refresh_token);
@@ -116,7 +115,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const refresh = localStorage.getItem('amadeus_refresh_token');
             if (!refresh) { logout(); return Promise.reject(err); }
             const res = await axios.post(
-              `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/auth/refresh`,
+              `${API_BASE}/api/auth/refresh`,
               { refresh_token: refresh }
             );
             const newToken = res.data.access_token;

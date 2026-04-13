@@ -8,8 +8,7 @@ import React, { useState, useEffect } from 'react';
 import { Drawer, Table, Button, Space, Tag, Tooltip, Alert, Modal, Input, message } from 'antd';
 import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
 import axios from 'axios';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+import { API as API_BASE_URL } from '../../config/api';
 
 interface PMReviewPanelProps {
   open: boolean;
@@ -58,7 +57,7 @@ const PMReviewPanel: React.FC<PMReviewPanelProps> = ({
     setLoading(true);
     try {
       const res = await axios.get(
-        `${API_BASE_URL}/api/teams/${teamId}/planning/review`,
+        `${API_BASE_URL}/teams/${teamId}/planning/review`,
         { params: { pi_id: piId } }
       );
       setReviewItems(res.data.items);
@@ -73,7 +72,7 @@ const PMReviewPanel: React.FC<PMReviewPanelProps> = ({
     try {
       console.log('Approving:', record.jira_record_id);
       await axios.post(
-        `${API_BASE_URL}/api/teams/${teamId}/planning/${record.jira_record_id}/review`,
+        `${API_BASE_URL}/teams/${teamId}/planning/${record.jira_record_id}/review`,
         { action: 'approve' }
       );
       setReviewItems(prev => prev.map(i =>
@@ -104,7 +103,7 @@ const PMReviewPanel: React.FC<PMReviewPanelProps> = ({
     try {
       console.log('Rejecting:', rejectingItem.jira_record_id, 'reason:', rejectReason);
       await axios.post(
-        `${API_BASE_URL}/api/teams/${teamId}/planning/${rejectingItem.jira_record_id}/review`,
+        `${API_BASE_URL}/teams/${teamId}/planning/${rejectingItem.jira_record_id}/review`,
         { action: 'reject', reason: rejectReason }
       );
       setReviewItems(prev => prev.map(i =>
@@ -126,7 +125,7 @@ const PMReviewPanel: React.FC<PMReviewPanelProps> = ({
     try {
       console.log('Completing review for team:', teamId, 'pi:', piId);
       const response = await axios.post(
-        `${API_BASE_URL}/api/teams/${teamId}/planning/review/complete`,
+        `${API_BASE_URL}/teams/${teamId}/planning/review/complete`,
         { pi_id: piId }
       );
       console.log('Review complete:', response.data);

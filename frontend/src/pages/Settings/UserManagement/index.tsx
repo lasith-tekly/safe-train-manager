@@ -3,8 +3,7 @@ import { Table, Button, Modal, Form, Input, Select, Switch, Tag,
          message, Space, Popconfirm } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import axios from 'axios';
-
-const API = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+import { API } from '../../../config/api';
 
 const ROLE_COLORS: Record<string, string> = {
   superadmin: 'purple',
@@ -26,9 +25,9 @@ export default function UserManagementPage() {
     setLoading(true);
     try {
       const [u, tr, tm] = await Promise.all([
-        axios.get(`${API}/api/users`),
-        axios.get(`${API}/api/trains`),
-        axios.get(`${API}/api/teams`),
+        axios.get(`${API}/users`),
+        axios.get(`${API}/trains`),
+        axios.get(`${API}/teams`),
       ]);
       setUsers(u.data.data);
       setTrains(tr.data.data);
@@ -62,7 +61,7 @@ export default function UserManagementPage() {
     try {
       const values = await form.validateFields();
       if (editingUser) {
-        await axios.put(`${API}/api/users/${editingUser.id}`, {
+        await axios.put(`${API}/users/${editingUser.id}`, {
           email: values.email,
           role: values.role,
           train_id: values.train_id || null,
@@ -72,7 +71,7 @@ export default function UserManagementPage() {
         });
         message.success('User updated');
       } else {
-        await axios.post(`${API}/api/users`, {
+        await axios.post(`${API}/users`, {
           username: values.username,
           email: values.email,
           password: values.password,
@@ -91,7 +90,7 @@ export default function UserManagementPage() {
 
   const handleDelete = async (id: string) => {
     try {
-      await axios.delete(`${API}/api/users/${id}`);
+      await axios.delete(`${API}/users/${id}`);
       message.success('User deleted');
       fetchAll();
     } catch { message.error('Delete failed'); }

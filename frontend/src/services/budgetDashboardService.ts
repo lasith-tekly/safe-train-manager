@@ -2,8 +2,7 @@
  * Budget Dashboard API service
  */
 import axios from 'axios';
-
-const API_BASE_URL = 'http://127.0.0.1:8000';
+import { API as API_BASE_URL } from '../config/api';
 
 // Types
 export interface FiscalYearSummary {
@@ -127,7 +126,7 @@ export const getProductsOverview = async (
   fiscalYearId: string
 ): Promise<ProductsOverviewResponse> => {
   const response = await axios.get(
-    `${API_BASE_URL}/api/budget/dashboard/products`,
+    `${API_BASE_URL}/budget/dashboard/products`,
     { params: { fiscal_year_id: fiscalYearId } }
   );
   return response.data;
@@ -139,7 +138,7 @@ export const getProductDetail = async (
 ): Promise<ProductDetailResponse> => {
   const params = budgetVersionId ? { budget_version_id: budgetVersionId } : {};
   const response = await axios.get(
-    `${API_BASE_URL}/api/budget/dashboard/product/${productId}`,
+    `${API_BASE_URL}/budget/dashboard/product/${productId}`,
     { params }
   );
   return response.data;
@@ -149,7 +148,7 @@ export const getBudgetLineDetail = async (
   lineId: string
 ): Promise<BudgetLineDetailResponse> => {
   const response = await axios.get(
-    `${API_BASE_URL}/api/budget/dashboard/line/${lineId}`
+    `${API_BASE_URL}/budget/dashboard/line/${lineId}`
   );
   return response.data;
 };
@@ -158,7 +157,7 @@ export const getChartData = async (
   lineId: string
 ): Promise<ChartDataResponse> => {
   const response = await axios.get(
-    `${API_BASE_URL}/api/budget/dashboard/line/${lineId}/chart-data`
+    `${API_BASE_URL}/budget/dashboard/line/${lineId}/chart-data`
   );
   return response.data;
 };

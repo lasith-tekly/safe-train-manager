@@ -3,8 +3,7 @@ import { Table, Button, Modal, Form, Input, Switch,
          Tag, message, Space, Popconfirm } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import axios from 'axios';
-
-const API = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+import { API } from '../../../config/api';
 
 export default function TrainManagementPage() {
   const [trains, setTrains] = useState<any[]>([]);
@@ -16,7 +15,7 @@ export default function TrainManagementPage() {
   const fetchTrains = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API}/api/trains`);
+      const res = await axios.get(`${API}/trains`);
       setTrains(res.data.data);
     } catch { message.error('Failed to load trains'); }
     finally { setLoading(false); }
@@ -40,10 +39,10 @@ export default function TrainManagementPage() {
     try {
       const values = await form.validateFields();
       if (editingTrain) {
-        await axios.put(`${API}/api/trains/${editingTrain.id}`, values);
+        await axios.put(`${API}/trains/${editingTrain.id}`, values);
         message.success('Train updated');
       } else {
-        await axios.post(`${API}/api/trains`, values);
+        await axios.post(`${API}/trains`, values);
         message.success('Train created');
       }
       setModalOpen(false);
@@ -55,7 +54,7 @@ export default function TrainManagementPage() {
 
   const handleDelete = async (id: string) => {
     try {
-      await axios.delete(`${API}/api/trains/${id}`);
+      await axios.delete(`${API}/trains/${id}`);
       message.success('Train deleted');
       fetchTrains();
     } catch { message.error('Delete failed'); }

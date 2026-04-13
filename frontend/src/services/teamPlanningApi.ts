@@ -8,6 +8,7 @@
  */
 
 import axios from 'axios';
+import { API as API_BASE_URL } from '../config/api';
 import type {
   TeamPlanningResponse,
   TeamCapacity,
@@ -22,8 +23,6 @@ import type {
   ApproveItemRequest,
   RejectItemRequest,
 } from '../types/teamPlanning';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 // Normalize numeric fields that come back as strings from API
 const normalizeItem = (item: any): TeamPlanningItem => ({
@@ -179,7 +178,7 @@ export const pmReviewApi = {
    * Get pending planning reviews for a product
    */
   getPendingReviews: async (productId: string, piId?: string): Promise<any> => {
-    const response = await axios.get(`${API_BASE_URL}/api/products/${productId}/planning-reviews`, {
+    const response = await axios.get(`${API_BASE_URL}/products/${productId}/planning-reviews`, {
       params: piId ? { pi_id: piId } : {},
     });
     return response.data;
@@ -191,7 +190,7 @@ export const pmReviewApi = {
    */
   approveItem: async (planningId: string, data?: ApproveItemRequest): Promise<TeamPlanningItem> => {
     const response = await axios.post(
-      `${API_BASE_URL}/api/planning/${planningId}/approve`,
+      `${API_BASE_URL}/planning/${planningId}/approve`,
       data || {}
     );
     return response.data;
@@ -201,7 +200,7 @@ export const pmReviewApi = {
    * Reject planning item
    */
   rejectItem: async (planningId: string, data: RejectItemRequest): Promise<TeamPlanningItem> => {
-    const response = await axios.post(`${API_BASE_URL}/api/planning/${planningId}/reject`, data);
+    const response = await axios.post(`${API_BASE_URL}/planning/${planningId}/reject`, data);
     return response.data;
   },
 
@@ -210,7 +209,7 @@ export const pmReviewApi = {
    * NOTE: Does NOT lock items
    */
   bulkApprove: async (planningIds: string[]): Promise<{ success: boolean; count: number }> => {
-    const response = await axios.post(`${API_BASE_URL}/api/planning/bulk-approve`, {
+    const response = await axios.post(`${API_BASE_URL}/planning/bulk-approve`, {
       planning_ids: planningIds,
     });
     return response.data;
@@ -223,7 +222,7 @@ export const pmReviewApi = {
     planningIds: string[],
     reason: string
   ): Promise<{ success: boolean; count: number }> => {
-    const response = await axios.post(`${API_BASE_URL}/api/planning/bulk-reject`, {
+    const response = await axios.post(`${API_BASE_URL}/planning/bulk-reject`, {
       planning_ids: planningIds,
       reason,
     });
@@ -235,7 +234,7 @@ export const pmReviewApi = {
    * NOTE: No expiry - all unread notifications returned
    */
   getNotifications: async (isRead?: boolean): Promise<{ notifications: PlanningNotification[]; unread_count: number }> => {
-    const response = await axios.get(`${API_BASE_URL}/api/notifications/planning`, {
+    const response = await axios.get(`${API_BASE_URL}/notifications/planning`, {
       params: isRead !== undefined ? { is_read: isRead } : {},
     });
     return response.data;
@@ -245,6 +244,6 @@ export const pmReviewApi = {
    * Mark notification as read
    */
   markNotificationRead: async (notificationId: string): Promise<void> => {
-    await axios.post(`${API_BASE_URL}/api/notifications/${notificationId}/read`);
+    await axios.post(`${API_BASE_URL}/notifications/${notificationId}/read`);
   },
 };
