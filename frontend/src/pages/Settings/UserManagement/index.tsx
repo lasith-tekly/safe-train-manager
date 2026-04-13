@@ -4,7 +4,7 @@ import { Table, Button, Modal, Form, Input, Select, Switch, Tag,
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import axios from 'axios';
 
-const API = 'http://localhost:8000';
+const API = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 const ROLE_COLORS: Record<string, string> = {
   superadmin: 'purple',

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 
-const API = 'http://localhost:8000';
+const API = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 // Set axios header synchronously on module load
 // This runs before any React rendering or React Query calls
@@ -116,7 +116,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const refresh = localStorage.getItem('amadeus_refresh_token');
             if (!refresh) { logout(); return Promise.reject(err); }
             const res = await axios.post(
-              'http://localhost:8000/api/auth/refresh',
+              `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/auth/refresh`,
               { refresh_token: refresh }
             );
             const newToken = res.data.access_token;

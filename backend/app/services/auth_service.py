@@ -1,3 +1,4 @@
+import os
 import uuid
 from datetime import datetime, timedelta
 from typing import Optional
@@ -6,10 +7,10 @@ from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 from app.models.auth import User, UserTeamAssignment
 
-SECRET_KEY = "amadeus-elevate-secret-2026"  # move to env var later
+SECRET_KEY = os.getenv("SECRET_KEY", "amadeus-elevate-secret-2026-change-in-prod")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 480  # 8 hours for dev
-REFRESH_TOKEN_EXPIRE_DAYS = 7
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "480"))
+REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "7"))
 
 
 def hash_password(password: str) -> str:

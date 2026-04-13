@@ -4,7 +4,7 @@ import { Table, Button, Modal, Form, Input, Switch,
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import axios from 'axios';
 
-const API = 'http://localhost:8000';
+const API = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 export default function TrainManagementPage() {
   const [trains, setTrains] = useState<any[]>([]);
