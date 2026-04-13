@@ -29,10 +29,11 @@ export default function ChangePasswordPage() {
         new_password: values.new_password,
       });
       setDone(true);
-    } catch (err: any) {
-      message.error(
-        err.response?.data?.detail || 'Failed to change password'
-      );
+    } catch (err) {
+      const detail = err instanceof Error
+        ? err.message
+        : (err as any)?.response?.data?.detail;
+      message.error(detail || 'Failed to change password');
     } finally {
       setLoading(false);
     }
