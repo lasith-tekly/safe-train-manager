@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Tag, message, Input, Empty, Skeleton, Typography, Select } from 'antd';
+import { Table, Button, Tag, message, Input, Skeleton, Typography, Select } from 'antd';
+import { useAuth } from '../../../contexts/AuthContext';
+import { AppEmptyState } from '../../../components/AppEmptyState';
 import { SearchOutlined, UserOutlined } from '@ant-design/icons';
 import { TeamFormPanel } from './TeamFormPanel';
 import { TeamMembersPanel } from './TeamMembersPanel';
@@ -16,6 +18,7 @@ import styles from './TeamsTab.module.css';
 const currentYear = new Date().getFullYear();
 
 export const TeamsTab: React.FC = () => {
+  const { canEdit } = useAuth();
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState('');
@@ -273,9 +276,11 @@ export const TeamsTab: React.FC = () => {
       </div>
 
       {filteredTeams.length === 0 && !searchText ? (
-        <Empty
-          description="No teams configured. Please add teams in Settings > Train Teams."
-          style={{ marginTop: 48 }}
+        <AppEmptyState
+          title="No teams yet"
+          description="Add your first team to start managing capacity and planning."
+          actionLabel={canEdit ? 'Add Team' : undefined}
+          onAction={canEdit ? () => setShowWizard(true) : undefined}
         />
       ) : (
         <div className={styles.mainLayout}>

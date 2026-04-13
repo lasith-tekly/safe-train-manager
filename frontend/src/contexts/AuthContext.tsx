@@ -103,6 +103,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     window.location.href = '/login';
   }, []);
 
+  const sessionExpired = useCallback(() => {
+    clearAuth();
+    window.location.href = '/login?reason=expired';
+  }, []);
+
   // Axios interceptor — auto-refresh on 401
   useEffect(() => {
     const interceptor = axios.interceptors.response.use(
@@ -113,7 +118,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           originalRequest._retry = true;
           try {
             const refresh = localStorage.getItem('amadeus_refresh_token');
-            if (!refresh) { logout(); return Promise.reject(err); }
+            if (!refresh) { sessionExpired(); return Promise.reject(err); }
             const res = await axios.post(
               `${API_BASE}/api/auth/refresh`,
               { refresh_token: refresh }
@@ -128,7 +133,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               `Bearer ${newToken}`;
             return axios(originalRequest);
           } catch {
-            logout();
+            sessionExpired();
             return Promise.reject(err);
           }
         }
@@ -136,7 +141,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     );
     return () => axios.interceptors.response.eject(interceptor);
-  }, [logout]);
+  }, [logout, sessionExpired]);
 
   const isSuperAdmin = user?.role === 'superadmin';
   const isAdmin    = user?.role === 'admin' || isSuperAdmin;

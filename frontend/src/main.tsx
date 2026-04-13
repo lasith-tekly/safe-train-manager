@@ -4,6 +4,7 @@ import { ConfigProvider } from 'antd';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import App from './App';
 import { AuthProvider } from './contexts/AuthContext';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import './index.css';
 
 const theme = {
@@ -25,12 +26,14 @@ const queryClient = new QueryClient({
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <AuthProvider>
-      <QueryClientProvider client={queryClient}>
-        <ConfigProvider theme={theme}>
-          <App />
-        </ConfigProvider>
-      </QueryClientProvider>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <QueryClientProvider client={queryClient}>
+          <ConfigProvider theme={theme}>
+            <App />
+          </ConfigProvider>
+        </QueryClientProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   </React.StrictMode>
 );

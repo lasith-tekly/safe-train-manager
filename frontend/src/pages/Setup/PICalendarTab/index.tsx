@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
+import { AppEmptyState } from '../../../components/AppEmptyState';
 import {
   Card,
   Table,
@@ -687,6 +688,15 @@ export const PICalendarTab: React.FC = () => {
           </Space>
         )}
       </div>
+
+      {pis.length === 0 && (
+        <AppEmptyState
+          title="No Program Increments yet"
+          description="Create your first PI to start planning iterations and capacity."
+          actionLabel={canEdit ? 'Add PI' : undefined}
+          onAction={canEdit ? () => setShowEditModal(true) : undefined}
+        />
+      )}
 
       <Row gutter={16} className={styles.statsRow}>
         <Col span={5}>

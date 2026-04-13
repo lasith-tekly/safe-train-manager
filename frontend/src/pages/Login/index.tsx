@@ -10,6 +10,8 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const isExpired = new URLSearchParams(window.location.search).get('reason') === 'expired';
+
   const handleSubmit = async () => {
     if (!username || !password) {
       setError('Please enter username and password');
@@ -53,6 +55,17 @@ export default function LoginPage() {
             SAFe Train Manager
           </div>
         </div>
+
+        {isExpired && (
+          <div style={{
+            background: '#fff7ed', border: '1px solid #fed7aa',
+            borderRadius: 8, padding: '10px 14px',
+            color: '#c2410c', fontSize: 13, marginBottom: 16,
+            display: 'flex', alignItems: 'center', gap: 8,
+          }}>
+            ⏱ Your session expired. Please sign in again.
+          </div>
+        )}
 
         {/* Form */}
         <div style={{ marginBottom: 16 }}>
