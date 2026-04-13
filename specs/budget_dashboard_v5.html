@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Budget Consumption Dashboard v5 — Amadeus Elevate</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f0f2f5;--surface:#fff;--surface2:#fafafa;
+    --border:#e8eaed;--border2:#d1d5db;
+    --text:#1a1d23;--text2:#6b7280;--muted:#9ca3af;
+    --accent:#1677ff;--accent-bg:#e6f0ff;
+    --purple:#7c3aed;
+    --r:8px;--sh:0 1px 3px rgba(0,0,0,.08);--sh2:0 4px 6px -1px rgba(0,0,0,.07);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.5}
+  .hdr{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100;box-shadow:var(--sh)}
+  .hdr h1{font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px}
+  .hdr h1 i{width:8px;height:8px;background:var(--accent);border-radius:50%;display:inline-block}
+  .hdr-meta{font-size:12px;color:var(--muted);font-family:'IBM Plex Mono',monospace}
+  .body{padding:20px 24px;max-width:1440px;margin:0 auto}
+  .notice{background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:8px 14px;font-size:12px;color:#1d4ed8;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+  /* Filter Bar */
+  .fbar{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:11px 20px;display:flex;align-items:center;gap:0;margin-bottom:16px;box-shadow:var(--sh);flex-wrap:wrap;row-gap:8px}
+  .fg{display:flex;align-items:center;gap:8px;padding-right:20px;margin-right:20px;border-right:1px solid var(--border)}
+  .fg:last-child{border-right:none;padding-right:0;margin-right:0;margin-left:auto}
+  .fl{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+  select{font-family:'IBM Plex Sans',sans-serif;font-size:13px;border:1px solid var(--border2);border-radius:6px;padding:5px 28px 5px 10px;background:var(--surface);color:var(--text);cursor:pointer;outline:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;min-width:190px}
+  select:focus{border-color:var(--accent)}
+  /* Cards */
+  .cards{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;box-shadow:var(--sh);border-top-width:3px}
+  .card .lbl{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+  .card .val{font-size:22px;font-weight:700;font-family:'IBM Plex Mono',monospace;line-height:1.1}
+  .card .sub{font-size:11px;color:var(--text2);margin-top:4px}
+  .ptrack{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:8px}
+  .pfill{height:100%;border-radius:2px}
+  /* Breadcrumb */
+  .breadcrumb{display:flex;align-items:center;gap:4px;font-size:12px;margin-bottom:12px}
+  .bc-item{color:var(--muted);cursor:pointer;padding:3px 8px;border-radius:4px;transition:all .15s}
+  .bc-item:hover{color:var(--accent);background:var(--accent-bg)}
+  .bc-item.active{color:var(--text);font-weight:600;background:#e8eaed;cursor:default}
+  .bc-sep{color:var(--muted);font-size:14px}
+  /* Chip Selector */
+  .selector{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 20px;margin-bottom:16px;box-shadow:var(--sh)}
+  .sel-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px}
+  .sel-title{font-size:13px;font-weight:600}
+  .sel-sub{font-size:11px;color:var(--text2);margin-top:2px}
+  .btn-lnk{font-size:12px;color:var(--accent);cursor:pointer;background:none;border:none;padding:0;font-family:inherit}
+  .btn-lnk:hover{text-decoration:underline}
+  .chips{display:flex;flex-wrap:wrap;gap:7px}
+  .chip{display:flex;align-items:center;gap:6px;padding:4px 12px;border:1px solid var(--border2);border-radius:20px;cursor:pointer;font-size:12px;font-weight:500;transition:all .15s;user-select:none}
+  .chip:hover{border-color:var(--accent)}
+  .chip.on{background:var(--accent-bg);border-color:var(--accent);color:var(--accent)}
+  .dot8{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+  .chip-meta{color:var(--muted);font-weight:400;margin-left:3px;font-size:11px}
+  /* Chart Panel */
+  .cpanel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh2);margin-bottom:16px;overflow:hidden}
+  .cpanel-hdr{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+  .cpanel-title{font-size:14px;font-weight:600}
+  .cpanel-sub{font-size:12px;color:var(--text2);margin-top:2px}
+  .ctrl-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+
+  /* ── Train Operating Cost Toggle Switch ── */
+  .ops-switch-wrap{display:flex;align-items:center;gap:8px;padding:5px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:20px;cursor:pointer;user-select:none;transition:all .2s}
+  .ops-switch-wrap:hover{border-color:var(--purple)}
+  .ops-switch-wrap.on{background:#fdf4ff;border-color:#c084fc}
+  .ops-switch-wrap .sw-track{width:30px;height:16px;background:#d1d5db;border-radius:8px;position:relative;transition:background .2s;flex-shrink:0}
+  .ops-switch-wrap.on .sw-track{background:var(--purple)}
+  .ops-switch-wrap .sw-thumb{width:12px;height:12px;background:#fff;border-radius:50%;position:absolute;top:2px;left:2px;transition:left .2s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+  .ops-switch-wrap.on .sw-thumb{left:16px}
+  .ops-switch-wrap .sw-label{font-size:12px;font-weight:600;color:var(--muted);transition:color .2s}
+  .ops-switch-wrap.on .sw-label{color:var(--purple)}
+  .ops-dot{width:8px;height:8px;background:var(--purple);border-radius:2px;flex-shrink:0}
+  /* divider */
+  .divider-v{width:1px;height:22px;background:var(--border2);margin:0 2px}
+  /* Series toggles */
+  .toggles{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+  .tog{display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none;padding:4px 10px;border-radius:20px;border:1px solid var(--border);transition:all .15s;font-size:12px;font-weight:500}
+  .tog:hover{border-color:var(--accent)}
+  .tog.on.t-b{background:#dbeafe;border-color:#93c5fd;color:#1e40af}
+  .tog.on.t-s{background:#eff6ff;border-color:var(--accent);color:var(--accent)}
+  .tog.on.t-p{background:#fff7ed;border-color:#fb923c;color:#c2410c}
+  .tog.on.t-a{background:#f0fdf4;border-color:#86efac;color:#166534}
+  .tdot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+  /* Quarter strip */
+  .qstrip{display:grid;grid-template-columns:50px repeat(4,1fr);gap:4px;padding:10px 20px 0}
+  .qb{text-align:center;padding:5px 4px;font-size:11px;font-weight:600;border-radius:5px}
+  .qb small{display:block;font-weight:400;font-size:10px;opacity:.8}
+  .q-past{background:#f3f4f6;color:var(--text2)}
+  .q-now{background:#fef9c3;color:#92400e;border:1px solid #fde68a}
+  .q-fut{background:#eff6ff;color:#1d4ed8}
+  .chart-wrap{padding:8px 20px 20px;height:360px}
+  /* Tree Table */
+  .tpanel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);margin-bottom:16px}
+  .tpanel-hdr{padding:11px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface2)}
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  th{padding:8px 13px;text-align:left;font-weight:600;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;background:var(--surface2);border-bottom:1px solid var(--border);white-space:nowrap}
+  th.r,td.r{text-align:right;font-family:'IBM Plex Mono',monospace}
+  td{padding:8px 13px;border-bottom:1px solid var(--border);vertical-align:middle}
+  tr:last-child td{border-bottom:none}
+  .rl0 td{background:#eef2ff;font-weight:700}
+  .rl-ops td{background:#fdf4ff;font-weight:600}
+  .rl1 td{background:#f8f9fa;font-weight:600}
+  .rl1:hover td,.rl2:hover td,.rl3:hover td{background:#f0f4ff}
+  .rl2 td,.rl3 td{background:#fff}
+  .hide{display:none}
+  .xbtn{width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer;color:var(--muted);font-size:9px;border-radius:3px;transition:all .15s;flex-shrink:0}
+  .xbtn:hover{background:var(--border);color:var(--text)}
+  .xbtn.open{transform:rotate(90deg)}
+  .swatch{width:8px;height:8px;border-radius:2px;display:inline-block;margin:0 7px 0 2px;flex-shrink:0}
+  .ucell{display:flex;align-items:center;justify-content:flex-end;gap:7px}
+  .mbar{width:55px;height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+  .mfill{height:100%;border-radius:3px}
+  .bdg{display:inline-flex;align-items:center;padding:1px 7px;border-radius:10px;font-size:10px;font-weight:600}
+  .bg{background:#f0fdf4;color:#15803d}.bo{background:#fff7ed;color:#c2410c}.br{background:#fef2f2;color:#b91c1c}
+  .na{color:var(--muted);font-family:'IBM Plex Mono',monospace}
+  .lvl-tag{font-size:10px;padding:1px 6px;border-radius:10px;font-weight:600;margin-left:6px;vertical-align:middle}
+  .lt-ops{background:#f3e8ff;color:#7c3aed}.lt-p{background:#dcfce7;color:#166534}
+  .lt-b{background:#fff7ed;color:#c2410c}.lt-c{background:#f3f4f6;color:#374151}
+
+  /* ── Reference Section (collapsible) ── */
+  .ref-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
+  .ref-hdr{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;transition:background .15s}
+  .ref-hdr:hover{background:var(--surface2)}
+  .ref-hdr-left{display:flex;align-items:center;gap:10px}
+  .ref-hdr-icon{font-size:14px}
+  .ref-hdr-title{font-size:13px;font-weight:600;color:var(--text2)}
+  .ref-hdr-badge{font-size:11px;padding:1px 8px;border-radius:10px;background:#f3f4f6;color:var(--muted);font-weight:500}
+  .ref-chevron{font-size:11px;color:var(--muted);transition:transform .2s}
+  .ref-chevron.open{transform:rotate(180deg)}
+  .ref-body{display:none;border-top:1px solid var(--border);padding:20px}
+  .ref-body.open{display:block}
+  .ref-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .ref-card{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:14px 16px}
+  .ref-card h4{font-size:12px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:7px}
+  .ref-card h4 span{width:10px;height:10px;border-radius:50%;display:inline-block}
+  .ref-card p{font-size:12px;color:var(--text2);margin-bottom:8px}
+  .formula{background:#1a1d23;border-radius:5px;padding:10px 14px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#e2e8f0;line-height:1.9;margin-top:8px}
+  .formula .comment{color:#64748b}
+  .formula .val{color:#86efac}
+  .formula .label{color:#93c5fd}
+  .ref-example{margin-top:10px;font-size:11px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:5px;padding:8px 12px;color:#166534;font-family:'IBM Plex Mono',monospace;line-height:1.8}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <h1><i></i> Budget Consumption Dashboard</h1>
+  <span class="hdr-meta">FY 2026 · Version: FY2026-Active · Mar 11, 2026</span>
+</div>
+<div class="body">
+  <div class="notice">ℹ️ &nbsp;Mockup v5 — (1) Train Operating Cost toggle switch &nbsp;|&nbsp; (2) Forecast logic moved to collapsible reference section at bottom</div>
+
+  <!-- Filter Bar -->
+  <div class="fbar">
+    <div class="fg"><span class="fl">Year</span><select><option>2026</option><option>2025</option></select></div>
+    <div class="fg">
+      <span class="fl">View Level</span>
+      <select id="lvlSel" onchange="onLevel(this.value)">
+        <option value="train">Train (All)</option>
+        <option value="product" selected>Product</option>
+        <option value="budgetline">Budget Line</option>
+        <option value="category">Category</option>
+      </select>
+    </div>
+    <div class="fg" id="ctxGrp" style="display:none">
+      <span class="fl" id="ctxLbl">—</span>
+      <select id="ctxSel" onchange="onCtx(this.value)"></select>
+    </div>
+  </div>
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb" id="bc"></div>
+
+  <!-- Summary Cards -->
+  <div class="cards">
+    <div class="card" style="border-top-color:#1677ff"><div class="lbl">Total Budget FY2026</div><div class="val">14,908</div><div class="sub">KEUR · Products + Operating</div><div class="ptrack"><div class="pfill" style="width:100%;background:#1677ff"></div></div></div>
+    <div class="card" style="border-top-color:#93c5fd"><div class="lbl">Baseline Q2 (Current)</div><div class="val">3,195</div><div class="sub">KEUR · 3 iter of 14 total</div><div class="ptrack"><div class="pfill" style="width:21%;background:#93c5fd"></div></div></div>
+    <div class="card" style="border-top-color:#1677ff"><div class="lbl">Strategic Planned</div><div class="val">1,936</div><div class="sub">KEUR · Q1 roadmap committed</div><div class="ptrack"><div class="pfill" style="width:22%;background:#1677ff"></div></div></div>
+    <div class="card" style="border-top-color:#fa8c16"><div class="lbl">Planned Consumption</div><div class="val">1,110</div><div class="sub">KEUR · Approved team plans Q1</div><div class="ptrack"><div class="pfill" style="width:13%;background:#fa8c16"></div></div></div>
+    <div class="card" style="border-top-color:#52c41a"><div class="lbl">Actual Consumption</div><div class="val">745</div><div class="sub">KEUR · JIRA records Q1</div><div class="ptrack"><div class="pfill" style="width:8%;background:#52c41a"></div></div></div>
+  </div>
+
+  <!-- Chip Selector -->
+  <div class="selector">
+    <div class="sel-hdr">
+      <div><div class="sel-title" id="selTitle">Select items to display in chart</div><div class="sel-sub" id="selSub"></div></div>
+      <div style="display:flex;gap:12px"><button class="btn-lnk" onclick="selAll()">Select all</button><button class="btn-lnk" onclick="clrAll()">Clear</button></div>
+    </div>
+    <div class="chips" id="chipList"></div>
+  </div>
+
+  <!-- Chart Panel -->
+  <div class="cpanel">
+    <div class="cpanel-hdr">
+      <div>
+        <div class="cpanel-title">Budget Consumption — Quarterly View</div>
+        <div class="cpanel-sub">Bars = theoretical baseline · Lines = strategic / planned / actual consumption</div>
+      </div>
+      <div class="ctrl-row">
+
+        <!-- ── Train Operating Cost Toggle Switch ── -->
+        <div class="ops-switch-wrap" id="opsSwitch" onclick="togOps(this)" title="Include Train Operating Cost budget lines in chart">
+          <div class="sw-track"><div class="sw-thumb"></div></div>
+          <span class="ops-dot"></span>
+          <span class="sw-label">Train Operating Cost</span>
+        </div>
+
+        <div class="divider-v"></div>
+
+        <!-- Series Toggles -->
+        <div class="toggles">
+          <div class="tog on t-b" onclick="togS('b',this)"><span class="tdot" style="background:#93c5fd"></span>Baseline</div>
+          <div class="tog on t-s" onclick="togS('s',this)"><span class="tdot" style="background:#1677ff"></span>Strategic</div>
+          <div class="tog on t-p" onclick="togS('p',this)"><span class="tdot" style="background:#fa8c16"></span>Planned</div>
+          <div class="tog on t-a" onclick="togS('a',this)"><span class="tdot" style="background:#52c41a"></span>Actual</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quarter strip -->
+    <div class="qstrip">
+      <div></div>
+      <div class="qb q-past">Q1 2026<small>4 iter · Past</small></div>
+      <div class="qb q-now">Q2 2026<small>3 iter ★ Now</small></div>
+      <div class="qb q-fut">Q3 2026<small>4 iter · Future</small></div>
+      <div class="qb q-fut">Q4 2026<small>3 iter · Future</small></div>
+    </div>
+    <div class="chart-wrap"><canvas id="chart"></canvas></div>
+  </div>
+
+  <!-- Tree Table -->
+  <div class="tpanel">
+    <div class="tpanel-hdr">
+      <span style="font-size:13px;font-weight:600">📊 Full Budget Hierarchy — Q2 2026</span>
+      <div style="display:flex;gap:12px"><button class="btn-lnk" onclick="xAll(1)">Expand all</button><button class="btn-lnk" onclick="xAll(0)">Collapse all</button></div>
+    </div>
+    <table>
+      <thead><tr>
+        <th style="width:26px"></th><th>Name</th>
+        <th class="r">Total Budget</th><th class="r">Baseline /Q</th>
+        <th class="r">Strategic</th><th class="r">Planned</th><th class="r">Actual</th>
+        <th class="r" style="width:130px">Utilisation</th>
+      </tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+
+  <!-- ── Reference Section — collapsible ── -->
+  <div class="ref-section">
+    <div class="ref-hdr" onclick="togRef(this)">
+      <div class="ref-hdr-left">
+        <span class="ref-hdr-icon">📐</span>
+        <span class="ref-hdr-title">Calculation Reference</span>
+        <span class="ref-hdr-badge">Baseline · Strategic Forecast · Utilisation</span>
+      </div>
+      <span class="ref-chevron" id="refChev">▼</span>
+    </div>
+    <div class="ref-body" id="refBody">
+      <div class="ref-grid">
+
+        <!-- Baseline -->
+        <div class="ref-card">
+          <h4><span style="background:#93c5fd"></span>Baseline Calculation</h4>
+          <p>The theoretical budget allocation per quarter, weighted by the number of PI iterations in that quarter. IP iterations are excluded.</p>
+          <div class="formula">
+<span class="comment">-- Baseline per quarter</span>
+<span class="label">baseline_q</span> = (<span class="label">total_budget</span> × <span class="label">iters_in_q</span>) ÷ <span class="label">total_iters</span>
+
+<span class="comment">-- Example: FM total = 4,345 KEUR, 14 total iters</span>
+Q1 = 4,345 × <span class="val">4</span>/14 = <span class="val">1,241</span> KEUR
+Q2 = 4,345 × <span class="val">3</span>/14 = <span class="val">  931</span> KEUR
+Q3 = 4,345 × <span class="val">4</span>/14 = <span class="val">1,241</span> KEUR
+Q4 = 4,345 × <span class="val">3</span>/14 = <span class="val">  932</span> KEUR</div>
+        </div>
+
+        <!-- Strategic Forecast -->
+        <div class="ref-card">
+          <h4><span style="background:#1677ff"></span>Strategic Forecast (Future Quarters)</h4>
+          <p>Quarters where roadmap planning is committed show actual planned KEUR. Future unplanned quarters redistribute the <em>remaining</em> budget by iteration ratio.</p>
+          <div class="formula">
+<span class="comment">-- Past/current (committed roadmap)</span>
+<span class="label">strategic_q</span> = actual roadmap allocation
+
+<span class="comment">-- Future quarters (forecast)</span>
+<span class="label">remaining</span>   = total_budget − Σ committed_quarters
+<span class="label">rem_iters</span>   = sum of iters in unplanned quarters
+<span class="label">forecast_q</span>  = remaining × iters_in_q ÷ rem_iters</div>
+          <div class="ref-example">
+Example: Total = 14,347 K · Q1 planned = 1,936 K<br>
+Remaining = 12,411 K · rem iters Q2+Q3+Q4 = 10<br>
+Forecast Q2 = 12,411 × 3/10 = <strong>3,723 K</strong><br>
+Forecast Q3 = 12,411 × 4/10 = <strong>4,964 K</strong><br>
+Forecast Q4 = 12,411 × 3/10 = <strong>3,723 K</strong>
+          </div>
+        </div>
+
+        <!-- Utilisation -->
+        <div class="ref-card">
+          <h4><span style="background:#52c41a"></span>Utilisation</h4>
+          <p>Actual consumption as a percentage of total budget allocation for the period.</p>
+          <div class="formula">
+<span class="label">utilisation</span> = actual ÷ total_budget × 100
+
+<span class="comment">-- Colour thresholds</span>
+< 40%   → <span class="val">Green</span>   (on track)
+40–80%  → <span style="color:#fbbf24">Orange</span>  (monitor)
+> 80%   → <span style="color:#f87171">Red</span>     (at risk)</div>
+        </div>
+
+        <!-- Quarter Classification -->
+        <div class="ref-card">
+          <h4><span style="background:#fde68a"></span>Quarter Classification</h4>
+          <p>Quarters are classified relative to today's date to determine Past / Current / Future status.</p>
+          <div class="formula">
+<span class="comment">-- Based on today's date</span>
+<span class="val">Past</span>    → quarter_end   &lt; today
+<span class="val">Current</span> → quarter_start ≤ today ≤ quarter_end
+<span class="val">Future</span>  → quarter_start &gt; today
+
+<span class="comment">-- Quarter boundaries from PI calendar</span>
+<span class="comment">-- (first iter start → last iter end per quarter)</span></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div><!-- /body -->
+
+<script>
+const ITERS=[4,3,4,3],TOTAL=14,QI=1;
+const QLS=['Q1 2026','Q2 2026','Q3 2026','Q4 2026'];
+
+// Train Operating Cost lines — from Budget Configuration (train-level budget lines)
+const OPS_LINES=[
+  {id:'op-infra',name:'Infrastructure',total:250,cats:[{name:'Cloud Hosting',total:150},{name:'On-Prem',total:100}]},
+  {id:'op-tool', name:'Tooling & Licences',total:180,cats:[{name:'Dev Tools',total:100},{name:'Monitoring',total:80}]},
+  {id:'op-other',name:'Other Operating Costs',total:131,cats:[{name:'Travel',total:60},{name:'Misc',total:71}]},
+];
+
+const PRODS=[
+  {id:'fm', name:'FM',fullName:'Flight Management (FM)',color:'#3b82f6',total:4345,
+   lines:[{id:'fm-ser',name:'SER',total:789,cats:[{name:'Support',total:350},{name:'Consulting',total:250},{name:'Other',total:189}]},{id:'fm-mnt',name:'FMMNT',total:2145,cats:[{name:'Core Maint',total:1200},{name:'BAU',total:600},{name:'Hotfix',total:345}]},{id:'fm-pe',name:'FMPE',total:849,cats:[{name:'Product Dev',total:600},{name:'Innovation',total:249}]},{id:'fm-prj',name:'FMPRJ',total:247,cats:[{name:'Alpha',total:150},{name:'Beta',total:97}]},{id:'fm-com',name:'COM',total:315,cats:[{name:'Community',total:200},{name:'Comms',total:115}]}]},
+  {id:'brs',name:'BRS',fullName:'Baggage Reconciliation (BRS)',color:'#8b5cf6',total:3423,
+   lines:[{id:'brs-ser',name:'BRSSER',total:105,cats:[{name:'Bespoke',total:80},{name:'Services',total:25}]},{id:'brs-mnt',name:'BRSMNT',total:489,cats:[{name:'Maint',total:350},{name:'BAU',total:139}]},{id:'brs-pe',name:'BRSPE',total:2297,cats:[{name:'Core',total:1500},{name:'New Feat',total:500},{name:'R&D',total:297}]},{id:'brs-prj',name:'BRSPRJ',total:532,cats:[{name:'Alpha',total:300},{name:'Beta',total:232}]}]},
+  {id:'aro',name:'ARO',fullName:'Amadeus Ramp Ops (ARO)',color:'#06b6d4',total:1493,
+   lines:[{id:'aro-pe',name:'AROPE',total:1284,cats:[{name:'Core',total:800},{name:'Evolution',total:484}]},{id:'aro-prj',name:'AROPRJ',total:209,cats:[{name:'Projects',total:209}]}]},
+  {id:'ite',name:'ITE',fullName:'IT Excellence (ITE)',color:'#f59e0b',total:1444,
+   lines:[{id:'ite-ssi',name:'SSI',total:717,cats:[{name:'Program A',total:400},{name:'Program B',total:317}]},{id:'ite-smt',name:'SMT',total:87,cats:[{name:'Smoothies',total:87}]},{id:'ite-swevo',name:'SWEVO',total:285,cats:[{name:'Airlines',total:200},{name:'Other',total:85}]},{id:'ite-other',name:'ITE Other',total:355,cats:[{name:'Galaxy',total:217},{name:'IMG',total:65},{name:'TTI',total:73}]}]},
+  {id:'apv',name:'APV',fullName:'APV',color:'#10b981',total:26,lines:[{id:'apv-mnt',name:'MNT',total:26,cats:[{name:'Maint',total:26}]}]},
+  {id:'dmx',name:'DMX',fullName:'Delivery Management (DMX)',color:'#ef4444',total:55,lines:[{id:'dmx-core',name:'DMX Core',total:55,cats:[{name:'DMX',total:55}]}]},
+];
+
+const STRAT_Q1={fm:936,brs:620,aro:290,ite:64,apv:0,dmx:0};
+const PLANNED_Q1={fm:510,brs:360,aro:180,ite:60,apv:0,dmx:0};
+const ACTUAL_Q1={fm:340,brs:240,aro:120,ite:45,apv:0,dmx:0};
+const OPS_TOTAL=OPS_LINES.reduce((s,o)=>s+o.total,0);
+
+function bs(tot,qi){return Math.round(tot*ITERS[qi]/TOTAL)}
+function stratForecast(qi){
+  if(qi===0)return Object.values(STRAT_Q1).reduce((a,b)=>a+b,0);
+  const prodTotal=PRODS.reduce((s,p)=>s+p.total,0);
+  const q1=Object.values(STRAT_Q1).reduce((a,b)=>a+b,0);
+  const rem=prodTotal-q1,remIters=ITERS.slice(1).reduce((a,b)=>a+b,0);
+  return Math.round(rem*ITERS[qi]/remIters);
+}
+
+let level='product',ctxVal='all';
+let chk=new Set();
+let sB=true,sS=true,sP=true,sA=true,sOps=false;
+
+const LEVEL_ORDER=['train','product','budgetline','category'];
+const LEVEL_LABELS={train:'Train',product:'Product',budgetline:'Budget Line',category:'Category'};
+
+function onLevel(v){
+  level=v;ctxVal='all';chk.clear();
+  const grp=document.getElementById('ctxGrp'),lbl=document.getElementById('ctxLbl'),sel=document.getElementById('ctxSel');
+  if(v==='budgetline'){grp.style.display='flex';lbl.textContent='Product';sel.innerHTML='<option value="all">All Products</option>'+PRODS.map(p=>`<option value="${p.id}">${p.fullName}</option>`).join('');}
+  else if(v==='category'){grp.style.display='flex';lbl.textContent='Budget Line';sel.innerHTML='<option value="all">All Budget Lines</option>'+PRODS.flatMap(p=>p.lines.map(l=>`<option value="${l.id}">${p.name} — ${l.name}</option>`)).join('');}
+  else{grp.style.display='none';}
+  renderBC();renderChips();buildChart();renderTree();
+}
+function onCtx(v){ctxVal=v;chk.clear();renderChips();buildChart();}
+
+function renderBC(){
+  const idx=LEVEL_ORDER.indexOf(level);
+  document.getElementById('bc').innerHTML=LEVEL_ORDER.slice(0,idx+1).map((l,i)=>
+    `${i>0?'<span class="bc-sep">›</span>':''}<span class="bc-item${l===level?' active':''}" onclick="if('${l}'!=='${level}')onLevel('${l}')">${LEVEL_LABELS[l]}</span>`).join('');
+}
+
+function chipItems(){
+  if(level==='train')return[];
+  if(level==='product')return PRODS.map(p=>({id:p.id,label:p.fullName,sub:`${p.total.toLocaleString()}K`,color:p.color}));
+  if(level==='budgetline'){const pp=ctxVal==='all'?PRODS:PRODS.filter(p=>p.id===ctxVal);return pp.flatMap(p=>p.lines.map(l=>({id:l.id,label:`${p.name} — ${l.name}`,sub:`${l.total.toLocaleString()}K`,color:p.color})));}
+  if(level==='category'){if(ctxVal==='all')return PRODS.flatMap(p=>p.lines.flatMap((l,li)=>l.cats.map((c,ci)=>({id:`${l.id}-c${ci}`,label:c.name,sub:`${l.name}·${c.total}K`,color:p.color}))));for(const p of PRODS){const l=p.lines.find(x=>x.id===ctxVal);if(l)return l.cats.map((c,ci)=>({id:`${l.id}-c${ci}`,label:c.name,sub:`${c.total}K`,color:p.color}));}}
+  return[];
+}
+function renderChips(){
+  const items=chipItems(),el=document.getElementById('chipList');
+  if(!items.length){el.innerHTML='<span style="color:var(--muted);font-size:12px">All data aggregated at Train level.</span>';document.getElementById('selTitle').textContent='Train level';document.getElementById('selSub').textContent='';return;}
+  if(chk.size===0)items.forEach(i=>chk.add(i.id));
+  el.innerHTML=items.map(i=>`<label class="chip ${chk.has(i.id)?'on':''}" onclick="togChip('${i.id}',this)"><span class="dot8" style="background:${i.color}"></span>${i.label}<span class="chip-meta">${i.sub}</span></label>`).join('');
+  const lm={product:'Products',budgetline:'Budget Lines',category:'Categories'};
+  document.getElementById('selTitle').textContent=`📋 ${lm[level]||'Items'} — select to display in chart`;
+  document.getElementById('selSub').textContent=`${chk.size} of ${items.length} selected`;
+}
+function togChip(id,el){if(chk.has(id))chk.delete(id);else chk.add(id);el.classList.toggle('on',chk.has(id));const items=chipItems();document.getElementById('selSub').textContent=`${chk.size} of ${items.length} selected`;buildChart();}
+function selAll(){chipItems().forEach(i=>chk.add(i.id));renderChips();buildChart();}
+function clrAll(){chk.clear();renderChips();buildChart();}
+
+function buildDS(){
+  const ds=[];
+  if(sB){
+    PRODS.forEach(p=>{
+      const show=level==='train'||(level==='product'&&chk.has(p.id))||(level==='budgetline'&&p.lines.some(l=>chk.has(l.id)))||level==='category';
+      if(!show)return;
+      ds.push({type:'bar',label:`Baseline — ${p.name}`,data:QLS.map((_,qi)=>bs(p.total,qi)),backgroundColor:p.color+'44',borderColor:p.color+'88',borderWidth:1,stack:'baseline',order:5});
+    });
+    if(sOps){
+      ds.push({type:'bar',label:'Train Operating Cost',data:QLS.map((_,qi)=>bs(OPS_TOTAL,qi)),backgroundColor:'#7c3aed33',borderColor:'#7c3aed88',borderWidth:1,borderDash:[4,3],stack:'baseline',order:5});
+    }
+  }
+  if(sS){
+    ds.push({type:'line',label:'Strategic — Committed',data:[stratForecast(0),null,null,null],borderColor:'#1677ff',backgroundColor:'#1677ff',borderWidth:2.5,pointRadius:6,pointBackgroundColor:'#1677ff',tension:.3,order:1,spanGaps:false});
+    ds.push({type:'line',label:'Strategic — Forecast',data:[null,stratForecast(1),stratForecast(2),stratForecast(3)],borderColor:'#1677ff',backgroundColor:'transparent',borderWidth:2,borderDash:[8,5],pointRadius:5,pointBorderColor:'#1677ff',pointBackgroundColor:'#fff',pointBorderWidth:2,tension:.3,order:1});
+  }
+  if(sP){const q1=Object.values(PLANNED_Q1).reduce((a,b)=>a+b,0);ds.push({type:'line',label:'Planned Consumption',data:[q1,null,null,null],borderColor:'#fa8c16',backgroundColor:'#fa8c16',borderWidth:2,pointRadius:5,pointBackgroundColor:'#fa8c16',tension:.3,order:0});}
+  if(sA){const q1=Object.values(ACTUAL_Q1).reduce((a,b)=>a+b,0);ds.push({type:'line',label:'Actual Consumption',data:[q1,null,null,null],borderColor:'#52c41a',backgroundColor:'#52c41a',borderWidth:2,pointRadius:5,pointBackgroundColor:'#52c41a',tension:.3,order:0});}
+  return ds;
+}
+
+const mc=new Chart(document.getElementById('chart').getContext('2d'),{
+  data:{labels:QLS,datasets:buildDS()},
+  options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{position:'bottom',labels:{font:{family:'IBM Plex Sans',size:11},padding:14,usePointStyle:true,pointStyleWidth:14}},
+      tooltip:{backgroundColor:'#1a1d23',titleFont:{family:'IBM Plex Sans',size:12,weight:'600'},bodyFont:{family:'IBM Plex Mono',size:11},padding:12,callbacks:{label:c=>c.raw===null?null:` ${c.dataset.label}: ${Number(c.raw).toLocaleString()} KEUR`}}},
+    scales:{x:{stacked:true,grid:{display:false},ticks:{font:{family:'IBM Plex Sans',size:11}}},y:{stacked:false,beginAtZero:true,grid:{color:'#f0f2f5'},ticks:{font:{family:'IBM Plex Mono',size:10},callback:v=>v.toLocaleString()+'K'},title:{display:true,text:'KEUR',font:{family:'IBM Plex Sans',size:11},color:'#9ca3af'}}}}
+});
+function buildChart(){mc.data.datasets=buildDS();mc.update();}
+function togS(s,el){if(s==='b')sB=!sB;if(s==='s')sS=!sS;if(s==='p')sP=!sP;if(s==='a')sA=!sA;el.classList.toggle('on');buildChart();}
+function togOps(el){sOps=!sOps;el.classList.toggle('on');buildChart();}
+
+// Reference section toggle
+function togRef(hdr){
+  const body=document.getElementById('refBody'),chev=document.getElementById('refChev');
+  const open=body.classList.toggle('open');
+  chev.classList.toggle('open',open);
+}
+
+// Tree
+function u(a,t,c){const p=t>0?Math.round(a/t*100):0;const cl=p>80?'br':p>40?'bo':'bg';return`<div class="ucell"><div class="mbar"><div class="mfill" style="width:${p}%;background:${c||'#1677ff'}"></div></div><span class="bdg ${cl}">${p}%</span></div>`}
+function nv(v){return v>0?v.toLocaleString():`<span class="na">—</span>`}
+function row(cls,pid,rid,indent,sw,name,tag,tot,b,s,p,a,color){
+  const btn=rid?`<button class="xbtn" id="btn-${rid}" onclick="togRow('${rid}',this)">▶</button>`:`<span style="width:18px;display:inline-block"></span>`;
+  const ph=pid?`data-parent="${pid}"`:'';const hc=pid?'hide':'';const ia=rid?`id="r-${rid}"`:'';
+  return`<tr class="${cls} ${hc}" ${ph} ${ia}><td>${btn}</td>
+    <td><span style="display:inline-block;width:${indent}px"></span>${sw?`<span class="swatch" style="background:${sw}"></span>`:''}<span>${name}</span>${tag?`<span class="lvl-tag ${tag.c}">${tag.l}</span>`:''}</td>
+    <td class="r">${tot.toLocaleString()}</td><td class="r">${b.toLocaleString()}</td>
+    <td class="r">${nv(s)}</td><td class="r">${nv(p)}</td><td class="r">${nv(a)}</td>
+    <td>${u(a,tot,color)}</td></tr>`;
+}
+function renderTree(){
+  let h='';
+  const prodTotal=PRODS.reduce((s,p)=>s+p.total,0);
+  const opTotal=OPS_LINES.reduce((s,o)=>s+o.total,0);
+  const tS=Object.values(STRAT_Q1).reduce((a,b)=>a+b,0);
+  const tP=Object.values(PLANNED_Q1).reduce((a,b)=>a+b,0);
+  const tA=Object.values(ACTUAL_Q1).reduce((a,b)=>a+b,0);
+  h+=row('rl0','','train',0,'#1677ff','Train Total (Products + Operating)',null,prodTotal+opTotal,bs(prodTotal+opTotal,QI),tS,tP,tA,'#1677ff');
+  h+=row('rl-ops','train','ops',0,'#7c3aed','Train Operating Cost',{c:'lt-ops',l:'Operating'},opTotal,bs(opTotal,QI),0,0,0,'#7c3aed');
+  OPS_LINES.forEach((o,oi)=>{
+    h+=row('rl2','ops',`opl-${oi}`,16,'#7c3aed99',o.name,null,o.total,bs(o.total,QI),0,0,0,'#7c3aed');
+    o.cats.forEach((c)=>{h+=row('rl3',`opl-${oi}`,'',32,'',`↳ ${c.name}`,null,c.total,bs(c.total,QI),0,0,0,'#d1d5db');});
+  });
+  PRODS.forEach(p=>{
+    const pS=STRAT_Q1[p.id]||0,pP=PLANNED_Q1[p.id]||0,pA=ACTUAL_Q1[p.id]||0;
+    h+=row('rl1','train',`p-${p.id}`,0,p.color,p.fullName,{c:'lt-p',l:'Product'},p.total,bs(p.total,QI),pS,pP,pA,p.color);
+    p.lines.forEach(l=>{
+      h+=row('rl2',`p-${p.id}`,`bl-${l.id}`,16,p.color+'99',l.name,{c:'lt-b',l:'BL'},l.total,bs(l.total,QI),0,0,0,p.color);
+      l.cats.forEach((c,ci)=>{h+=row('rl3',`bl-${l.id}`,'',32,'',`↳ ${c.name}`,{c:'lt-c',l:'Cat'},c.total,bs(c.total,QI),0,0,0,'#d1d5db');});
+    });
+  });
+  document.getElementById('tbody').innerHTML=h;
+}
+function togRow(id,btn){
+  btn.classList.toggle('open');const open=btn.classList.contains('open');
+  document.querySelectorAll(`[data-parent="${id}"]`).forEach(r=>{
+    r.classList.toggle('hide',!open);
+    if(!open){const cid=r.id?.replace('r-','');if(cid){document.querySelectorAll(`[data-parent="${cid}"]`).forEach(g=>g.classList.add('hide'));const cb=document.getElementById(`btn-${cid}`);if(cb)cb.classList.remove('open');}}
+  });
+}
+function xAll(open){
+  document.querySelectorAll('[data-parent]').forEach(r=>r.classList.toggle('hide',!open));
+  document.querySelectorAll('.xbtn').forEach(b=>b.classList.toggle('open',open));
+}
+onLevel('product');
+renderTree();
+</script>
+</body>
+</html>

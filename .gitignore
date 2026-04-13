@@ -50,3 +50,8 @@ yarn-error.log*
 .coverage
 htmlcov/
 .pytest_cache/
+.git_commit_msg.txt
+backend/safe_train.db.backup_*
+backend/safe_train.db.backup*
+.DS_Store
+Docs/.DS_Store
