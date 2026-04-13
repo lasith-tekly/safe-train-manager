@@ -14,7 +14,9 @@ export interface AuthUser {
   username: string;
   email: string;
   role: 'superadmin' | 'admin' | 'po' | 'readonly';
+  train_id: string | null;
   team_ids: string[];
+  must_change_password: boolean;
 }
 
 interface AuthContextType {
@@ -29,6 +31,7 @@ interface AuthContextType {
   isReadOnly: boolean;
   canEdit: boolean;          // admin or po
   canManageUsers: boolean;   // admin only
+  mustChangePassword: boolean;
   isAssignedTeam: (teamId: string) => boolean;
 }
 
@@ -90,12 +93,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (username: string, password: string) => {
     const res = await axios.post(`${API_BASE}/api/auth/login`, { username, password });
-    const { access_token, refresh_token } = res.data;
+    const { access_token, refresh_token, must_change_password } = res.data;
     localStorage.setItem('amadeus_access_token', access_token);
     localStorage.setItem('amadeus_refresh_token', refresh_token);
     setAuthHeader(access_token);
     const me = await fetchMe(access_token);
     if (me) setUser(me);
+    if (must_change_password) {
+      window.location.href = '/change-password';
+      return;
+    }
+    window.location.href = '/';
   };
 
   const logout = useCallback(() => {
@@ -149,6 +157,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const isReadOnly = user?.role === 'readonly';
   const canEdit    = isAdmin || isPO;
   const canManageUsers = isAdmin;
+  const mustChangePassword = user?.must_change_password ?? false;
 
   const isAssignedTeam = (teamId: string) => {
     if (isAdmin) return true;
@@ -162,6 +171,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       login, logout,
       isAdmin, isSuperAdmin, isPO, isReadOnly,
       canEdit, canManageUsers,
+      mustChangePassword,
       isAssignedTeam,
     }}>
       {children}

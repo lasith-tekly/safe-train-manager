@@ -20,6 +20,7 @@ class TokenResponse(BaseModel):
     access_token: str
     refresh_token: str
     token_type: str = "bearer"
+    must_change_password: bool = False
 
 
 class RefreshRequest(BaseModel):
@@ -33,6 +34,7 @@ class UserResponse(BaseModel):
     role: str
     train_id: Optional[str]
     team_ids: list[str]
+    must_change_password: bool = False
 
 
 @router.post("/login", response_model=TokenResponse)
@@ -47,6 +49,7 @@ def login(req: LoginRequest, db: Session = Depends(get_db)):
         access_token=auth_service.create_access_token(
             user.id, user.role, user.train_id),
         refresh_token=auth_service.create_refresh_token(user.id),
+        must_change_password=user.must_change_password,
     )
 
 
@@ -78,6 +81,7 @@ def me(current_user: User = Depends(get_current_user),
         role=current_user.role,
         train_id=current_user.train_id,
         team_ids=team_ids,
+        must_change_password=current_user.must_change_password,
     )
 
 

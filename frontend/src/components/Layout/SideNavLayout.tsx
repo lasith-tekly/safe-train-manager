@@ -248,6 +248,20 @@ export const SideNavLayout: React.FC<SideNavLayoutProps> = ({ children }) => {
               <span style={{ width: 1, height: 20,
                 background: '#e5e7eb', margin: '0 4px' }} />
 
+              {/* Change password */}
+              <button
+                onClick={() => navigate('/change-password')}
+                style={{
+                  background: 'none', border: 'none',
+                  cursor: 'pointer', padding: '4px 6px',
+                  fontSize: 12, color: '#6b7280',
+                  borderRadius: 4,
+                }}
+                title="Change password"
+              >
+                🔑
+              </button>
+
               {/* Sign out — text link style */}
               <button
                 onClick={logout}

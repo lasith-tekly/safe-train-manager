@@ -74,6 +74,7 @@ def seed_admin_user(db: Session):
             role="superadmin",
             is_active=True,
             train_id=None,  # superadmin sees all trains
+            must_change_password=True,
         )
         db.add(admin)
         db.commit()

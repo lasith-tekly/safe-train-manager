@@ -4,7 +4,7 @@ from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
 from typing import Optional
 from app.database import get_db
-from app.dependencies.auth import require_admin
+from app.dependencies.auth import require_admin, get_current_user
 from app.models.auth import User, UserTeamAssignment
 from app.services.auth_service import hash_password
 
@@ -121,3 +121,31 @@ def delete_user(user_id: str, db: Session = Depends(get_db)):
     db.delete(user)
     db.commit()
     return {"message": "User deleted"}
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+
+@router.post("/change-password")
+def change_password(
+    req: ChangePasswordRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    from app.services.auth_service import verify_password
+    if not verify_password(req.current_password, current_user.password_hash):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+
+    if len(req.new_password) < 8:
+        raise HTTPException(status_code=400, detail="New password must be at least 8 characters")
+
+    if req.current_password == req.new_password:
+        raise HTTPException(status_code=400, detail="New password must be different from current password")
+
+    current_user.password_hash = hash_password(req.new_password)
+    current_user.must_change_password = False
+    db.commit()
+
+    return {"message": "Password changed successfully"}

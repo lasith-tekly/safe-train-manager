@@ -18,6 +18,7 @@ import RoadmapV4Page from './pages/RoadmapV4';
 import ProductsOverviewPage from './pages/RoadmapV4/ProductsOverviewPage';
 import ProductRoadmapPage from './pages/RoadmapV4/ProductRoadmapPage';
 import TeamPlanningPage from './pages/TeamPlanning/TeamPlanningPage';
+import ChangePasswordPage from './pages/ChangePassword/index';
 
 // Import Amadeus theme
 import './styles/amadeus-theme.css';
@@ -28,6 +29,7 @@ const App: React.FC = () => {
       <Routes>
         {/* Public */}
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/change-password" element={<ChangePasswordPage />} />
 
         {/* Protected — all existing routes */}
         <Route path="/*" element={
