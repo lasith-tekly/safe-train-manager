@@ -95,18 +95,32 @@ class TeamMemberService:
     @staticmethod
     def delete(db: Session, member_id: str) -> None:
         """Remove a member from a team, including all related records."""
+        from sqlalchemy.exc import IntegrityError
         from app.models.holiday import MemberLeave
         from app.models.team import MemberPIAllocation
-        
+        from app.models.member_iteration_productivity import MemberIterationProductivity
+
         member = db.query(TeamMember).filter(TeamMember.id == member_id).first()
         if member:
-            # Delete related records first to avoid foreign key constraints
-            db.query(MemberLeave).filter(MemberLeave.member_id == member_id).delete()
-            db.query(MemberPIAllocation).filter(MemberPIAllocation.member_id == member_id).delete()
-            db.query(MemberQuarterlyAvailability).filter(MemberQuarterlyAvailability.member_id == member_id).delete()
-            
-            db.delete(member)
-            db.commit()
+            try:
+                # Explicitly delete all related records
+                db.query(MemberLeave).filter(
+                    MemberLeave.member_id == member_id).delete()
+                db.query(MemberPIAllocation).filter(
+                    MemberPIAllocation.member_id == member_id).delete()
+                db.query(MemberQuarterlyAvailability).filter(
+                    MemberQuarterlyAvailability.member_id == member_id).delete()
+                db.query(MemberIterationProductivity).filter(
+                    MemberIterationProductivity.member_id == member_id).delete()
+                db.delete(member)
+                db.commit()
+            except IntegrityError as e:
+                db.rollback()
+                raise ValueError(
+                    f"Cannot delete member: they are referenced by "
+                    f"planning records. Please remove their planning "
+                    f"assignments first."
+                )
     
     @staticmethod
     def get_availability(

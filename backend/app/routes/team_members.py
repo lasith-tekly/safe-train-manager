@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, String
 
 from app.database import get_db
+from app.dependencies.auth import get_current_user
 from app.schemas.team_member import (
     TeamMemberCreate, TeamMemberUpdate, TeamMemberResponse,
     MemberAvailabilityUpdate, MemberAvailabilityResponse,
@@ -67,13 +68,27 @@ def update_team_member(
 def remove_team_member(
     team_id: str,
     member_id: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
 ):
     """Remove a member from a team."""
+    # Check permissions
+    if current_user.role not in ("admin", "superadmin"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only admins can remove team members"
+        )
+
+    # Verify member exists and belongs to team
     member = TeamMemberService.get_by_id(db, member_id)
     if not member or member.team_id != team_id:
         raise HTTPException(status_code=404, detail="Member not found")
-    TeamMemberService.delete(db, member_id)
+
+    # Attempt deletion with error handling
+    try:
+        TeamMemberService.delete(db, member_id)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.post("/{member_id}/remove-from-pi")
