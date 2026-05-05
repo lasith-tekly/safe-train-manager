@@ -138,10 +138,18 @@ def remove_member_from_pi(
     else:
         # Remove from PI X onwards = last active PI was X-1
         previous_pi = all_pis[current_index - 1]
-        member.left_after_pi_id = str(previous_pi.id)
+
+        # Use bulk update to avoid ORM cascade issues with pi_allocations relationship
+        db.query(TeamMember).filter(
+            TeamMember.id == member_id
+        ).update({
+            "left_after_pi_id": str(previous_pi.id)
+        })
         db.commit()
+
+        # Re-fetch to get updated value
         db.refresh(member)
-        
+
         return {
             "id": str(member.id),
             "name": member.name,
