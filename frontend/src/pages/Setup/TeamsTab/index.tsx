@@ -100,7 +100,7 @@ export const TeamsTab: React.FC = () => {
 
   const loadPIs = async () => {
     try {
-      const response = await getPIs(currentYear);
+      const response = await getPIs();
       const piList = response.data || response;
       setPIs(piList);
       if (piList.length > 0) {

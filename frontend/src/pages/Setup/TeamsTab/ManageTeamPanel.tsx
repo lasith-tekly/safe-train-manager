@@ -87,8 +87,7 @@ export const ManageTeamPanel: React.FC<ManageTeamPanelProps> = ({
   const loadPIsData = async () => {
     setLoadingPis(true);
     try {
-      const currentYear = new Date().getFullYear();
-      const response = await getPIs(currentYear);
+      const response = await getPIs();
       const piList = response.data || [];
       setPis(piList);
       // Default to the first PI and load members immediately with resolved PI

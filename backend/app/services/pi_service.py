@@ -98,18 +98,21 @@ class PIService:
     @staticmethod
     def get_all(
         db: Session,
-        year: int,
+        year: Optional[int] = None,
         status: Optional[str] = None
     ) -> Tuple[List[PI], int]:
-        """Get all PIs for a year."""
-        query = db.query(PI).filter(PI.year == year)
-        
+        """Get all PIs (optionally filtered by year)."""
+        query = db.query(PI)
+
+        if year is not None:
+            query = query.filter(PI.year == year)
+
         if status:
             query = query.filter(PI.status == status)
-        
-        query = query.order_by(PI.sequence)
+
+        query = query.order_by(PI.start_date)
         pis = query.all()
-        
+
         return pis, len(pis)
 
     @staticmethod

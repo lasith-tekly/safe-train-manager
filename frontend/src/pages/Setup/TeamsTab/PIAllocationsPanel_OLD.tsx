@@ -79,7 +79,7 @@ export const PIAllocationsPanel: React.FC<PIAllocationsPanelProps> = ({
 
   const loadPIs = async () => {
     try {
-      const response = await getPIs(year);
+      const response = await getPIs();
       setPIs(response.data);
       if (response.data.length > 0) {
         setSelectedPI(response.data[0].id);

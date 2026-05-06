@@ -123,7 +123,7 @@ export const TrainCapacityDashboard: React.FC = () => {
   const initialLoad = async () => {
     try {
       const [pisRes, teamsRes] = await Promise.all([
-        axios.get(`/api/pis?year=${currentYear}`),
+        axios.get(`/api/pis`),
         axios.get('/api/teams'),
       ]);
 

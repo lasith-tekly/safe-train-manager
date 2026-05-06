@@ -79,13 +79,9 @@ const CapacityView: React.FC = () => {
   useEffect(() => {
     const loadPIs = async () => {
       try {
-        const currentYear = new Date().getFullYear();
-        // Load PIs for current year and previous year
-        const [currentYearPIs, prevYearPIs] = await Promise.all([
-          getPIs(currentYear).catch(() => ({ data: [] })),
-          getPIs(currentYear - 1).catch(() => ({ data: [] }))
-        ]);
-        const allPIs = [...currentYearPIs.data, ...prevYearPIs.data];
+        // Load all PIs
+        const allPIsResponse = await getPIs().catch(() => ({ data: [] }));
+        const allPIs = allPIsResponse.data;
         setPIs(allPIs);
         // Select active PI by default
         const activePI = allPIs.find(p => p.status === 'active');

@@ -25,11 +25,11 @@ router = APIRouter(prefix="/api/pis", tags=["pis"])
 
 @router.get("", response_model=PIListResponse)
 def list_pis(
-    year: int = Query(..., ge=2020, le=2100),
+    year: Optional[int] = Query(None, ge=2020, le=2100),
     status: Optional[str] = Query(None),
     db: Session = Depends(get_db)
 ):
-    """List all PIs for a year with their iterations."""
+    """List all PIs (optionally filtered by year) with their iterations."""
     pis, total = PIService.get_all(db, year, status)
     return PIListResponse(
         data=[PIService.build_pi_response(pi) for pi in pis],

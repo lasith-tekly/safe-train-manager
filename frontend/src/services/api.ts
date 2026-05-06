@@ -424,8 +424,9 @@ export const updateGlobalSettings = async (
 };
 
 // PI (Program Increment) API
-export const getPIs = async (year: number, status?: string): Promise<PIListResponse> => {
-  const params: Record<string, string | number> = { year };
+export const getPIs = async (year?: number, status?: string): Promise<PIListResponse> => {
+  const params: Record<string, string | number> = {};
+  if (year !== undefined) params.year = year;
   if (status) params.status = status;
   const response = await api.get<PIListResponse>('/pis', { params });
   return response.data;

@@ -93,8 +93,7 @@ export const JiraRecordModal: React.FC<JiraRecordModalProps> = ({
 
   const fetchPIs = async () => {
     try {
-      const currentYear = new Date().getFullYear();
-      const response = await axios.get(`${API_BASE_URL}/pis?year=${currentYear}`);
+      const response = await axios.get(`${API_BASE_URL}/pis`);
       const pisData = response.data.data || response.data.items || response.data || [];
       setPIs(Array.isArray(pisData) ? pisData : []);
     } catch (error) {

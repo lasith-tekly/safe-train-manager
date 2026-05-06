@@ -73,10 +73,10 @@ export const MemberLeavePanel: React.FC<MemberLeavePanelProps> = ({
     try {
       const [leaveData, piData] = await Promise.all([
         getMemberLeaveByIteration(member.id),
-        getPIs(year)
+        getPIs()
       ]);
       setLeaves(leaveData.data);
-      
+
       // Extract all iterations from PIs
       const allIterations: Iteration[] = [];
       piData.data.forEach(pi => {

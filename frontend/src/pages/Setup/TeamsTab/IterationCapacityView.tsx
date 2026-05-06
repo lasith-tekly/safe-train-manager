@@ -73,9 +73,9 @@ export const IterationCapacityView: React.FC<IterationCapacityViewProps> = ({
   const loadData = async () => {
     setLoading(true);
     try {
-      const pisData = await getPIs(year);
+      const pisData = await getPIs();
       setPIs(pisData.data);
-      
+
       // Auto-select first PI
       if (pisData.data.length > 0) {
         setSelectedPI(pisData.data[0].id);
