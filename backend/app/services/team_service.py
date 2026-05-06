@@ -168,7 +168,37 @@ class TeamService:
     @staticmethod
     def can_delete(db: Session, team_id: UUID) -> Tuple[bool, str]:
         """Check if team can be deleted."""
-        # TODO: Check for assigned features when Feature model exists
+        from app.models.team import TeamMember
+        from app.models.team_planning import POPlanVersion, TeamPlanning
+        from app.models.roadmap_v4 import JiraRecord, FeatureTeam
+
+        team_id_str = str(team_id)
+
+        # Check for team members
+        member_count = db.query(TeamMember).filter(TeamMember.team_id == team_id_str).count()
+        if member_count > 0:
+            return False, f"Team has {member_count} member(s). Please remove all team members before deleting the team."
+
+        # Check for roadmap features assigned to team
+        feature_count = db.query(FeatureTeam).filter(FeatureTeam.team_id == team_id_str).count()
+        if feature_count > 0:
+            return False, f"Team is assigned to {feature_count} roadmap feature(s). Please unassign features before deleting the team."
+
+        # Check for JIRA records
+        jira_count = db.query(JiraRecord).filter(JiraRecord.team_id == team_id_str).count()
+        if jira_count > 0:
+            return False, f"Team has {jira_count} JIRA record(s). Please reassign or delete JIRA records before deleting the team."
+
+        # Check for planning versions
+        plan_count = db.query(POPlanVersion).filter(POPlanVersion.team_id == team_id_str).count()
+        if plan_count > 0:
+            return False, f"Team has {plan_count} planning version(s). Planning data will be lost. Please archive or delete planning versions before deleting the team."
+
+        # Check for team planning items
+        planning_item_count = db.query(TeamPlanning).filter(TeamPlanning.team_id == team_id_str).count()
+        if planning_item_count > 0:
+            return False, f"Team has {planning_item_count} planning item(s). Please delete planning items before deleting the team."
+
         return True, ""
 
     @staticmethod
