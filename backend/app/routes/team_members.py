@@ -127,12 +127,27 @@ def remove_member_from_pi(
     
     if current_index == 0:
         # Removing from first PI = member was never active in this team
-        # DELETE the record entirely
-        db.delete(member)
+        # DELETE the record entirely using bulk operations to avoid ORM cascades
+        from app.models.team import MemberPIAllocation
+
+        member_id_for_return = str(member.id)
+        member_name_for_return = member.name
+
+        # Delete all PI allocations manually
+        db.query(MemberPIAllocation).filter(
+            MemberPIAllocation.member_id == member_id
+        ).delete(synchronize_session=False)
+
+        # Delete the member using bulk delete
+        db.query(TeamMember).filter(
+            TeamMember.id == member_id
+        ).delete(synchronize_session=False)
+
         db.commit()
+
         return {
-            "id": str(member.id),
-            "name": member.name,
+            "id": member_id_for_return,
+            "name": member_name_for_return,
             "status": "deleted"
         }
     else:
@@ -142,9 +157,10 @@ def remove_member_from_pi(
         # Use bulk update to avoid ORM cascade issues with pi_allocations relationship
         db.query(TeamMember).filter(
             TeamMember.id == member_id
-        ).update({
-            "left_after_pi_id": str(previous_pi.id)
-        })
+        ).update(
+            {"left_after_pi_id": str(previous_pi.id)},
+            synchronize_session=False
+        )
         db.commit()
 
         # Re-fetch to get updated value
