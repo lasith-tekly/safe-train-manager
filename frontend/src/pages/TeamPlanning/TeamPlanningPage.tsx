@@ -39,7 +39,7 @@ interface PI {
 }
 
 const TeamPlanningPage: React.FC = () => {
-  const { canEdit } = useAuth();
+  const { canEdit, isPO, isAdmin, isSuperAdmin, user } = useAuth();
   const [selectedTeamId, setSelectedTeamId] = useState<string>('');
   const [selectedPiId, setSelectedPiId] = useState<string>('');
   const [teams, setTeams] = useState<Team[]>([]);
@@ -149,13 +149,18 @@ const TeamPlanningPage: React.FC = () => {
     }
   }, [error]);
 
+  // Filter teams based on role: PO only sees their assigned teams
+  const availableTeams = (isAdmin || isSuperAdmin)
+    ? teams
+    : teams.filter(team => user?.team_ids?.includes(team.id));
+
   // Filter active and descoped items
   const activeItems = planningData?.items?.filter(i => !i.is_descoped) || [];
   const descopedItems = planningData?.items?.filter(i => i.is_descoped) || [];
 
   // Check if plan is outdated (PM changed JIRA assignments)
   const isOutdated = planningData?.is_outdated || false;
-  const isReadOnly = planningData?.version?.status === 'committed' || 
+  const isReadOnly = planningData?.version?.status === 'committed' ||
                      planningData?.version?.status === 'approved';
 
   return (
@@ -180,7 +185,7 @@ const TeamPlanningPage: React.FC = () => {
               onChange={setSelectedTeamId}
               showSearch
               optionFilterProp="label"
-              options={teams.map(t => ({ value: t.id, label: t.name }))}
+              options={availableTeams.map(t => ({ value: t.id, label: t.name }))}
             />
           </Col>
           <Col span={6}>

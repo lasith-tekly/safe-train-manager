@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Table, Button, Modal, Form, Input, Select, Switch, Tag,
          message, Space, Popconfirm } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { API } from '../../../config/api';
+import { useAuth } from '../../../contexts/AuthContext';
 
 const ROLE_COLORS: Record<string, string> = {
   superadmin: 'purple',
@@ -13,6 +15,8 @@ const ROLE_COLORS: Record<string, string> = {
 };
 
 export default function UserManagementPage() {
+  const { isAdmin, isSuperAdmin } = useAuth();
+  const navigate = useNavigate();
   const [users, setUsers]   = useState<any[]>([]);
   const [trains, setTrains] = useState<any[]>([]);
   const [teams, setTeams]   = useState<any[]>([]);
@@ -20,6 +24,13 @@ export default function UserManagementPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<any>(null);
   const [form] = Form.useForm();
+
+  // Role guard: redirect non-admins to home
+  useEffect(() => {
+    if (!isAdmin && !isSuperAdmin) {
+      navigate('/');
+    }
+  }, [isAdmin, isSuperAdmin, navigate]);
 
   const fetchAll = async () => {
     setLoading(true);

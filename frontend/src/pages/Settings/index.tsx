@@ -8,6 +8,7 @@ import {
   TeamOutlined,
   GlobalOutlined,
 } from '@ant-design/icons';
+import { useAuth } from '../../contexts/AuthContext';
 
 // Import individual settings pages
 import { WorkingDaysPage } from './WorkingDaysPage';
@@ -24,6 +25,8 @@ const { Title, Text } = Typography;
 // Settings Overview Page Component
 const SettingsOverview: React.FC = () => {
   const navigate = useNavigate();
+  const { isAdmin, isSuperAdmin } = useAuth();
+  const canManage = isAdmin || isSuperAdmin;
 
   const settingsSections = [
     {
@@ -31,42 +34,48 @@ const SettingsOverview: React.FC = () => {
       description: 'Configure working days and hours per week',
       icon: <ScheduleOutlined style={{ fontSize: 32 }} />,
       path: '/settings/working-days',
-      color: '#1890ff'
+      color: '#1890ff',
+      adminOnly: false
     },
     {
       title: 'Budget Configuration',
       description: 'Manage fiscal years, budget versions, and allocations',
       icon: <DollarOutlined style={{ fontSize: 32 }} />,
       path: '/settings/budget-configuration',
-      color: '#faad14'
+      color: '#faad14',
+      adminOnly: true
     },
     {
       title: 'Train Configuration',
       description: 'Productivity, capacity allocations, budget & cost settings',
       icon: <DollarOutlined style={{ fontSize: 32 }} />,
       path: '/settings/train-config',
-      color: '#52c41a'
+      color: '#52c41a',
+      adminOnly: true
     },
     {
       title: 'Components',
       description: 'Component hats configuration',
       icon: <BuildOutlined style={{ fontSize: 32 }} />,
       path: '/settings/components',
-      color: '#722ed1'
+      color: '#722ed1',
+      adminOnly: false
     },
     {
       title: 'Train Teams',
       description: 'Team setup at train level',
       icon: <TeamOutlined style={{ fontSize: 32 }} />,
       path: '/settings/train-teams',
-      color: '#13c2c2'
+      color: '#13c2c2',
+      adminOnly: false
     },
     {
       title: 'Site Management',
       description: 'Countries, sites, and holidays',
       icon: <GlobalOutlined style={{ fontSize: 32 }} />,
       path: '/settings/sites/locations',
-      color: '#eb2f96'
+      color: '#eb2f96',
+      adminOnly: false
     },
   ];
 
@@ -78,27 +87,29 @@ const SettingsOverview: React.FC = () => {
       </Text>
 
       <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
-        {settingsSections.map(section => (
-          <Col span={8} key={section.path}>
-            <Card
-              hoverable
-              onClick={() => navigate(section.path)}
-              style={{ 
-                textAlign: 'center', 
-                height: '100%',
-                cursor: 'pointer',
-                transition: 'all 0.3s'
-              }}
-              styles={{ body: { padding: '24px' } }}
-            >
-              <div style={{ color: section.color, marginBottom: 16 }}>
-                {section.icon}
-              </div>
-              <Title level={4} style={{ marginBottom: 8 }}>{section.title}</Title>
-              <Text type="secondary">{section.description}</Text>
-            </Card>
-          </Col>
-        ))}
+        {settingsSections
+          .filter(section => !section.adminOnly || canManage)
+          .map(section => (
+            <Col span={8} key={section.path}>
+              <Card
+                hoverable
+                onClick={() => navigate(section.path)}
+                style={{
+                  textAlign: 'center',
+                  height: '100%',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s'
+                }}
+                styles={{ body: { padding: '24px' } }}
+              >
+                <div style={{ color: section.color, marginBottom: 16 }}>
+                  {section.icon}
+                </div>
+                <Title level={4} style={{ marginBottom: 8 }}>{section.title}</Title>
+                <Text type="secondary">{section.description}</Text>
+              </Card>
+            </Col>
+          ))}
       </Row>
     </div>
   );

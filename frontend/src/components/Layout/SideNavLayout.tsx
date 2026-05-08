@@ -46,7 +46,9 @@ function getItem(
   } as MenuItem;
 }
 
-function buildMenuItems(isSuperAdmin: boolean, isReadOnly: boolean): MenuItem[] {
+function buildMenuItems(isSuperAdmin: boolean, isAdmin: boolean): MenuItem[] {
+  const canAccessSettings = isAdmin || isSuperAdmin;
+
   return [
     getItem('Dashboard', '/dashboard', <DashboardOutlined />, [
       // getItem('Overview', '/'),  // Hidden - not yet implemented
@@ -61,7 +63,7 @@ function buildMenuItems(isSuperAdmin: boolean, isReadOnly: boolean): MenuItem[] 
     getItem('PI Calendar', '/pi-calendar', <CalendarOutlined />),
     getItem('Teams', '/teams', <TeamOutlined />),
     // getItem('Reports', '/reports', <BarChartOutlined />),  // Hidden - not yet implemented
-    ...(!isReadOnly ? [
+    ...(canAccessSettings ? [
       getItem('Settings', '/settings', <SettingOutlined />, [
         getItem('Working Days', '/settings/working-days', <ScheduleOutlined />),
         getItem('Budget Configuration', '/settings/budget-configuration', <DollarOutlined />),
@@ -88,7 +90,7 @@ export const SideNavLayout: React.FC<SideNavLayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout, isAdmin, isSuperAdmin, isReadOnly, isPO } = useAuth();
-  const menuItems = buildMenuItems(isSuperAdmin, isReadOnly);
+  const menuItems = buildMenuItems(isSuperAdmin, isAdmin);
 
   const getSelectedKeys = (): string[] => {
     const path = location.pathname;
