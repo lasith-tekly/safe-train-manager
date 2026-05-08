@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 
 from app.database import get_db
+from app.dependencies.auth import get_current_user, require_admin
 from app.schemas.pi import (
     PICreate,
     PIUpdate,
@@ -27,7 +28,8 @@ router = APIRouter(prefix="/api/pis", tags=["pis"])
 def list_pis(
     year: Optional[int] = Query(None, ge=2020, le=2100),
     status: Optional[str] = Query(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
 ):
     """List all PIs (optionally filtered by year) with their iterations."""
     pis, total = PIService.get_all(db, year, status)
@@ -38,7 +40,11 @@ def list_pis(
 
 
 @router.post("", response_model=PIResponse, status_code=status.HTTP_201_CREATED)
-def create_pi(data: PICreate, db: Session = Depends(get_db)):
+def create_pi(
+    data: PICreate,
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
+):
     """Create a new PI with iterations."""
     # Check for overlapping PIs
     if PIService.check_overlap(db, data.year, data.start_date, data.end_date):
@@ -52,7 +58,11 @@ def create_pi(data: PICreate, db: Session = Depends(get_db)):
 
 
 @router.get("/{pi_id}", response_model=PIResponse)
-def get_pi(pi_id: str, db: Session = Depends(get_db)):
+def get_pi(
+    pi_id: str,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
     """Get a PI with all iterations."""
     pi = PIService.get_by_id(db, pi_id)
     if not pi:
@@ -64,7 +74,12 @@ def get_pi(pi_id: str, db: Session = Depends(get_db)):
 
 
 @router.put("/{pi_id}", response_model=PIResponse)
-def update_pi(pi_id: str, data: PIUpdate, db: Session = Depends(get_db)):
+def update_pi(
+    pi_id: str,
+    data: PIUpdate,
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
+):
     """Update PI details."""
     pi = PIService.get_by_id(db, pi_id)
     if not pi:
@@ -88,7 +103,11 @@ def update_pi(pi_id: str, data: PIUpdate, db: Session = Depends(get_db)):
 
 
 @router.delete("/{pi_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_pi(pi_id: str, db: Session = Depends(get_db)):
+def delete_pi(
+    pi_id: str,
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
+):
     """Delete PI and all iterations."""
     if not PIService.delete(db, pi_id):
         raise HTTPException(
@@ -99,7 +118,11 @@ def delete_pi(pi_id: str, db: Session = Depends(get_db)):
 
 
 @router.post("/generate", response_model=PIListResponse)
-def generate_pis(data: PIGenerateRequest, db: Session = Depends(get_db)):
+def generate_pis(
+    data: PIGenerateRequest,
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
+):
     """Generate PIs from template."""
     # Check if PIs already exist for this year
     existing, _ = PIService.get_all(db, data.year)
@@ -119,7 +142,12 @@ def generate_pis(data: PIGenerateRequest, db: Session = Depends(get_db)):
 # Iteration endpoints
 
 @router.post("/{pi_id}/iterations", response_model=IterationResponse, status_code=status.HTTP_201_CREATED)
-def add_iteration(pi_id: str, data: IterationCreate, db: Session = Depends(get_db)):
+def add_iteration(
+    pi_id: str,
+    data: IterationCreate,
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
+):
     """Add iteration to PI."""
     iteration = IterationService.add_to_pi(db, pi_id, data)
     if not iteration:
@@ -131,7 +159,12 @@ def add_iteration(pi_id: str, data: IterationCreate, db: Session = Depends(get_d
 
 
 @router.put("/iterations/{iteration_id}", response_model=IterationResponse)
-def update_iteration(iteration_id: str, data: IterationUpdate, db: Session = Depends(get_db)):
+def update_iteration(
+    iteration_id: str,
+    data: IterationUpdate,
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
+):
     """Update iteration with partial data."""
     iteration = IterationService.update(db, iteration_id, data)
     if not iteration:
@@ -143,7 +176,11 @@ def update_iteration(iteration_id: str, data: IterationUpdate, db: Session = Dep
 
 
 @router.delete("/iterations/{iteration_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_iteration(iteration_id: str, db: Session = Depends(get_db)):
+def delete_iteration(
+    iteration_id: str,
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
+):
     """Delete iteration."""
     if not IterationService.delete(db, iteration_id):
         raise HTTPException(
@@ -154,7 +191,11 @@ def delete_iteration(iteration_id: str, db: Session = Depends(get_db)):
 
 
 @router.post("/{pi_id}/recalculate", response_model=PIResponse)
-def recalculate_pi(pi_id: str, db: Session = Depends(get_db)):
+def recalculate_pi(
+    pi_id: str,
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
+):
     """Recalculate PI dates based on iterations and resequence."""
     pi = PIService.get_by_id(db, pi_id)
     if not pi:
@@ -172,7 +213,11 @@ def recalculate_pi(pi_id: str, db: Session = Depends(get_db)):
 
 
 @router.post("/{pi_id}/commit", response_model=PIResponse)
-def commit_pi(pi_id: str, db: Session = Depends(get_db)):
+def commit_pi(
+    pi_id: str,
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
+):
     """Commit a draft PI to lock it."""
     try:
         pi = PIService.commit_pi(db, pi_id)
@@ -190,7 +235,11 @@ def commit_pi(pi_id: str, db: Session = Depends(get_db)):
 
 
 @router.post("/{pi_id}/uncommit", response_model=PIResponse)
-def uncommit_pi(pi_id: str, db: Session = Depends(get_db)):
+def uncommit_pi(
+    pi_id: str,
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
+):
     """Revert a committed PI back to draft."""
     try:
         pi = PIService.uncommit_pi(db, pi_id)
@@ -208,7 +257,11 @@ def uncommit_pi(pi_id: str, db: Session = Depends(get_db)):
 
 
 @router.post("/year/{year}/commit", response_model=PIListResponse)
-def commit_year(year: int, db: Session = Depends(get_db)):
+def commit_year(
+    year: int,
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
+):
     """Commit all draft PIs for a year."""
     try:
         pis = PIService.commit_year(db, year)
@@ -224,7 +277,11 @@ def commit_year(year: int, db: Session = Depends(get_db)):
 
 
 @router.post("/year/{year}/uncommit", response_model=PIListResponse)
-def uncommit_year(year: int, db: Session = Depends(get_db)):
+def uncommit_year(
+    year: int,
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
+):
     """Uncommit all committed PIs for a year back to draft."""
     try:
         pis = PIService.uncommit_year(db, year)
@@ -243,7 +300,8 @@ def uncommit_year(year: int, db: Session = Depends(get_db)):
 def get_cascade_preview(
     iteration_id: str,
     new_duration_weeks: int = Query(..., ge=1, le=4),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
 ):
     """Preview cascade impact of changing iteration duration."""
     preview = PIService.get_cascade_preview(db, iteration_id, new_duration_weeks)
@@ -256,7 +314,11 @@ def get_cascade_preview(
 
 
 @router.post("/cascade-apply", response_model=PIResponse)
-def apply_cascade(data: CascadeApplyRequest, db: Session = Depends(get_db)):
+def apply_cascade(
+    data: CascadeApplyRequest,
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
+):
     """Apply cascade changes to iteration and optionally following PIs."""
     pi = PIService.apply_cascade(db, data)
     if not pi:
@@ -268,7 +330,11 @@ def apply_cascade(data: CascadeApplyRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/realign-working-days/{year}", response_model=PIListResponse)
-def realign_working_days(year: int, db: Session = Depends(get_db)):
+def realign_working_days(
+    year: int,
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
+):
     """Realign all PIs and iterations for a year to respect working days.
     
     This fixes existing PIs that may have dates on non-working days (weekends).

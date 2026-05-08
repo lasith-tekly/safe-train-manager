@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.dependencies.auth import get_train_context
+from app.dependencies.auth import get_train_context, get_current_user, require_admin, require_po_or_admin
 from app.models.team import Team, TeamStatus
 from app.schemas.team import (
     TeamCreate,
@@ -28,6 +28,7 @@ def list_teams(
     pi_id: Optional[str] = Query(None, description="PI ID for member count filtering"),
     db: Session = Depends(get_db),
     train_id: Optional[str] = Depends(get_train_context),
+    current_user = Depends(get_current_user)
 ):
     """List all teams with optional filtering."""
     teams, total = TeamService.get_all(
@@ -39,7 +40,8 @@ def list_teams(
 def get_team(
     team_id: UUID,
     year: Optional[int] = Query(None, description="Year for capacity data"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
 ):
     """Get a single team by ID."""
     team = TeamService.get_by_id(db, team_id)
@@ -54,7 +56,8 @@ def get_team(
 @router.post("", response_model=TeamResponse, status_code=status.HTTP_201_CREATED)
 def create_team(
     data: TeamCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
 ):
     """Create a new team."""
     # Check for duplicate name
@@ -80,7 +83,8 @@ def create_team(
 def update_team(
     team_id: UUID,
     data: TeamUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
 ):
     """Update an existing team."""
     team = TeamService.get_by_id(db, team_id)
@@ -113,7 +117,8 @@ def update_team(
 @router.delete("/{team_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_team(
     team_id: UUID,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
 ):
     """Delete a team."""
     team = TeamService.get_by_id(db, team_id)
@@ -138,7 +143,8 @@ def delete_team(
 def get_team_capacity_summary(
     team_id: UUID,
     pi_id: Optional[str] = Query(None, description="PI ID for PI-specific allocations"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
 ):
     """Get team capacity summary with role breakdown and allocation categories."""
     from app.services.capacity_calculator import CapacityCalculator
@@ -157,7 +163,8 @@ def get_team_capacity_summary(
 def get_team_capacity(
     team_id: UUID,
     year: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
 ):
     """Get team capacity for a specific year."""
     team = TeamService.get_by_id(db, team_id)
@@ -176,7 +183,8 @@ def update_team_capacity(
     team_id: UUID,
     year: int,
     data: TeamCapacityUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_po_or_admin)
 ):
     """Update team capacity for a specific year."""
     team = TeamService.get_by_id(db, team_id)
@@ -194,7 +202,8 @@ def update_team_capacity(
 def get_team_pi_capacity_detail(
     team_id: UUID,
     pi_id: UUID,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
 ):
     """Get comprehensive team capacity detail for a specific PI.
     

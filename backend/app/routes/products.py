@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.dependencies.auth import get_train_context
+from app.dependencies.auth import get_train_context, get_current_user, require_admin
 from app.models.product import Product, ProductStatus
 from app.schemas.product import (
     ProductCreate,
@@ -23,6 +23,7 @@ def list_products(
     search: Optional[str] = Query(None, description="Search by name or short code"),
     db: Session = Depends(get_db),
     train_id: Optional[str] = Depends(get_train_context),
+    current_user = Depends(get_current_user)
 ):
     """
     List all products with optional filtering.
@@ -38,7 +39,8 @@ def list_products(
 @router.get("/{product_id}", response_model=ProductResponse)
 def get_product(
     product_id: UUID,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
 ):
     """Get a single product by ID."""
     product = ProductService.get_by_id(db, product_id)
@@ -64,7 +66,8 @@ def get_product(
 @router.post("", response_model=ProductResponse, status_code=status.HTTP_201_CREATED)
 def create_product(
     product_data: ProductCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
 ):
     """
     Create a new product.
@@ -109,7 +112,8 @@ def create_product(
 def update_product(
     product_id: UUID,
     product_data: ProductUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
 ):
     """Update an existing product."""
     product = ProductService.get_by_id(db, product_id)
@@ -164,7 +168,8 @@ def update_product(
 @router.delete("/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_product(
     product_id: UUID,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
 ):
     """
     Delete a product.

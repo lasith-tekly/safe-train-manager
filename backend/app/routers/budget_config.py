@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.services.budget_config_service import BudgetConfigService
-from app.dependencies.auth import get_train_context
+from app.dependencies.auth import get_train_context, get_current_user, require_admin
 from app.models.feature_budget_allocation import FeatureBudgetLineAllocation
 from app.models.roadmap_v4 import RoadmapFeature
 from app.schemas.budget_config import (
@@ -54,6 +54,7 @@ def _calculate_consumed_amount(db: Session, product_budget) -> float:
 def get_fiscal_years(
     db: Session = Depends(get_db),
     train_id: Optional[str] = Depends(get_train_context),
+    current_user = Depends(get_current_user)
 ):
     """Get all fiscal years."""
     fiscal_years = BudgetConfigService.get_fiscal_years(db)
@@ -63,7 +64,8 @@ def get_fiscal_years(
 @router.post("/fiscal-years", response_model=FiscalYearResponse, status_code=201)
 def create_fiscal_year(
     data: FiscalYearCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
 ):
     """Create a new fiscal year."""
     fiscal_year = BudgetConfigService.create_fiscal_year(db, data)
@@ -74,7 +76,8 @@ def create_fiscal_year(
 def update_fiscal_year(
     fiscal_year_id: UUID,
     data: FiscalYearUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
 ):
     """Update fiscal year (mainly to set as current)."""
     fiscal_year = BudgetConfigService.update_fiscal_year(db, fiscal_year_id, data.is_current)
@@ -88,7 +91,8 @@ def update_fiscal_year(
 @router.get("/versions", response_model=BudgetVersionListResponse)
 def get_budget_versions(
     fiscal_year_id: UUID = Query(..., description="Fiscal year ID"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
 ):
     """Get all budget versions for a fiscal year."""
     versions = BudgetConfigService.get_budget_versions(db, fiscal_year_id)
@@ -98,7 +102,8 @@ def get_budget_versions(
 @router.post("/versions", response_model=BudgetVersionResponse, status_code=201)
 def create_budget_version(
     data: BudgetVersionCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
 ):
     """Create a new budget version."""
     version = BudgetConfigService.create_budget_version(db, data, TEMP_USER_ID)
@@ -108,7 +113,8 @@ def create_budget_version(
 @router.get("/versions/{version_id}/train-lines", response_model=TrainBudgetLineListResponse)
 def get_train_budget_lines(
     version_id: UUID,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
 ):
     """Get all train-level budget lines for a version (product_budget_id IS NULL)."""
     lines = BudgetConfigService.get_train_budget_lines(db, version_id)
@@ -119,7 +125,8 @@ def get_train_budget_lines(
 def create_train_budget_line(
     version_id: UUID,
     data: TrainBudgetLineCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
 ):
     """Create a train-level budget line. Always non-roadmap, always transversal."""
     budget_line = BudgetConfigService.create_train_budget_line(
@@ -131,18 +138,19 @@ def create_train_budget_line(
 @router.get("/versions/{version_id}", response_model=BudgetVersionDetailResponse)
 def get_budget_version_detail(
     version_id: UUID,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
 ):
     """Get budget version with full hierarchy."""
     version = BudgetConfigService.get_budget_version_detail(db, version_id)
     if not version:
         raise HTTPException(status_code=404, detail="Budget version not found")
-    
+
     # Calculate summary
     total_budget = sum(pb.allocated_amount for pb in version.product_budgets)
     # TODO: Calculate consumed from features
     total_consumed = 0
-    
+
     return BudgetVersionDetailResponse(
         **version.__dict__,
         summary={
@@ -160,7 +168,8 @@ def get_budget_version_detail(
 def get_product_budgets(
     fiscal_year_id: Optional[UUID] = Query(None, description="Fiscal year ID"),
     version_id: Optional[UUID] = Query(None, description="Budget version ID"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
 ):
     """Get product budgets for active version or specified version."""
     # If no version_id provided, use active version automatically
@@ -196,7 +205,8 @@ def get_product_budgets(
 @router.post("/products", response_model=ProductBudgetResponse, status_code=201)
 def create_or_update_product_budget(
     data: ProductBudgetCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
 ):
     """Create or update product budget."""
     product_budget = BudgetConfigService.create_or_update_product_budget(db, data)
@@ -219,7 +229,8 @@ def create_or_update_product_budget(
 @router.get("/products/{product_budget_id}", response_model=ProductBudgetDetailResponse)
 def get_product_budget_detail(
     product_budget_id: UUID,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
 ):
     """Get product budget details with budget lines."""
     product_budget = BudgetConfigService.get_product_budget_detail(db, product_budget_id)
@@ -249,7 +260,8 @@ def get_product_budget_detail(
 def update_train_budget_line(
     budget_line_id: UUID,
     data: BudgetLineUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
 ):
     """Update a train-level budget line. is_roadmap_eligible is forced False."""
     budget_line = BudgetConfigService.update_budget_line(
@@ -265,7 +277,8 @@ def update_train_budget_line(
 @router.delete("/train-lines/{budget_line_id}", status_code=204)
 def delete_train_budget_line(
     budget_line_id: UUID,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
 ):
     """Delete a train-level budget line."""
     result = BudgetConfigService.delete_budget_line(db, budget_line_id, TEMP_USER_ID)
@@ -285,7 +298,8 @@ def delete_train_budget_line(
 @router.post("/lines", response_model=BudgetLineResponse, status_code=201)
 def create_budget_line(
     data: BudgetLineCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
 ):
     """Create a budget line (transversal or non-transversal)."""
     # Validate transversal allocations
@@ -314,7 +328,8 @@ def create_budget_line(
 def update_budget_line(
     budget_line_id: UUID,
     data: BudgetLineUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
 ):
     """Update budget line."""
     budget_line = BudgetConfigService.update_budget_line(
@@ -330,10 +345,11 @@ def update_budget_line(
 @router.delete("/lines/{budget_line_id}", status_code=204)
 def delete_budget_line(
     budget_line_id: UUID,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
 ):
     """Delete budget line.
-    
+
     Returns 409 if the budget line is referenced by Roadmap features.
     """
     result = BudgetConfigService.delete_budget_line(
@@ -361,7 +377,8 @@ def delete_budget_line(
 @router.delete("/products/{product_budget_id}", status_code=204)
 def delete_product_budget(
     product_budget_id: UUID,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
 ):
     """Delete product budget and all associated budget lines."""
     success = BudgetConfigService.delete_product_budget(db, product_budget_id)
@@ -375,7 +392,8 @@ def delete_product_budget(
 @router.post("/categories", response_model=BudgetCategoryResponse, status_code=201)
 def create_budget_category(
     data: BudgetCategoryCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
 ):
     """Create a budget category."""
     category = BudgetConfigService.create_budget_category(db, data, TEMP_USER_ID)
@@ -386,7 +404,8 @@ def create_budget_category(
 def update_budget_category(
     category_id: UUID,
     data: BudgetCategoryUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
 ):
     """Update budget category."""
     category = BudgetConfigService.update_budget_category(
@@ -400,7 +419,8 @@ def update_budget_category(
 @router.delete("/categories/{category_id}", status_code=204)
 def delete_budget_category(
     category_id: UUID,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
 ):
     """Delete budget category."""
     success = BudgetConfigService.delete_budget_category(db, category_id, TEMP_USER_ID)
@@ -415,7 +435,8 @@ def delete_budget_category(
 def get_budget_summary(
     fiscal_year_id: Optional[UUID] = Query(None, description="Fiscal year ID"),
     version_id: Optional[UUID] = Query(None, description="Budget version ID"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
 ):
     """Get budget summary for active version or specified version."""
     summary = BudgetConfigService.get_budget_summary(db, fiscal_year_id, version_id)
@@ -433,7 +454,8 @@ def get_audit_log(
     changed_by: Optional[UUID] = Query(None, description="User ID filter"),
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(50, ge=1, le=100, description="Page size"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
 ):
     """Get audit log with filters and pagination."""
     logs, total = BudgetConfigService.get_audit_log(

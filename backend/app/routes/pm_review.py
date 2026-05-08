@@ -14,6 +14,7 @@ from typing import Optional
 from pydantic import BaseModel
 
 from app.database import get_db
+from app.dependencies.auth import get_current_user, require_admin
 from app.schemas.pm_review import (
     PendingReviewsResponse,
     ApproveRequest,
@@ -42,7 +43,8 @@ router = APIRouter(prefix="/api", tags=["PM Review"])
 @router.get("/products/{product_id}/planning-reviews", response_model=PendingReviewsResponse)
 def get_pending_reviews(
     product_id: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
 ):
     """
     Get all pending planning reviews for a product.
@@ -60,22 +62,22 @@ def get_pending_reviews(
 def approve_item(
     planning_id: str,
     data: ApproveRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
 ):
     """
     Approve a planning item.
-    
+
     CRITICAL: This does NOT lock the item. PO can request changes in next iteration.
-    
+
     If item is descoped:
     - Remove from current PI (planned_effort = 0)
     - Flag for future PI consideration
     """
     try:
         service = PMReviewService(db)
-        # TODO: Get reviewer_id from auth context
-        reviewer_id = "placeholder-reviewer-id"
-        
+        reviewer_id = current_user.id
+
         result = service.approve_item(planning_id, reviewer_id, data.note)
         
         return ApproveResponse(
@@ -93,7 +95,8 @@ def approve_item(
 def reject_item(
     planning_id: str,
     data: RejectRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
 ):
     """
     Reject a planning item with reason.
@@ -101,9 +104,8 @@ def reject_item(
     """
     try:
         service = PMReviewService(db)
-        # TODO: Get reviewer_id from auth context
-        reviewer_id = "placeholder-reviewer-id"
-        
+        reviewer_id = current_user.id
+
         result = service.reject_item(planning_id, reviewer_id, data.reason)
         
         return {
@@ -119,19 +121,19 @@ def reject_item(
 @router.post("/planning/bulk-approve", response_model=BulkApproveResponse)
 def bulk_approve(
     data: BulkApproveRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
 ):
     """
     Bulk approve multiple items.
-    
+
     CRITICAL: Items are NOT locked after approval.
     PO can request changes in next iteration.
     """
     try:
         service = PMReviewService(db)
-        # TODO: Get reviewer_id from auth context
-        reviewer_id = "placeholder-reviewer-id"
-        
+        reviewer_id = current_user.id
+
         result = service.bulk_approve(data.planning_ids, reviewer_id, data.note)
         
         return BulkApproveResponse(
@@ -146,7 +148,8 @@ def bulk_approve(
 @router.post("/planning/bulk-reject", response_model=BulkRejectResponse)
 def bulk_reject(
     data: BulkRejectRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
 ):
     """
     Bulk reject multiple items with reason.
@@ -154,9 +157,8 @@ def bulk_reject(
     """
     try:
         service = PMReviewService(db)
-        # TODO: Get reviewer_id from auth context
-        reviewer_id = "placeholder-reviewer-id"
-        
+        reviewer_id = current_user.id
+
         result = service.bulk_reject(data.planning_ids, reviewer_id, data.reason)
         
         return BulkRejectResponse(
@@ -170,19 +172,19 @@ def bulk_reject(
 @router.get("/notifications/planning", response_model=NotificationsResponse)
 def get_planning_notifications(
     is_read: Optional[bool] = None,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
 ):
     """
     Get planning notifications for current user.
-    
+
     CRITICAL: Notifications do NOT expire. They persist until read.
     No expiry filter is applied.
     """
     try:
         service = PMReviewService(db)
-        # TODO: Get user_id from auth context
-        user_id = "placeholder-user-id"
-        
+        user_id = current_user.id
+
         result = service.get_notifications(user_id=user_id, is_read=is_read)
         
         return NotificationsResponse(
@@ -196,7 +198,8 @@ def get_planning_notifications(
 @router.post("/notifications/{notification_id}/read")
 def mark_notification_read(
     notification_id: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
 ):
     """Mark notification as read."""
     try:
@@ -211,7 +214,8 @@ def mark_notification_read(
 def get_review_items(
     team_id: str,
     pi_id: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
 ):
     """PM fetches committed plan for review"""
     try:
@@ -229,14 +233,15 @@ def review_item(
     team_id: str,
     jira_record_id: str,
     request: ReviewItemRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
 ):
     """PM approves or rejects a single item"""
     try:
         print(f"REVIEW: team={team_id}, jira={jira_record_id}, action={request.action}")
         if request.action == 'reject' and not request.reason:
             raise HTTPException(status_code=400, detail="Rejection reason is required")
-        
+
         from app.services.team_planning_service import TeamPlanningService
         service = TeamPlanningService(db)
         return service.review_item(team_id, jira_record_id, request.action, request.reason)
@@ -255,7 +260,8 @@ def review_item(
 def complete_review(
     team_id: str,
     request: CompleteReviewRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
 ):
     """PM submits final review decision"""
     try:
@@ -273,7 +279,10 @@ def complete_review(
 
 
 @router.get("/notifications/pending-reviews")
-def get_pending_reviews_count(db: Session = Depends(get_db)):
+def get_pending_reviews_count(
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
     """Get count of plans pending PM review - for notification badge"""
     try:
         from app.services.team_planning_service import TeamPlanningService
@@ -287,7 +296,8 @@ def get_pending_reviews_count(db: Session = Depends(get_db)):
 def resubmit_plan(
     team_id: str,
     pi_id: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
 ):
     """Reset rejected plan to draft for revision"""
     try:

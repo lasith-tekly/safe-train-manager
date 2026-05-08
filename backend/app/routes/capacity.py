@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 
 from app.database import get_db
+from app.dependencies.auth import get_current_user, require_po_or_admin
 from app.models.team import Team
 from app.models.pi import Iteration
 from app.schemas.iteration_capacity import (
@@ -24,7 +25,8 @@ router = APIRouter(prefix="/api/capacity", tags=["capacity"])
 def get_team_iteration_capacity(
     team_id: str,
     pi_id: str = Query(...),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
 ):
     """Get team capacity by iteration."""
     result = IterationCapacityService.get_team_iteration_capacity(db, team_id, pi_id)
@@ -40,7 +42,8 @@ def get_team_iteration_capacity(
 def calculate_team_capacity(
     team_id: str,
     pi_id: Optional[str] = Query(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_po_or_admin)
 ):
     """Recalculate team capacity for all iterations."""
     team = db.query(Team).filter(Team.id == team_id).first()
@@ -59,7 +62,8 @@ def override_capacity(
     team_id: str,
     iteration_id: str,
     data: CapacityOverrideRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_po_or_admin)
 ):
     """Override calculated capacity with manual value."""
     # Verify team exists
@@ -103,7 +107,8 @@ def override_capacity(
 def reset_capacity_override(
     team_id: str,
     iteration_id: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_po_or_admin)
 ):
     """Reset to calculated capacity."""
     if not IterationCapacityService.reset_override(db, team_id, iteration_id):
@@ -118,7 +123,8 @@ def reset_capacity_override(
 def get_annual_capacity_summary(
     year: int = Query(..., ge=2020, le=2100),
     team_ids: Optional[List[str]] = Query(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
 ):
     """Get annual capacity summary for all PIs in a year."""
     summary = IterationCapacityService.get_annual_capacity_summary(db, year, team_ids)

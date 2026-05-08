@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from typing import Optional, List
 
 from app.database import get_db
+from app.dependencies.auth import get_current_user, require_po_or_admin
 from app.schemas.roadmap_v4 import (
     CreateFeatureRequest, UpdateFeatureRequest, FeatureResponse, FeatureListResponse,
     CreateJiraRecordRequest, UpdateJiraRecordRequest, JiraRecordResponse,
@@ -114,6 +115,7 @@ def serialize_feature(feature: RoadmapFeature) -> dict:
 def create_feature(
     request: CreateFeatureRequest,
     db: Session = Depends(get_db),
+    current_user = Depends(require_po_or_admin),
     created_by: Optional[str] = None
 ):
     """Create a new roadmap feature"""
@@ -132,6 +134,7 @@ def list_features(
     page_size: int = Query(50, ge=1, le=100),
     db: Session = Depends(get_db),
     train_id: Optional[str] = Depends(get_train_context),
+    current_user = Depends(get_current_user)
 ):
     """List features with filters and pagination"""
     # If train_id scoping needed and no product_id specified,
@@ -172,7 +175,8 @@ def list_features(
 def get_feature(
     feature_id: str,
     include_jira: bool = Query(True),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
 ):
     """Get a single feature by ID"""
     service = FeatureServiceV4(db)
@@ -186,7 +190,8 @@ def get_feature(
 def update_feature(
     feature_id: str,
     request: UpdateFeatureRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_po_or_admin)
 ):
     """Update a feature"""
     service = FeatureServiceV4(db)
@@ -200,7 +205,8 @@ def update_feature(
 @router.delete("/{feature_id}", status_code=204)
 def delete_feature(
     feature_id: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_po_or_admin)
 ):
     """Delete a feature"""
     service = FeatureServiceV4(db)
@@ -218,7 +224,8 @@ def delete_feature(
 def create_jira_record(
     feature_id: str,
     request: CreateJiraRecordRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_po_or_admin)
 ):
     """Create a JIRA record for a feature"""
     service = FeatureServiceV4(db)
@@ -230,7 +237,8 @@ def create_jira_record(
 def update_jira_record(
     jira_id: str,
     request: UpdateJiraRecordRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_po_or_admin)
 ):
     """Update a JIRA record"""
     service = FeatureServiceV4(db)
@@ -244,7 +252,8 @@ def update_jira_record(
 @router.delete("/jira-records/{jira_id}", status_code=204)
 def delete_jira_record(
     jira_id: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_po_or_admin)
 ):
     """Delete a JIRA record"""
     service = FeatureServiceV4(db)
@@ -261,7 +270,8 @@ def delete_jira_record(
 @router.post("/calculate", response_model=CalculateSizingResponse)
 def calculate_sizing(
     request: CalculateSizingRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
 ):
     """Calculate net sizing and cost from gross sizing"""
     service = CalculationService(db)
@@ -279,7 +289,8 @@ def validate_budget(
     budget_line_id: str = Query(...),
     year: int = Query(...),
     category_id: Optional[str] = Query(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
 ):
     """Validate budget at product, budget line, and category levels"""
     service = ValidationServiceV4(db)
@@ -292,7 +303,8 @@ def validate_capacity(
     team_id: str = Query(...),
     year: int = Query(...),
     quarter: int = Query(..., ge=1, le=4),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
 ):
     """Validate team capacity for a specific quarter"""
     service = ValidationServiceV4(db)
@@ -305,7 +317,8 @@ def validate_feature(
     feature_id: str,
     year: int = Query(...),
     quarter: int = Query(..., ge=1, le=4),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
 ):
     """Validate feature consistency (JIRA vs Feature plan)"""
     service = ValidationServiceV4(db)
@@ -318,7 +331,10 @@ def validate_feature(
 # ============================================
 
 @router.get("/settings/train-config", response_model=TrainConfigResponse)
-def get_train_config(db: Session = Depends(get_db)):
+def get_train_config(
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
     """Get train configuration settings"""
     settings = db.query(GlobalSettings).first()
     if not settings:
@@ -334,7 +350,8 @@ def get_train_config(db: Session = Depends(get_db)):
 @router.put("/settings/train-config", response_model=TrainConfigResponse)
 def update_train_config(
     request: UpdateTrainConfigRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_po_or_admin)
 ):
     """Update train configuration settings"""
     settings = db.query(GlobalSettings).first()
