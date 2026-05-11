@@ -65,16 +65,20 @@ def get_user_team_ids(db: Session, user_id: str) -> list[str]:
 
 def seed_admin_user(db: Session):
     """Create default superadmin if no users exist."""
-    if db.query(User).count() == 0:
-        admin = User(
-            id=str(uuid.uuid4()),
-            username="admin",
-            email="admin@amadeus.com",
-            password_hash=hash_password("Amadeus@2026"),
-            role="superadmin",
-            is_active=True,
-            train_id=None,  # superadmin sees all trains
-            must_change_password=True,
-        )
-        db.add(admin)
-        db.commit()
+    # Check if any users exist - if they do, do nothing
+    if db.query(User).count() > 0:
+        return
+
+    # Only create admin user on first run when database is empty
+    admin = User(
+        id=str(uuid.uuid4()),
+        username="admin",
+        email="admin@amadeus.com",
+        password_hash=hash_password("Amadeus@2026"),
+        role="superadmin",
+        is_active=True,
+        train_id=None,  # superadmin sees all trains
+        must_change_password=True,
+    )
+    db.add(admin)
+    db.commit()
