@@ -25,9 +25,12 @@ class BudgetConfigService:
     # ============= Fiscal Year Operations =============
 
     @staticmethod
-    def get_fiscal_years(db: Session) -> List[FiscalYear]:
-        """Get all fiscal years."""
-        return db.query(FiscalYear).order_by(FiscalYear.year.desc()).all()
+    def get_fiscal_years(db: Session, train_id: Optional[str] = None) -> List[FiscalYear]:
+        """Get all fiscal years, optionally filtered by train."""
+        query = db.query(FiscalYear)
+        if train_id is not None:
+            query = query.filter(FiscalYear.train_id == train_id)
+        return query.order_by(FiscalYear.year.desc()).all()
 
     @staticmethod
     def get_current_fiscal_year(db: Session) -> Optional[FiscalYear]:
@@ -35,13 +38,15 @@ class BudgetConfigService:
         return db.query(FiscalYear).filter(FiscalYear.is_current == True).first()
 
     @staticmethod
-    def create_fiscal_year(db: Session, data: FiscalYearCreate) -> FiscalYear:
+    def create_fiscal_year(db: Session, data: FiscalYearCreate, train_id: Optional[str] = None) -> FiscalYear:
         """Create a new fiscal year."""
         # If setting as current, unset other current fiscal years
         if data.is_current:
             db.query(FiscalYear).update({FiscalYear.is_current: False})
-        
-        fiscal_year = FiscalYear(**data.model_dump())
+
+        fiscal_year_data = data.model_dump()
+        fiscal_year_data['train_id'] = train_id
+        fiscal_year = FiscalYear(**fiscal_year_data)
         db.add(fiscal_year)
         db.commit()
         db.refresh(fiscal_year)

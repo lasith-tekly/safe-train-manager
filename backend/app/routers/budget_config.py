@@ -57,7 +57,7 @@ def get_fiscal_years(
     current_user = Depends(get_current_user)
 ):
     """Get all fiscal years."""
-    fiscal_years = BudgetConfigService.get_fiscal_years(db)
+    fiscal_years = BudgetConfigService.get_fiscal_years(db, train_id)
     return FiscalYearListResponse(data=fiscal_years)
 
 
@@ -65,10 +65,11 @@ def get_fiscal_years(
 def create_fiscal_year(
     data: FiscalYearCreate,
     db: Session = Depends(get_db),
-    current_user = Depends(require_admin)
+    current_user = Depends(require_admin),
+    train_id: Optional[str] = Depends(get_train_context)
 ):
     """Create a new fiscal year."""
-    fiscal_year = BudgetConfigService.create_fiscal_year(db, data)
+    fiscal_year = BudgetConfigService.create_fiscal_year(db, data, train_id)
     return fiscal_year
 
 

@@ -99,10 +99,14 @@ class PIService:
     def get_all(
         db: Session,
         year: Optional[int] = None,
-        status: Optional[str] = None
+        status: Optional[str] = None,
+        train_id: Optional[str] = None
     ) -> Tuple[List[PI], int]:
-        """Get all PIs (optionally filtered by year)."""
+        """Get all PIs (optionally filtered by year and train)."""
         query = db.query(PI)
+
+        if train_id is not None:
+            query = query.filter(PI.train_id == train_id)
 
         if year is not None:
             query = query.filter(PI.year == year)
@@ -121,7 +125,7 @@ class PIService:
         return db.query(PI).filter(PI.id == pi_id).first()
 
     @staticmethod
-    def create(db: Session, data: PICreate) -> PI:
+    def create(db: Session, data: PICreate, train_id: Optional[str] = None) -> PI:
         """Create a new PI with iterations."""
         pi = PI(
             name=data.name,
@@ -129,7 +133,8 @@ class PIService:
             sequence=data.sequence,
             start_date=data.start_date,
             end_date=data.end_date,
-            status=PIStatus(data.status)
+            status=PIStatus(data.status),
+            train_id=train_id
         )
         
         # Add iterations
@@ -183,21 +188,22 @@ class PIService:
     @staticmethod
     def generate_from_template(
         db: Session,
-        data: PIGenerateRequest
+        data: PIGenerateRequest,
+        train_id: Optional[str] = None
     ) -> List[PI]:
         """Generate PIs from a template, respecting working days configuration."""
         # Get global settings for working days
         settings = db.query(GlobalSettings).filter(GlobalSettings.year == data.year).first()
         working_days_str = settings.working_days if settings else "mon,tue,wed,thu,fri"
         working_days = get_working_days_set(working_days_str)
-        
+
         pis = []
         current_start = data.start_date
-        
+
         # Ensure start date is a working day
         while current_start.weekday() not in working_days:
             current_start += timedelta(days=1)
-        
+
         for pi_seq in range(1, data.pi_count + 1):
             # Determine PI name based on template
             if data.template == "quarterly":
@@ -205,14 +211,15 @@ class PIService:
                 pi_name = f"PI {data.year}-Q{quarter}"
             else:
                 pi_name = f"PI {data.year}.{pi_seq}"
-            
+
             pi = PI(
                 name=pi_name,
                 year=data.year,
                 sequence=pi_seq,
                 start_date=current_start,
                 end_date=current_start,  # Will be updated after iterations
-                status=PIStatus.PLANNING
+                status=PIStatus.PLANNING,
+                train_id=train_id
             )
             
             # Generate iterations
@@ -261,17 +268,20 @@ class PIService:
         return pis
 
     @staticmethod
-    def check_overlap(db: Session, year: int, start_date: date, end_date: date, exclude_id: Optional[str] = None) -> bool:
-        """Check if dates overlap with existing PIs."""
+    def check_overlap(db: Session, year: int, start_date: date, end_date: date, train_id: Optional[str] = None, exclude_id: Optional[str] = None) -> bool:
+        """Check if dates overlap with existing PIs in the same train."""
         query = db.query(PI).filter(
             PI.year == year,
             PI.start_date <= end_date,
             PI.end_date >= start_date
         )
-        
+
+        if train_id is not None:
+            query = query.filter(PI.train_id == train_id)
+
         if exclude_id:
             query = query.filter(PI.id != exclude_id)
-        
+
         return query.first() is not None
 
     @staticmethod
@@ -379,47 +389,59 @@ class PIService:
         return pi
 
     @staticmethod
-    def commit_year(db: Session, year: int) -> List[PI]:
-        """Commit all draft PIs for a year."""
-        pis = db.query(PI).filter(
+    def commit_year(db: Session, year: int, train_id: Optional[str] = None) -> List[PI]:
+        """Commit all draft PIs for a year and train."""
+        query = db.query(PI).filter(
             PI.year == year,
             PI.status == PIStatus.DRAFT
-        ).all()
-        
+        )
+        if train_id is not None:
+            query = query.filter(PI.train_id == train_id)
+        pis = query.all()
+
         if not pis:
             raise ValueError(f"No draft PIs found for year {year}")
-        
+
         # Validate all PIs have iterations
         for pi in pis:
             if not pi.iterations:
                 raise ValueError(f"PI {pi.name} has no iterations")
-        
+
         for pi in pis:
             pi.status = PIStatus.COMMITTED
-        
+
         db.commit()
-        
-        # Return all PIs for the year
-        return db.query(PI).filter(PI.year == year).order_by(PI.sequence).all()
+
+        # Return all PIs for the year and train
+        result_query = db.query(PI).filter(PI.year == year)
+        if train_id is not None:
+            result_query = result_query.filter(PI.train_id == train_id)
+        return result_query.order_by(PI.sequence).all()
 
     @staticmethod
-    def uncommit_year(db: Session, year: int) -> List[PI]:
-        """Uncommit all committed PIs for a year back to draft."""
-        pis = db.query(PI).filter(
+    def uncommit_year(db: Session, year: int, train_id: Optional[str] = None) -> List[PI]:
+        """Uncommit all committed PIs for a year and train back to draft."""
+        query = db.query(PI).filter(
             PI.year == year,
             PI.status == PIStatus.COMMITTED
-        ).all()
-        
+        )
+        if train_id is not None:
+            query = query.filter(PI.train_id == train_id)
+        pis = query.all()
+
         if not pis:
             raise ValueError(f"No committed PIs found for year {year}")
-        
+
         for pi in pis:
             pi.status = PIStatus.DRAFT
-        
+
         db.commit()
-        
-        # Return all PIs for the year
-        return db.query(PI).filter(PI.year == year).order_by(PI.sequence).all()
+
+        # Return all PIs for the year and train
+        result_query = db.query(PI).filter(PI.year == year)
+        if train_id is not None:
+            result_query = result_query.filter(PI.train_id == train_id)
+        return result_query.order_by(PI.sequence).all()
 
     @staticmethod
     def get_cascade_preview(
@@ -639,17 +661,20 @@ class PIService:
         )
 
     @staticmethod
-    def realign_to_working_days(db: Session, year: int) -> List[PI]:
+    def realign_to_working_days(db: Session, year: int, train_id: Optional[str] = None) -> List[PI]:
         """Realign all PIs and iterations for a year to respect working days.
-        
+
         This fixes existing PIs that may have dates on non-working days.
         """
         # Get working days for this year
         working_days = get_working_days_for_year(db, year)
-        
-        # Get all PIs for the year, ordered by sequence
-        pis = db.query(PI).filter(PI.year == year).order_by(PI.sequence).all()
-        
+
+        # Get all PIs for the year and train, ordered by sequence
+        query = db.query(PI).filter(PI.year == year)
+        if train_id is not None:
+            query = query.filter(PI.train_id == train_id)
+        pis = query.order_by(PI.sequence).all()
+
         if not pis:
             return []
         

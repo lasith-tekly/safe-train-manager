@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.dependencies.auth import get_current_user, require_admin
+from app.dependencies.auth import get_current_user, require_admin, get_train_context
 from app.schemas.pi import (
     PICreate,
     PIUpdate,
@@ -29,10 +29,11 @@ def list_pis(
     year: Optional[int] = Query(None, ge=2020, le=2100),
     status: Optional[str] = Query(None),
     db: Session = Depends(get_db),
-    current_user = Depends(get_current_user)
+    current_user = Depends(get_current_user),
+    train_id: Optional[str] = Depends(get_train_context)
 ):
-    """List all PIs (optionally filtered by year) with their iterations."""
-    pis, total = PIService.get_all(db, year, status)
+    """List all PIs (optionally filtered by year and train) with their iterations."""
+    pis, total = PIService.get_all(db, year, status, train_id)
     return PIListResponse(
         data=[PIService.build_pi_response(pi) for pi in pis],
         total=total
@@ -43,17 +44,18 @@ def list_pis(
 def create_pi(
     data: PICreate,
     db: Session = Depends(get_db),
-    current_user = Depends(require_admin)
+    current_user = Depends(require_admin),
+    train_id: Optional[str] = Depends(get_train_context)
 ):
     """Create a new PI with iterations."""
     # Check for overlapping PIs
-    if PIService.check_overlap(db, data.year, data.start_date, data.end_date):
+    if PIService.check_overlap(db, data.year, data.start_date, data.end_date, train_id):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="PI dates overlap with an existing PI"
         )
-    
-    pi = PIService.create(db, data)
+
+    pi = PIService.create(db, data, train_id)
     return PIService.build_pi_response(pi)
 
 
@@ -121,18 +123,19 @@ def delete_pi(
 def generate_pis(
     data: PIGenerateRequest,
     db: Session = Depends(get_db),
-    current_user = Depends(require_admin)
+    current_user = Depends(require_admin),
+    train_id: Optional[str] = Depends(get_train_context)
 ):
     """Generate PIs from template."""
     # Check if PIs already exist for this year
-    existing, _ = PIService.get_all(db, data.year)
+    existing, _ = PIService.get_all(db, data.year, None, train_id)
     if existing:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"PIs already exist for year {data.year}. Delete them first."
         )
-    
-    pis = PIService.generate_from_template(db, data)
+
+    pis = PIService.generate_from_template(db, data, train_id)
     return PIListResponse(
         data=[PIService.build_pi_response(pi) for pi in pis],
         total=len(pis)
@@ -260,11 +263,12 @@ def uncommit_pi(
 def commit_year(
     year: int,
     db: Session = Depends(get_db),
-    current_user = Depends(require_admin)
+    current_user = Depends(require_admin),
+    train_id: Optional[str] = Depends(get_train_context)
 ):
     """Commit all draft PIs for a year."""
     try:
-        pis = PIService.commit_year(db, year)
+        pis = PIService.commit_year(db, year, train_id)
         return PIListResponse(
             data=[PIService.build_pi_response(pi) for pi in pis],
             total=len(pis)
@@ -280,11 +284,12 @@ def commit_year(
 def uncommit_year(
     year: int,
     db: Session = Depends(get_db),
-    current_user = Depends(require_admin)
+    current_user = Depends(require_admin),
+    train_id: Optional[str] = Depends(get_train_context)
 ):
     """Uncommit all committed PIs for a year back to draft."""
     try:
-        pis = PIService.uncommit_year(db, year)
+        pis = PIService.uncommit_year(db, year, train_id)
         return PIListResponse(
             data=[PIService.build_pi_response(pi) for pi in pis],
             total=len(pis)
@@ -333,14 +338,15 @@ def apply_cascade(
 def realign_working_days(
     year: int,
     db: Session = Depends(get_db),
-    current_user = Depends(require_admin)
+    current_user = Depends(require_admin),
+    train_id: Optional[str] = Depends(get_train_context)
 ):
     """Realign all PIs and iterations for a year to respect working days.
-    
+
     This fixes existing PIs that may have dates on non-working days (weekends).
     All dates will be adjusted to fall on configured working days.
     """
-    pis = PIService.realign_to_working_days(db, year)
+    pis = PIService.realign_to_working_days(db, year, train_id)
     if not pis:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
