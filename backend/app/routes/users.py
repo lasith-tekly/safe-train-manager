@@ -75,6 +75,7 @@ def create_user(req: CreateUserRequest, db: Session = Depends(get_db)):
         password_hash=hash_password(req.password),
         role=req.role,
         train_id=req.train_id,
+        must_change_password=True,
     )
     db.add(user)
     db.flush()

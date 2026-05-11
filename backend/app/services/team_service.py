@@ -91,14 +91,15 @@ class TeamService:
         ).first()
 
     @staticmethod
-    def create(db: Session, data: TeamCreate) -> Team:
+    def create(db: Session, data: TeamCreate, train_id: Optional[str] = None) -> Team:
         """Create a new team."""
         team = Team(
             name=data.name.strip(),
             short_code=data.short_code.upper().strip(),
             description=data.description,
             site_id=str(data.site_id) if data.site_id else None,
-            status=TeamStatus(data.status)
+            status=TeamStatus(data.status),
+            train_id=train_id
         )
         db.add(team)
         db.flush()

@@ -77,14 +77,14 @@ class ProductService:
         ).first()
 
     @staticmethod
-    def create(db: Session, data: ProductCreate) -> Product:
+    def create(db: Session, data: ProductCreate, train_id: Optional[str] = None) -> Product:
         """Create a new product."""
         product = Product(
             name=data.name.strip(),
             short_code=data.short_code.upper().strip(),
             description=data.description,
             status=ProductStatus(data.status),
-            train_id=data.train_id if hasattr(data, 'train_id') else None
+            train_id=train_id
         )
         db.add(product)
         db.commit()

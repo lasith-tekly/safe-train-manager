@@ -57,7 +57,8 @@ def get_team(
 def create_team(
     data: TeamCreate,
     db: Session = Depends(get_db),
-    current_user = Depends(require_admin)
+    current_user = Depends(require_admin),
+    train_id: Optional[str] = Depends(get_train_context)
 ):
     """Create a new team."""
     # Check for duplicate name
@@ -74,7 +75,7 @@ def create_team(
             detail="A team with this short code already exists"
         )
 
-    team = TeamService.create(db, data)
+    team = TeamService.create(db, data, train_id)
     year = data.capacity.year if data.capacity else None
     return TeamService.build_team_response(db, team, year)
 

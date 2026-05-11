@@ -67,7 +67,8 @@ def get_product(
 def create_product(
     product_data: ProductCreate,
     db: Session = Depends(get_db),
-    current_user = Depends(require_admin)
+    current_user = Depends(require_admin),
+    train_id: Optional[str] = Depends(get_train_context)
 ):
     """
     Create a new product.
@@ -93,7 +94,7 @@ def create_product(
             detail="A product with this short code already exists"
         )
 
-    product = ProductService.create(db, product_data)
+    product = ProductService.create(db, product_data, train_id)
 
     return ProductResponse(
         id=product.id,
