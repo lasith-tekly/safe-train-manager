@@ -33,6 +33,8 @@ class PI(Base):
         default=PIStatus.PLANNING,
         index=True
     )
+    train_id = Column(String(36), ForeignKey("trains.id", ondelete="SET NULL"),
+                      nullable=True, index=True)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
     updated_at = Column(DateTime, nullable=True, onupdate=datetime.utcnow)
 

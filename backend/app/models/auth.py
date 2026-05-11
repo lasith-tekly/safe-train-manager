@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, Text
+from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, Text, UniqueConstraint
 from sqlalchemy.orm import relationship
 from app.database import Base
 
@@ -24,6 +24,8 @@ class User(Base):
 
     team_assignments = relationship("UserTeamAssignment", back_populates="user",
                                     cascade="all, delete-orphan")
+    train_assignments = relationship("UserTrainAssignment", back_populates="user",
+                                     cascade="all, delete-orphan")
 
 
 class UserTeamAssignment(Base):
@@ -37,3 +39,23 @@ class UserTeamAssignment(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     user = relationship("User", back_populates="team_assignments")
+
+
+class UserTrainAssignment(Base):
+    __tablename__ = "user_train_assignments"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"),
+                     nullable=False, index=True)
+    train_id = Column(String(36), ForeignKey("trains.id", ondelete="CASCADE"),
+                      nullable=False, index=True)
+    role = Column(String(20), nullable=False)
+    is_default = Column(Boolean, default=False, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    user = relationship("User", back_populates="train_assignments")
+    train = relationship("Train")
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "train_id", name="uq_user_train"),
+    )

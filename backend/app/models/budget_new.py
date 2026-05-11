@@ -35,6 +35,8 @@ class FiscalYear(Base):
     end_month = Column(Integer, nullable=False)
     end_day = Column(Integer, nullable=False)
     is_current = Column(Boolean, default=False, index=True)
+    train_id = Column(String(36), ForeignKey("trains.id", ondelete="SET NULL"),
+                      nullable=True, index=True)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
     updated_at = Column(DateTime, nullable=True, onupdate=datetime.utcnow)
 
