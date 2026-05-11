@@ -36,6 +36,7 @@ import dayjs from 'dayjs';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import type { PI, PIGenerateRequest, PICreate, IterationCreate, Holiday, CascadePreviewResponse, CascadeApplyRequest } from '../../../types';
 import { getPIs, generatePIs, deletePI, createPI, getHolidays, addIteration, deleteIteration, recalculatePI, getCascadePreview, applyCascade, getGlobalSettings, updateGlobalSettings } from '../../../services/api';
+import { TrainContextSelect } from '../../../components/TrainContextSelect';
 import styles from './PICalendarTab.module.css';
 
 dayjs.extend(isoWeek);
@@ -894,6 +895,8 @@ export const PICalendarTab: React.FC = () => {
               </Form.Item>
             </Col>
           </Row>
+
+          <TrainContextSelect />
         </Form>
 
         <Divider>Iterations ({iterations.length})</Divider>

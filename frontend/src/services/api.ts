@@ -112,7 +112,13 @@ export const getProduct = async (id: string): Promise<Product> => {
 };
 
 export const createProduct = async (data: ProductCreate): Promise<Product> => {
-  const response = await api.post<Product>('/products', data);
+  // Extract train_id if present (superadmin All Trains mode)
+  const { train_id, ...productData } = data as any;
+  const headers: any = {};
+  if (train_id) {
+    headers['X-Train-Context'] = train_id;
+  }
+  const response = await api.post<Product>('/products', productData, { headers });
   return response.data;
 };
 
@@ -438,7 +444,12 @@ export const getPI = async (id: string): Promise<PI> => {
 };
 
 export const createPI = async (data: PICreate): Promise<PI> => {
-  const response = await api.post<PI>('/pis', data);
+  const { train_id, ...piData } = data as any;
+  const headers: any = {};
+  if (train_id) {
+    headers['X-Train-Context'] = train_id;
+  }
+  const response = await api.post<PI>('/pis', piData, { headers });
   return response.data;
 };
 

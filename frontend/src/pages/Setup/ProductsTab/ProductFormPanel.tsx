@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Form, Input, Radio, Button, Space } from 'antd';
 import { SidePanel } from '../../../components/SidePanel';
+import { TrainContextSelect } from '../../../components/TrainContextSelect';
 import type { Product, ProductCreate, ProductUpdate } from '../../../types';
 
 interface ProductFormPanelProps {
@@ -105,6 +106,8 @@ export const ProductFormPanel: React.FC<ProductFormPanelProps> = ({
             style={{ width: 120 }}
           />
         </Form.Item>
+
+        <TrainContextSelect />
 
         <Form.Item
           name="description"

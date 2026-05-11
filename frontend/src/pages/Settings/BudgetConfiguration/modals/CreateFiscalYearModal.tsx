@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Modal, Form, InputNumber, Select, Checkbox, message } from 'antd';
 import { createFiscalYear, FiscalYearCreate } from '../../../../services/budgetConfigService';
+import { TrainContextSelect } from '../../../../components/TrainContextSelect';
 
 interface CreateFiscalYearModalProps {
   visible: boolean;
@@ -79,6 +80,8 @@ export const CreateFiscalYearModal: React.FC<CreateFiscalYearModalProps> = ({
             placeholder="e.g., 2027"
           />
         </Form.Item>
+
+        <TrainContextSelect />
 
         <Form.Item label="Start Date">
           <Form.Item

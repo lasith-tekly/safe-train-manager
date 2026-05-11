@@ -339,10 +339,48 @@ const mutation = useMutation({
 
 ## Git Workflow
 
+### Repository Setup (Dual Remote)
+This project uses TWO git remotes:
+
+| Remote | URL | Purpose |
+|--------|-----|---------|
+| `origin` | `github.com/lasith-tekly/safe-train-manager` | Personal GitHub — daily pushes |
+| `amadeus` | `github.com/pljayara_amadeus/Amadeus_Elevate` | Amadeus GitHub — company sync |
+
+Verify remotes:
+```bash
+git remote -v
+```
+
 ### Branch Strategy
-- `main` - Production-ready code
-- `developer2` - Active development branch
-- Feature branches for major changes
+- `main` — Production-ready. Never commit directly.
+- `developer` — Active development. ALL work happens here.
+
+### Daily Development Workflow
+```bash
+git checkout developer
+git add .
+git commit -m "[Module] Description
+Modules affected: X, Y
+Risk: 🟢/🟡/🔴"
+git push                     # → personal GitHub (origin)
+```
+
+### Periodic Amadeus Sync (weekly or at milestones)
+```bash
+git push amadeus developer
+git push amadeus main        # only after developer → main merge
+```
+
+### Merging developer → main
+Only after deployment confirmed on Amadeus server:
+```bash
+git checkout main
+git merge developer
+git push
+git push amadeus main
+git checkout developer
+```
 
 ### Commit Messages
 
@@ -370,6 +408,61 @@ Brief description
 - Commit after each logical unit of work
 - Don't commit broken code
 - Commit before switching tasks
+
+---
+
+## Local Environment Setup
+
+### First-Time Setup (after fresh clone or venv deletion)
+Backend venv and frontend .env are gitignored — must be recreated locally.
+
+**Backend:**
+```bash
+cd backend
+python3 -m venv venv
+source venv/bin/activate
+python -m pip install -r requirements.txt
+```
+
+**Database initialisation (if safe_train.db is missing or 0 bytes):**
+```bash
+python -c "
+from app.database import engine, Base
+from app.models.auth import User
+from app.models.product import Product
+from app.models.team import Team
+from app.models.train import Train
+from app.models.budget_new import BudgetVersion, ProductBudget, BudgetLine, BudgetCategory
+Base.metadata.create_all(bind=engine)
+print('All tables created successfully')
+"
+```
+
+**Frontend:**
+```bash
+cd frontend
+npm install
+cp .env.example .env    # set VITE_API_URL=http://localhost:8000
+```
+
+### Starting the App (every session)
+```bash
+# Terminal 1 — Backend
+cd backend
+source venv/bin/activate
+python -m uvicorn app.main:app --reload --port 8000
+
+# Terminal 2 — Frontend
+cd frontend
+npm run dev
+```
+
+### ⚠️ Critical Environment Notes
+- Always use `python -m uvicorn` NOT plain `uvicorn`
+- Always use `python -m pip` NOT plain `pip` if pip not found
+- `VITE_API_URL` must be set WITHOUT `/api` suffix
+- `backend/.env` must explicitly set `DATABASE_URL=sqlite:///./safe_train.db`
+- Alembic migration chain is BROKEN — use SQLite direct + create_all + stamp only
 
 ---
 
@@ -494,8 +587,11 @@ class CreateFeatureRequest(BaseModel):
 - Use parameterized queries
 
 **Authentication:**
-- TODO: Implement SSO/RBAC
-- Currently no authentication (development only)
+- ✅ JWT-based authentication implemented
+- ✅ Role-based access control: admin, pm, readonly
+- ✅ Force password change on first login
+- ✅ Session expiry with UI notification
+- Token config: ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY in backend/.env
 
 ### Frontend Security
 
@@ -508,6 +604,14 @@ class CreateFeatureRequest(BaseModel):
 - Always validate API responses
 - Handle errors gracefully
 - Don't expose sensitive data in console
+
+---
+
+## Development Tooling
+
+- **Claude Code** — primary implementation and agentic coding tool (replaced Windsurf)
+- **Claude Code Subagents** — `code-reviewer`, `tech-lead`, `spec-updater`
+- `docs/agents/*.md` — reference documents readable by Claude Code on demand
 
 ---
 
@@ -595,7 +699,14 @@ def get_team_planning(
 
 ---
 
-**Document Version:** 1.0  
-**Last Updated:** 2026-02-19  
+**Document Version:** 2.0  
+**Last Updated:** 2026-05-06  
 **Maintained By:** @TechLead  
 **Review Frequency:** Quarterly or after major changes
+
+### Change Log
+
+| Version | Date | Changes |
+|---------|------|---------|
+| 2.0 | 2026-05-06 | Dual remote git workflow, local env setup, fixed branch name, updated auth status, added Claude Code tooling |
+| 1.0 | 2026-02-19 | Initial version |

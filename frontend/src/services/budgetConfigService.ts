@@ -163,7 +163,12 @@ export const getFiscalYears = async (): Promise<FiscalYear[]> => {
 };
 
 export const createFiscalYear = async (data: FiscalYearCreate): Promise<FiscalYear> => {
-  const response = await api.post('/budget/fiscal-years', data);
+  const { train_id, ...fiscalYearData } = data as any;
+  const headers: any = {};
+  if (train_id) {
+    headers['X-Train-Context'] = train_id;
+  }
+  const response = await api.post('/budget/fiscal-years', fiscalYearData, { headers });
   return response.data;
 };
 
