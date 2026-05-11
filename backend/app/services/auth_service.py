@@ -21,11 +21,10 @@ def verify_password(password: str, password_hash: str) -> bool:
     return bcrypt.checkpw(password.encode(), password_hash.encode())
 
 
-def create_access_token(user_id: str, role: str,
-                         train_id: str | None = None) -> str:
+def create_access_token(user_id: str, role: str) -> str:
     expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     return jwt.encode(
-        {"sub": user_id, "role": role, "train_id": train_id,
+        {"sub": user_id, "role": role,
          "exp": expire, "type": "access"},
         SECRET_KEY, algorithm=ALGORITHM
     )
@@ -61,6 +60,76 @@ def get_user_team_ids(db: Session, user_id: str) -> list[str]:
         UserTeamAssignment.user_id == user_id
     ).all()
     return [a.team_id for a in assignments]
+
+
+def get_user_trains(db: Session, user_id: str) -> list:
+    """Get all train assignments for a user"""
+    from app.models.auth import UserTrainAssignment
+    assignments = db.query(UserTrainAssignment).filter(
+        UserTrainAssignment.user_id == user_id
+    ).all()
+    return assignments
+
+
+def get_user_train_ids(db: Session, user_id: str) -> list[str]:
+    """Get list of train IDs user has access to"""
+    from app.models.auth import UserTrainAssignment
+    assignments = db.query(UserTrainAssignment).filter(
+        UserTrainAssignment.user_id == user_id
+    ).all()
+    return [a.train_id for a in assignments]
+
+
+def get_user_default_train_id(db: Session, user_id: str) -> Optional[str]:
+    """Get user's default train ID"""
+    from app.models.auth import UserTrainAssignment
+    assignment = db.query(UserTrainAssignment).filter(
+        UserTrainAssignment.user_id == user_id,
+        UserTrainAssignment.is_default == True
+    ).first()
+    if assignment:
+        return assignment.train_id
+    # Fall back to first assignment if no default set
+    first = db.query(UserTrainAssignment).filter(
+        UserTrainAssignment.user_id == user_id
+    ).first()
+    return first.train_id if first else None
+
+
+def assign_user_to_train(db: Session, user_id: str,
+                          train_id: str, role: str,
+                          is_default: bool = False) -> object:
+    """Assign a user to a train with a role"""
+    from app.models.auth import UserTrainAssignment
+    # If setting as default, clear other defaults first
+    if is_default:
+        db.query(UserTrainAssignment).filter(
+            UserTrainAssignment.user_id == user_id
+        ).update({"is_default": False})
+    assignment = UserTrainAssignment(
+        user_id=user_id,
+        train_id=train_id,
+        role=role,
+        is_default=is_default
+    )
+    db.add(assignment)
+    db.commit()
+    db.refresh(assignment)
+    return assignment
+
+
+def remove_user_from_train(db: Session, user_id: str, train_id: str) -> bool:
+    """Remove a user from a train"""
+    from app.models.auth import UserTrainAssignment
+    assignment = db.query(UserTrainAssignment).filter(
+        UserTrainAssignment.user_id == user_id,
+        UserTrainAssignment.train_id == train_id
+    ).first()
+    if not assignment:
+        return False
+    db.delete(assignment)
+    db.commit()
+    return True
 
 
 def seed_admin_user(db: Session):

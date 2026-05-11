@@ -149,3 +149,93 @@ def change_password(
     db.commit()
 
     return {"message": "Password changed successfully"}
+
+
+@router.get("/{user_id}/trains")
+def get_user_trains_endpoint(
+    user_id: str,
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
+):
+    """Get all train assignments for a user"""
+    from app.services import auth_service
+    from app.models.auth import UserTrainAssignment
+    from app.models.train import Train
+    assignments = auth_service.get_user_trains(db, user_id)
+    result = []
+    for a in assignments:
+        train = db.query(Train).filter(Train.id == a.train_id).first()
+        if train:
+            result.append({
+                "id": a.id,
+                "train_id": a.train_id,
+                "train_name": train.name,
+                "role": a.role,
+                "is_default": a.is_default
+            })
+    return result
+
+
+@router.post("/{user_id}/trains")
+def assign_train(
+    user_id: str,
+    data: dict,
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
+):
+    """Assign user to a train"""
+    from app.services import auth_service
+    assignment = auth_service.assign_user_to_train(
+        db=db,
+        user_id=user_id,
+        train_id=data["train_id"],
+        role=data["role"],
+        is_default=data.get("is_default", False)
+    )
+    return {"message": "Train assigned successfully",
+            "assignment_id": assignment.id}
+
+
+@router.put("/{user_id}/trains/{train_id}")
+def update_train_assignment(
+    user_id: str,
+    train_id: str,
+    data: dict,
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
+):
+    """Update user's role or default status on a train"""
+    from app.models.auth import UserTrainAssignment
+    assignment = db.query(UserTrainAssignment).filter(
+        UserTrainAssignment.user_id == user_id,
+        UserTrainAssignment.train_id == train_id
+    ).first()
+    if not assignment:
+        raise HTTPException(status_code=404,
+                            detail="Assignment not found")
+    if "role" in data:
+        assignment.role = data["role"]
+    if "is_default" in data and data["is_default"]:
+        # Clear other defaults first
+        db.query(UserTrainAssignment).filter(
+            UserTrainAssignment.user_id == user_id
+        ).update({"is_default": False})
+        assignment.is_default = True
+    db.commit()
+    return {"message": "Assignment updated successfully"}
+
+
+@router.delete("/{user_id}/trains/{train_id}")
+def remove_train(
+    user_id: str,
+    train_id: str,
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
+):
+    """Remove user from a train"""
+    from app.services import auth_service
+    success = auth_service.remove_user_from_train(db, user_id, train_id)
+    if not success:
+        raise HTTPException(status_code=404,
+                            detail="Assignment not found")
+    return {"message": "Train assignment removed"}

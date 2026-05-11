@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Request
 from typing import Optional
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
@@ -64,10 +64,38 @@ def get_optional_user(
 
 
 def get_train_context(
-    current_user: Optional[User] = Depends(get_optional_user)
+    request: Request,
+    current_user: Optional[User] = Depends(get_optional_user),
+    db: Session = Depends(get_db)
 ) -> Optional[str]:
+    """
+    Determines the active train context for data filtering.
+
+    Priority order:
+    1. If no user → no filter (None)
+    2. If superadmin + no header → no filter (sees all)
+    3. If superadmin + header → filter to that train
+    4. If regular user + valid header → filter to that train
+    5. If regular user + no/invalid header → use default train
+    """
     if not current_user:
-        return None  # No auth — superadmin-like, no filter
-    if current_user.role == "superadmin":
         return None
-    return current_user.train_id
+
+    selected = request.headers.get("X-Train-Context")
+
+    if current_user.role == "superadmin":
+        if not selected:
+            return None  # sees all data
+        return selected  # filter to selected train
+
+    # Regular user (admin, po, readonly)
+    from app.services.auth_service import (
+        get_user_train_ids, get_user_default_train_id
+    )
+    user_train_ids = get_user_train_ids(db, current_user.id)
+
+    if selected and selected in user_train_ids:
+        return selected
+
+    # Fall back to default train
+    return get_user_default_train_id(db, current_user.id)
