@@ -89,7 +89,7 @@ export const SideNavLayout: React.FC<SideNavLayoutProps> = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, logout, isAdmin, isSuperAdmin, isReadOnly, isPO } = useAuth();
+  const { user, logout, isAdmin, isSuperAdmin, isPO } = useAuth();
   const menuItems = buildMenuItems(isSuperAdmin, isAdmin);
 
   const getSelectedKeys = (): string[] => {

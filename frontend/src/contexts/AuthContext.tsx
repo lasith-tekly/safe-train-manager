@@ -1,20 +1,42 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
+import { useQueryClient } from '@tanstack/react-query';
 import { API_BASE } from '../config/api';
 
-// Set axios header synchronously on module load
-// This runs before any React rendering or React Query calls
+// Module-level variable for axios interceptor to access
+let currentTrainId: string | null = null;
+
+export const setCurrentTrainId = (trainId: string | null) => {
+  currentTrainId = trainId;
+};
+
+// Set axios headers synchronously on module load
 const storedToken = localStorage.getItem('amadeus_access_token');
+const storedTrainId = localStorage.getItem('selectedTrainId');
 if (storedToken) {
   axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+}
+if (storedTrainId) {
+  currentTrainId = storedTrainId;
+  axios.defaults.headers.common['X-Train-Context'] = storedTrainId;
+}
+
+export interface TrainAssignment {
+  id: string;
+  train_id: string;
+  train_name: string;
+  train_short_code: string;
+  role: 'admin' | 'po' | 'readonly';
+  is_default: boolean;
 }
 
 export interface AuthUser {
   id: string;
   username: string;
   email: string;
-  role: 'superadmin' | 'admin' | 'po' | 'readonly';
-  train_id: string | null;
+  role: string;                          // global role
+  train_id: string | null;               // kept for backward compatibility
+  trains: TrainAssignment[];             // NEW — all assigned trains
   team_ids: string[];
   must_change_password: boolean;
 }
@@ -25,12 +47,19 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
+
+  // Train context — NEW
+  selectedTrainId: string | null;
+  selectedTrainRole: string | null;
+  switchTrain: (trainId: string | null) => void;
+
+  // Role helpers — updated to use per-train role
   isAdmin: boolean;
   isSuperAdmin: boolean;
   isPO: boolean;
   isReadOnly: boolean;
-  canEdit: boolean;          // admin or po
-  canManageUsers: boolean;   // admin only
+  canEdit: boolean;
+  canManageUsers: boolean;
   mustChangePassword: boolean;
   isAssignedTeam: (teamId: string) => boolean;
 }
@@ -40,16 +69,34 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedTrainId, setSelectedTrainId] = useState<string | null>(() => {
+    // Load from localStorage on init
+    return localStorage.getItem('selectedTrainId') || null;
+  });
+
+  const queryClient = useQueryClient();
 
   const setAuthHeader = (token: string) => {
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
   };
 
+  const setTrainContextHeader = (trainId: string | null) => {
+    if (trainId) {
+      axios.defaults.headers.common['X-Train-Context'] = trainId;
+    } else {
+      delete axios.defaults.headers.common['X-Train-Context'];
+    }
+  };
+
   const clearAuth = () => {
     localStorage.removeItem('amadeus_access_token');
     localStorage.removeItem('amadeus_refresh_token');
+    localStorage.removeItem('selectedTrainId');
     delete axios.defaults.headers.common['Authorization'];
+    delete axios.defaults.headers.common['X-Train-Context'];
+    currentTrainId = null;
     setUser(null);
+    setSelectedTrainId(null);
   };
 
   const fetchMe = useCallback(async (token: string): Promise<AuthUser | null> => {
@@ -62,6 +109,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  // Get role for currently selected train
+  const selectedTrainRole = useMemo(() => {
+    if (!user) return null;
+    if (user.role === 'superadmin') return 'admin'; // superadmin = admin everywhere
+    if (!selectedTrainId || !user.trains) return null;
+    const assignment = user.trains.find(
+      t => t.train_id === selectedTrainId
+    );
+    return assignment?.role || null;
+  }, [user, selectedTrainId]);
+
+  // Role boolean helpers
+  const isSuperAdmin = user?.role === 'superadmin';
+  const isAdmin = isSuperAdmin || selectedTrainRole === 'admin';
+  const isPO = selectedTrainRole === 'po';
+  const isReadOnly = selectedTrainRole === 'readonly';
+  const canEdit = isAdmin || isPO;
+  const canManageUsers = isSuperAdmin;
+  const mustChangePassword = user?.must_change_password ?? false;
+
+  const isAssignedTeam = useCallback((teamId: string) => {
+    if (isAdmin || isSuperAdmin) return true;
+    return user?.team_ids?.includes(teamId) ?? false;
+  }, [isAdmin, isSuperAdmin, user?.team_ids]);
+
+  const switchTrain = useCallback((trainId: string | null) => {
+    setCurrentTrainId(trainId);
+    setSelectedTrainId(trainId);
+    setTrainContextHeader(trainId);
+    if (trainId) {
+      localStorage.setItem('selectedTrainId', trainId);
+    } else {
+      localStorage.removeItem('selectedTrainId');
+    }
+    // Invalidate all React Query cache so data refreshes
+    queryClient.invalidateQueries();
+  }, [queryClient]);
+
   // On mount — restore session from localStorage
   useEffect(() => {
     const init = async () => {
@@ -70,6 +155,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const me = await fetchMe(token);
       if (me) {
         setUser(me);
+        // Restore selectedTrainId if user still has access
+        const stored = localStorage.getItem('selectedTrainId');
+        if (stored && me.trains?.some(t => t.train_id === stored)) {
+          setSelectedTrainId(stored);
+          setCurrentTrainId(stored);
+          setTrainContextHeader(stored);
+        } else if (me.trains?.length > 0) {
+          // Set to default or first train
+          const defaultTrain = me.trains.find(t => t.is_default)?.train_id || me.trains[0].train_id;
+          setSelectedTrainId(defaultTrain);
+          setCurrentTrainId(defaultTrain);
+          setTrainContextHeader(defaultTrain);
+          localStorage.setItem('selectedTrainId', defaultTrain);
+        }
       } else {
         // Try refresh
         const refresh = localStorage.getItem('amadeus_refresh_token');
@@ -81,8 +180,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem('amadeus_access_token', newToken);
             localStorage.setItem('amadeus_refresh_token', res.data.refresh_token);
             const me2 = await fetchMe(newToken);
-            if (me2) setUser(me2);
-            else clearAuth();
+            if (me2) {
+              setUser(me2);
+              // Set selectedTrainId for refreshed session
+              const stored = localStorage.getItem('selectedTrainId');
+              if (stored && me2.trains?.some(t => t.train_id === stored)) {
+                setSelectedTrainId(stored);
+                setCurrentTrainId(stored);
+                setTrainContextHeader(stored);
+              } else if (me2.trains?.length > 0) {
+                const defaultTrain = me2.trains.find(t => t.is_default)?.train_id || me2.trains[0].train_id;
+                setSelectedTrainId(defaultTrain);
+                setCurrentTrainId(defaultTrain);
+                setTrainContextHeader(defaultTrain);
+                localStorage.setItem('selectedTrainId', defaultTrain);
+              }
+            } else {
+              clearAuth();
+            }
           } catch { clearAuth(); }
         } else { clearAuth(); }
       }
@@ -93,12 +208,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (username: string, password: string) => {
     const res = await axios.post(`${API_BASE}/api/auth/login`, { username, password });
-    const { access_token, refresh_token, must_change_password } = res.data;
+    const { access_token, refresh_token, must_change_password, trains, default_train_id } = res.data;
     localStorage.setItem('amadeus_access_token', access_token);
     localStorage.setItem('amadeus_refresh_token', refresh_token);
     setAuthHeader(access_token);
     const me = await fetchMe(access_token);
-    if (me) setUser(me);
+    if (me) {
+      setUser(me);
+
+      // Set initial selectedTrainId after login
+      const stored = localStorage.getItem('selectedTrainId');
+      const hasAccess = trains?.some((t: TrainAssignment) => t.train_id === stored);
+
+      if (stored && hasAccess) {
+        setSelectedTrainId(stored);
+        setCurrentTrainId(stored);
+        setTrainContextHeader(stored);
+      } else if (default_train_id) {
+        setSelectedTrainId(default_train_id);
+        setCurrentTrainId(default_train_id);
+        setTrainContextHeader(default_train_id);
+        localStorage.setItem('selectedTrainId', default_train_id);
+      } else if (trains?.length > 0) {
+        const firstTrain = trains[0].train_id;
+        setSelectedTrainId(firstTrain);
+        setCurrentTrainId(firstTrain);
+        setTrainContextHeader(firstTrain);
+        localStorage.setItem('selectedTrainId', firstTrain);
+      } else {
+        setSelectedTrainId(null);
+        setCurrentTrainId(null);
+        localStorage.removeItem('selectedTrainId');
+      }
+    }
+
     if (must_change_password) {
       window.location.href = '/change-password';
       return;
@@ -116,9 +259,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     window.location.href = '/login?reason=expired';
   }, []);
 
-  // Axios interceptor — auto-refresh on 401
+  // Axios interceptors
   useEffect(() => {
-    const interceptor = axios.interceptors.response.use(
+    // Request interceptor to add X-Train-Context header
+    const requestInterceptor = axios.interceptors.request.use(
+      config => {
+        if (currentTrainId) {
+          config.headers['X-Train-Context'] = currentTrainId;
+        }
+        return config;
+      },
+      error => Promise.reject(error)
+    );
+
+    // Response interceptor for auto-refresh on 401
+    const responseInterceptor = axios.interceptors.response.use(
       res => res,
       async err => {
         const originalRequest = err.config;
@@ -139,6 +294,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               `Bearer ${newToken}`;
             originalRequest.headers['Authorization'] =
               `Bearer ${newToken}`;
+            // Preserve train context on refresh
+            if (currentTrainId) {
+              originalRequest.headers['X-Train-Context'] = currentTrainId;
+            }
             return axios(originalRequest);
           } catch {
             sessionExpired();
@@ -148,29 +307,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return Promise.reject(err);
       }
     );
-    return () => axios.interceptors.response.eject(interceptor);
+
+    return () => {
+      axios.interceptors.request.eject(requestInterceptor);
+      axios.interceptors.response.eject(responseInterceptor);
+    };
   }, [logout, sessionExpired]);
-
-  const isSuperAdmin = user?.role === 'superadmin';
-  const isAdmin    = user?.role === 'admin' || isSuperAdmin;
-  const isPO       = user?.role === 'po';
-  const isReadOnly = user?.role === 'readonly';
-  const canEdit    = isAdmin || isPO;
-  const canManageUsers = isAdmin;
-  const mustChangePassword = user?.must_change_password ?? false;
-
-  const isAssignedTeam = (teamId: string) => {
-    if (isAdmin) return true;
-    return user?.team_ids?.includes(teamId) ?? false;
-  };
 
   return (
     <AuthContext.Provider value={{
-      user, isLoading,
+      user,
+      isLoading,
       isAuthenticated: !!user,
-      login, logout,
-      isAdmin, isSuperAdmin, isPO, isReadOnly,
-      canEdit, canManageUsers,
+      login,
+      logout,
+
+      // Train context
+      selectedTrainId,
+      selectedTrainRole,
+      switchTrain,
+
+      // Role helpers
+      isAdmin,
+      isSuperAdmin,
+      isPO,
+      isReadOnly,
+      canEdit,
+      canManageUsers,
       mustChangePassword,
       isAssignedTeam,
     }}>

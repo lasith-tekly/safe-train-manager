@@ -39,7 +39,7 @@ interface PI {
 }
 
 const TeamPlanningPage: React.FC = () => {
-  const { canEdit, isPO, isAdmin, isSuperAdmin, user } = useAuth();
+  const { canEdit, isAdmin, isSuperAdmin, user } = useAuth();
   const [selectedTeamId, setSelectedTeamId] = useState<string>('');
   const [selectedPiId, setSelectedPiId] = useState<string>('');
   const [teams, setTeams] = useState<Team[]>([]);
