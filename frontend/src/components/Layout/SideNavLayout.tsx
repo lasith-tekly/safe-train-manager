@@ -22,6 +22,7 @@ import {
 } from '@ant-design/icons';
 import styles from './SideNavLayout.module.css';
 import { useAuth } from '../../contexts/AuthContext';
+import { TrainSelector } from '../TrainSelector';
 
 const { Sider, Header, Content } = Layout;
 const { Text } = Typography;
@@ -202,7 +203,7 @@ export const SideNavLayout: React.FC<SideNavLayoutProps> = ({ children }) => {
         {/* Top Header */}
         <Header className={styles.header}>
           <div className={styles.headerLeft}>
-            {/* Breadcrumb or page title could go here */}
+            <TrainSelector />
           </div>
           
           <div className={styles.headerRight}>
