@@ -1,57 +1,76 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Select } from 'antd';
 import { RocketOutlined } from '@ant-design/icons';
+import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
+import { API_BASE } from '../../config/api';
 
 const { Option } = Select;
 
 export const TrainSelector: React.FC = () => {
-  const {
-    user,
-    selectedTrainId,
-    switchTrain,
-    isSuperAdmin
-  } = useAuth();
+  const { user, selectedTrainId, switchTrain, isSuperAdmin } = useAuth();
+  const [allTrains, setAllTrains] = useState<any[]>([]);
+
+  // For superadmin, fetch all trains from API
+  useEffect(() => {
+    if (isSuperAdmin) {
+      const token = localStorage.getItem('amadeus_access_token');
+      axios.get(`${API_BASE}/api/trains`, {
+        headers: { Authorization: `Bearer ${token}` }
+      }).then(res => {
+        setAllTrains(res.data.data || res.data || []);
+      }).catch(() => {});
+    }
+  }, [isSuperAdmin]);
+
+  // Trains to display in dropdown
+  // For superadmin: all trains from API
+  // For regular user: their assigned trains
+  const trainsToShow = isSuperAdmin
+    ? allTrains.map(t => ({
+        id: t.id,
+        train_id: t.id,
+        train_name: t.name,
+        train_short_code: t.short_code || '',
+        role: 'admin' as const,
+        is_default: false
+      }))
+    : (user?.trains || []);
 
   // If user has no trains and is not superadmin, show nothing
-  if (!isSuperAdmin && (!user?.trains || user.trains.length === 0)) {
+  if (!isSuperAdmin && trainsToShow.length === 0) {
     return null;
   }
 
-  // If user has only one train and is not superadmin,
-  // show train name but no dropdown (can't switch)
-  const showDropdown = isSuperAdmin || (user?.trains?.length ?? 0) > 1;
+  // Single train non-superadmin — show static badge
+  const showDropdown = isSuperAdmin || trainsToShow.length > 1;
 
-  const selectedTrain = user?.trains?.find(
+  const selectedTrain = trainsToShow.find(
     t => t.train_id === selectedTrainId
   );
   const displayName = selectedTrain?.train_name ||
     (isSuperAdmin && !selectedTrainId ? 'All Trains' : 'Select Train');
 
   if (!showDropdown) {
-    // Single train — just show the name, no dropdown
     return (
       <div style={{
         display: 'flex',
         alignItems: 'center',
         gap: 8,
-        padding: '6px 12px',
+        padding: '4px 12px',
         background: '#f0f5ff',
-        border: '1px solid #d6e4ff',
         borderRadius: 6,
+        border: '1px solid #d6e4ff',
         color: '#1677ff',
         fontSize: 13,
         fontWeight: 500,
+        maxWidth: 220,
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
       }}>
         <RocketOutlined />
-        <span style={{
-          maxWidth: 200,
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap'
-        }}>
-          {displayName}
-        </span>
+        <span>{displayName}</span>
       </div>
     );
   }
@@ -61,70 +80,74 @@ export const TrainSelector: React.FC = () => {
       value={selectedTrainId || 'all'}
       onChange={(value) => switchTrain(value === 'all' ? null : value)}
       style={{ minWidth: 220 }}
-      suffixIcon={<RocketOutlined style={{ color: '#1677ff' }} />}
+      popupMatchSelectWidth={false}
       dropdownStyle={{ minWidth: 280 }}
-      placeholder="Select Train"
+      labelRender={(props) => (
+        <span style={{
+          color: '#1677ff',
+          fontWeight: 500,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+          fontSize: 13,
+        }}>
+          <RocketOutlined />
+          <span style={{
+            maxWidth: 160,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap'
+          }}>
+            {props.label}
+          </span>
+        </span>
+      )}
     >
-      {/* All Trains option — superadmin only */}
+      {/* All Trains — superadmin only */}
       {isSuperAdmin && (
-        <Option value="all">
+        <Option value="all" label="All Trains">
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center'
           }}>
-            <span style={{ fontWeight: 500 }}>
-              <RocketOutlined style={{ marginRight: 8, color: '#8c8c8c' }} />
-              All Trains
-            </span>
+            <span>All Trains</span>
             <span style={{
               fontSize: 11,
               color: '#8c8c8c',
               background: '#f0f0f0',
-              padding: '2px 8px',
-              borderRadius: 3,
-              fontWeight: 500
-            }}>
-              Global View
-            </span>
+              padding: '1px 6px',
+              borderRadius: 3
+            }}>Global View</span>
           </div>
         </Option>
       )}
 
-      {/* User's assigned trains */}
-      {user?.trains?.map(train => (
+      {/* Train list */}
+      {trainsToShow.map(train => (
         <Option
           key={train.train_id}
           value={train.train_id}
+          label={train.train_name}
         >
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
-            alignItems: 'center',
-            gap: 12
+            alignItems: 'center'
           }}>
-            <span style={{
-              flex: 1,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              fontWeight: 500
-            }}>
-              <RocketOutlined style={{ marginRight: 8, color: '#1677ff' }} />
-              {train.train_name}
-            </span>
-            <span style={{
-              fontSize: 11,
-              color: getRoleColor(train.role),
-              background: getRoleBg(train.role),
-              padding: '2px 8px',
-              borderRadius: 3,
-              textTransform: 'capitalize',
-              fontWeight: 500,
-              flexShrink: 0
-            }}>
-              {train.role}
-            </span>
+            <span>{train.train_name}</span>
+            {!isSuperAdmin && (
+              <span style={{
+                fontSize: 11,
+                color: getRoleColor(train.role),
+                background: getRoleBg(train.role),
+                padding: '1px 6px',
+                borderRadius: 3,
+                textTransform: 'capitalize'
+              }}>
+                {train.role}
+              </span>
+            )}
           </div>
         </Option>
       ))}
@@ -132,7 +155,6 @@ export const TrainSelector: React.FC = () => {
   );
 };
 
-// Helper functions for role colors
 function getRoleColor(role: string): string {
   switch (role) {
     case 'admin': return '#1677ff';
