@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -11,6 +11,18 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   const isExpired = new URLSearchParams(window.location.search).get('reason') === 'expired';
+
+  useEffect(() => {
+    // Clear any stale tokens on login page load
+    // This prevents "session expired" on fresh visits
+    const reason = new URLSearchParams(window.location.search).get('reason');
+    if (!reason) {
+      // Only clear if NOT redirected here due to actual expiry
+      localStorage.removeItem('amadeus_access_token');
+      localStorage.removeItem('amadeus_refresh_token');
+      localStorage.removeItem('selectedTrainId');
+    }
+  }, []);
 
   const handleSubmit = async () => {
     if (!username || !password) {
