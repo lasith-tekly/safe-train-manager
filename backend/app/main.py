@@ -43,14 +43,14 @@ from app.models.auth import User, UserTeamAssignment, UserTrainAssignment  # noq
 from app.models.train import Train  # noqa: F401
 from app.models.product import Product  # noqa: F401
 from app.models.team import Team, TeamCapacity, TeamMember, MemberQuarterlyAvailability, MemberPIAllocation, ComponentHat, SiteHoliday  # noqa: F401
-from app.models.pi import PI  # noqa: F401
+from app.models.pi import PI, Iteration  # noqa: F401
 from app.models.holiday import Holiday, MemberLeave  # noqa: F401
 from app.models.organization import Country, Site  # noqa: F401
 from app.models.capacity import TeamIterationCapacity  # noqa: F401
 from app.models.capacity_allocation import CapacityAllocationCategory  # noqa: F401
 from app.models.member_iteration_productivity import MemberIterationProductivity  # noqa: F401
-from app.models.budget_new import FiscalYear, BudgetVersion, ProductBudget, BudgetLine, BudgetCategory, BudgetLineProduct, BudgetAuditLog, PIBudgetPlan  # noqa: F401
-from app.models.roadmap_v4 import RoadmapFeature, FeatureQuarterlyAllocation, FeatureTeam, JIRARecord, JIRAQuarterlyAllocation  # noqa: F401
+from app.models.budget_new import FiscalYear, BudgetVersion, ProductBudget, BudgetLine, BudgetCategory, BudgetLineProduct, BudgetAuditLog  # noqa: F401
+from app.models.roadmap_v4 import RoadmapFeature, FeatureQuarterlyAllocation, FeatureTeam, JiraRecord, JiraQuarterlyAllocation  # noqa: F401
 from app.models.roadmap_version import RoadmapVersion  # noqa: F401
 from app.models.feature_budget_allocation import FeatureBudgetLineAllocation  # noqa: F401
 from app.models.spillover_history import SpilloverHistory  # noqa: F401
