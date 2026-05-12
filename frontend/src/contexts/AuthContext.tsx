@@ -257,7 +257,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const sessionExpired = useCallback(() => {
     clearAuth();
-    window.location.href = '/login?reason=expired';
+    // Only redirect if not already on login page
+    if (!window.location.pathname.includes('/login')) {
+      window.location.href = '/login?reason=expired';
+    }
   }, []);
 
   // Axios interceptors

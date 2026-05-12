@@ -13,15 +13,10 @@ export default function LoginPage() {
   const isExpired = new URLSearchParams(window.location.search).get('reason') === 'expired';
 
   useEffect(() => {
-    // Clear any stale tokens on login page load
-    // This prevents "session expired" on fresh visits
-    const reason = new URLSearchParams(window.location.search).get('reason');
-    if (!reason) {
-      // Only clear if NOT redirected here due to actual expiry
-      localStorage.removeItem('amadeus_access_token');
-      localStorage.removeItem('amadeus_refresh_token');
-      localStorage.removeItem('selectedTrainId');
-    }
+    // Clear all tokens on login page load
+    localStorage.removeItem('amadeus_access_token');
+    localStorage.removeItem('amadeus_refresh_token');
+    localStorage.removeItem('selectedTrainId');
   }, []);
 
   const handleSubmit = async () => {
