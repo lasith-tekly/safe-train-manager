@@ -42,11 +42,11 @@ from app.database import engine, Base
 from app.models.auth import User, UserTeamAssignment, UserTrainAssignment  # noqa: F401
 from app.models.train import Train  # noqa: F401
 from app.models.product import Product  # noqa: F401
-from app.models.team import Team  # noqa: F401
+from app.models.team import Team, TeamCapacity, TeamMember, MemberQuarterlyAvailability, MemberPIAllocation, ComponentHat, SiteHoliday  # noqa: F401
 from app.models.pi import PI  # noqa: F401
-from app.models.holiday import Holiday  # noqa: F401
+from app.models.holiday import Holiday, MemberLeave  # noqa: F401
 from app.models.organization import Country, Site  # noqa: F401
-from app.models.capacity import TeamCapacity, TeamMember, MemberLeave, MemberQuarterlyAvailability, MemberPIAllocation  # noqa: F401
+from app.models.capacity import TeamIterationCapacity  # noqa: F401
 from app.models.capacity_allocation import CapacityAllocationCategory  # noqa: F401
 from app.models.member_iteration_productivity import MemberIterationProductivity  # noqa: F401
 from app.models.budget_new import FiscalYear, BudgetVersion, ProductBudget, BudgetLine, BudgetCategory, BudgetLineProduct, BudgetAuditLog, PIBudgetPlan  # noqa: F401
@@ -56,7 +56,7 @@ from app.models.feature_budget_allocation import FeatureBudgetLineAllocation  # 
 from app.models.spillover_history import SpilloverHistory  # noqa: F401
 from app.models.record_history import RecordHistory  # noqa: F401
 from app.models.team_planning import TeamPlanning, POPlanVersion, PlanningNotification  # noqa: F401
-from app.models.global_settings import GlobalSetting, ComponentHat  # noqa: F401
+from app.models.global_settings import GlobalSettings  # noqa: F401
 
 # Create tables on startup (needed for fresh deployments)
 Base.metadata.create_all(bind=engine)
