@@ -229,6 +229,7 @@ export const SideNavLayout: React.FC<SideNavLayoutProps> = ({ children }) => {
                       ),
                       onClick: () => {
                         switchTrain(train.train_id);
+                        navigate(0);  // React Router v6: reloads current route, triggers all useEffects
                       }
                     })) ?? [])
                   ]
