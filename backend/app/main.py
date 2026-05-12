@@ -53,9 +53,13 @@ def _get_allowed_origins() -> list[str]:
         "http://127.0.0.1:5173",
         "http://127.0.0.1:5174",
     ]
-    extra = os.getenv("ALLOWED_ORIGINS", "")
+    extra = os.getenv("CORS_ORIGINS", "")
     if extra:
-        origins.extend([o.strip() for o in extra.split(",") if o.strip()])
+        # Support both "*" wildcard and comma-separated list
+        if extra.strip() == "*":
+            origins = ["*"]
+        else:
+            origins.extend([o.strip() for o in extra.split(",") if o.strip()])
     return origins
 
 
