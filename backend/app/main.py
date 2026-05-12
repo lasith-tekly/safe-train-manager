@@ -61,28 +61,6 @@ from app.models.global_settings import GlobalSettings  # noqa: F401
 # Create tables on startup (needed for fresh deployments)
 Base.metadata.create_all(bind=engine)
 
-def _get_allowed_origins() -> list[str]:
-    """Build CORS origins from environment."""
-    origins = [
-        "http://localhost:5173",
-        "http://localhost:5174",
-        "http://localhost:3000",
-        "http://127.0.0.1:5173",
-        "http://127.0.0.1:5174",
-        "http://127.0.0.1:3000",
-        "https://safe-train-manager.vercel.app",
-    ]
-
-    # Also allow any origin if CORS_ORIGINS is set to "*"
-    cors_env = os.getenv("CORS_ORIGINS", "")
-    if cors_env == "*":
-        origins = ["*"]
-    elif cors_env:
-        origins.extend([o.strip() for o in cors_env.split(",") if o.strip()])
-
-    return origins
-
-
 app = FastAPI(
     title="Amadeus Elevate API",
     description="API for managing SAFe train budgets, capacity, and features",
@@ -91,11 +69,11 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-# CORS middleware
+# CORS middleware - allow all origins for Render deployment
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=_get_allowed_origins(),
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
