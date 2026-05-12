@@ -122,9 +122,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Role boolean helpers
   const isSuperAdmin = user?.role === 'superadmin';
-  const isAdmin = isSuperAdmin || selectedTrainRole === 'admin';
-  const isPO = selectedTrainRole === 'po';
-  const isReadOnly = selectedTrainRole === 'readonly';
+  const isAdmin = isSuperAdmin || user?.role === 'admin';
+  const isPO = !isAdmin && user?.role === 'po';
+  const isReadOnly = !isAdmin && !isPO && user?.role === 'readonly';
   const canEdit = isAdmin || isPO;
   const canManageUsers = isSuperAdmin;
   const mustChangePassword = user?.must_change_password ?? false;
