@@ -208,45 +208,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (username: string, password: string) => {
     const res = await axios.post(`${API_BASE}/api/auth/login`, { username, password });
-    const { access_token, refresh_token, must_change_password, trains, default_train_id } = res.data;
+    const { access_token, refresh_token, must_change_password, trains } = res.data;
     localStorage.setItem('amadeus_access_token', access_token);
     localStorage.setItem('amadeus_refresh_token', refresh_token);
     setAuthHeader(access_token);
     const me = await fetchMe(access_token);
-    if (me) {
-      setUser(me);
-
-      // Set initial selectedTrainId after login
-      const stored = localStorage.getItem('selectedTrainId');
-      const hasAccess = trains?.some((t: TrainAssignment) => t.train_id === stored);
-
-      if (stored && hasAccess) {
-        setSelectedTrainId(stored);
-        setCurrentTrainId(stored);
-        setTrainContextHeader(stored);
-      } else if (default_train_id) {
-        setSelectedTrainId(default_train_id);
-        setCurrentTrainId(default_train_id);
-        setTrainContextHeader(default_train_id);
-        localStorage.setItem('selectedTrainId', default_train_id);
-      } else if (trains?.length > 0) {
-        const firstTrain = trains[0].train_id;
-        setSelectedTrainId(firstTrain);
-        setCurrentTrainId(firstTrain);
-        setTrainContextHeader(firstTrain);
-        localStorage.setItem('selectedTrainId', firstTrain);
-      } else {
-        setSelectedTrainId(null);
-        setCurrentTrainId(null);
-        localStorage.removeItem('selectedTrainId');
-      }
-    }
 
     if (must_change_password) {
       window.location.href = '/change-password';
       return;
     }
-    window.location.href = '/';
+
+    if (me) {
+      setUser(me);
+
+      // Superadmin → User Management
+      if (me.role === 'superadmin') {
+        window.location.href = '/settings/users';
+        return;
+      }
+
+      // No trains → No Access page
+      if (!trains || trains.length === 0) {
+        window.location.href = '/no-access';
+        return;
+      }
+
+      // Single train → auto-select and go to dashboard
+      if (trains.length === 1) {
+        const trainId = trains[0].train_id;
+        setSelectedTrainId(trainId);
+        setCurrentTrainId(trainId);
+        setTrainContextHeader(trainId);
+        localStorage.setItem('selectedTrainId', trainId);
+        window.location.href = '/';
+        return;
+      }
+
+      // Multiple trains → show train selection screen
+      window.location.href = '/select-train';
+    }
   };
 
   const logout = useCallback(() => {

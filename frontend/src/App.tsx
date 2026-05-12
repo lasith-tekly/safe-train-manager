@@ -19,6 +19,9 @@ import ProductsOverviewPage from './pages/RoadmapV4/ProductsOverviewPage';
 import ProductRoadmapPage from './pages/RoadmapV4/ProductRoadmapPage';
 import TeamPlanningPage from './pages/TeamPlanning/TeamPlanningPage';
 import ChangePasswordPage from './pages/ChangePassword/index';
+import SelectTrainPage from './pages/SelectTrain';
+import NoAccessPage from './pages/NoAccess';
+import SuperAdminLayout from './components/Layout/SuperAdminLayout';
 
 // Import Amadeus theme
 import './styles/amadeus-theme.css';
@@ -30,6 +33,34 @@ const App: React.FC = () => {
         {/* Public */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/change-password" element={<ChangePasswordPage />} />
+
+        {/* Train Selection & No Access */}
+        <Route path="/select-train" element={
+          <ProtectedRoute>
+            <SelectTrainPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/no-access" element={
+          <ProtectedRoute>
+            <NoAccessPage />
+          </ProtectedRoute>
+        } />
+
+        {/* Superadmin Routes - separate layout */}
+        <Route path="/settings/users" element={
+          <ProtectedRoute>
+            <SuperAdminLayout />
+          </ProtectedRoute>
+        }>
+          <Route index element={<UserManagementPage />} />
+        </Route>
+        <Route path="/settings/trains" element={
+          <ProtectedRoute>
+            <SuperAdminLayout />
+          </ProtectedRoute>
+        }>
+          <Route index element={<TrainManagementPage />} />
+        </Route>
 
         {/* Protected — all existing routes */}
         <Route path="/*" element={
@@ -73,8 +104,6 @@ const App: React.FC = () => {
                 <Route path="/settings/budget-configuration" element={<SettingsPage />} />
                 <Route path="/settings/train-config" element={<SettingsPage />} />
                 <Route path="/settings/train-teams" element={<SettingsPage />} />
-                <Route path="/settings/users" element={<UserManagementPage />} />
-                <Route path="/settings/trains" element={<TrainManagementPage />} />
                 <Route path="/settings/sites" element={<Navigate to="/settings/sites/locations" replace />} />
                 <Route path="/settings/sites/locations" element={<SettingsPage />} />
                 <Route path="/settings/sites/holidays" element={<SettingsPage />} />

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Layout, Menu, Typography, Tooltip } from 'antd';
+import { Layout, Menu, Typography, Tooltip, Dropdown, Tag } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom';
 import type { MenuProps } from 'antd';
 import {
@@ -19,10 +19,10 @@ import {
   FundOutlined,
   ProjectOutlined,
   UnorderedListOutlined,
+  RocketOutlined,
 } from '@ant-design/icons';
 import styles from './SideNavLayout.module.css';
 import { useAuth } from '../../contexts/AuthContext';
-import { TrainSelector } from '../TrainSelector';
 
 const { Sider, Header, Content } = Layout;
 const { Text } = Typography;
@@ -90,8 +90,12 @@ export const SideNavLayout: React.FC<SideNavLayoutProps> = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, logout, isAdmin, isSuperAdmin, isPO } = useAuth();
+  const { user, logout, isAdmin, isSuperAdmin, isPO, selectedTrainId, switchTrain } = useAuth();
   const menuItems = buildMenuItems(isSuperAdmin, isAdmin);
+
+  // Find currently selected train
+  const currentTrain = user?.trains?.find(t => t.train_id === selectedTrainId);
+  const hasMultipleTrains = (user?.trains?.length ?? 0) > 1;
 
   const getSelectedKeys = (): string[] => {
     const path = location.pathname;
@@ -203,10 +207,51 @@ export const SideNavLayout: React.FC<SideNavLayoutProps> = ({ children }) => {
         {/* Top Header */}
         <Header className={styles.header}>
           <div className={styles.headerLeft}>
-            <TrainSelector />
+            {/* Train context shown via train badge near sign out */}
           </div>
-          
+
           <div className={styles.headerRight}>
+            {/* Switch Train Dropdown - only for users with multiple trains */}
+            {hasMultipleTrains && (
+              <Dropdown
+                menu={{
+                  items: [
+                    ...(user?.trains?.map(train => ({
+                      key: train.train_id,
+                      label: (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <RocketOutlined style={{ color: '#1677ff' }} />
+                          <span>{train.train_name}</span>
+                          {train.train_id === selectedTrainId && (
+                            <Tag color="blue" style={{ marginLeft: 4, fontSize: 10 }}>Current</Tag>
+                          )}
+                        </div>
+                      ),
+                      onClick: () => {
+                        switchTrain(train.train_id);
+                      }
+                    })) ?? [])
+                  ]
+                }}
+                placement="bottomRight"
+              >
+                <div className={styles.headerIcon} style={{
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '4px 8px',
+                  borderRadius: 6,
+                  border: '1px solid #e8e8e8',
+                }}>
+                  <RocketOutlined style={{ color: '#1677ff' }} />
+                  <span style={{ fontSize: 12, color: '#1677ff', fontWeight: 500, maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {currentTrain?.train_name || 'Select Train'}
+                  </span>
+                </div>
+              </Dropdown>
+            )}
+
             {/* Notifications */}
             <Tooltip title="Notifications">
               <div className={styles.headerIcon}>
