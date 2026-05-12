@@ -35,13 +35,31 @@ from app.routes.pm_review import router as pm_review_router
 from app.routes.auth import router as auth_router
 from app.routes.users import router as users_router
 from app.routes.trains import router as trains_router
-from app.models.auth import User, UserTeamAssignment  # noqa: F401 — ensures tables registered with Base
-from app.models.train import Train  # noqa: F401
 from app.services.auth_service import seed_admin_user
 from app.database import engine, Base
 
-# Create tables - DISABLED: Using SQL migrations instead
-# Base.metadata.create_all(bind=engine)
+# Import all models to register them with Base before creating tables
+from app.models.auth import User, UserTeamAssignment, UserTrainAssignment  # noqa: F401
+from app.models.train import Train  # noqa: F401
+from app.models.product import Product  # noqa: F401
+from app.models.team import Team  # noqa: F401
+from app.models.pi import PI  # noqa: F401
+from app.models.holiday import Holiday  # noqa: F401
+from app.models.organization import Country, Site  # noqa: F401
+from app.models.capacity import TeamCapacity, TeamMember, MemberLeave, MemberQuarterlyAvailability, MemberPIAllocation  # noqa: F401
+from app.models.capacity_allocation import CapacityAllocationCategory  # noqa: F401
+from app.models.member_iteration_productivity import MemberIterationProductivity  # noqa: F401
+from app.models.budget_new import FiscalYear, BudgetVersion, ProductBudget, BudgetLine, BudgetCategory, BudgetLineProduct, BudgetAuditLog, PIBudgetPlan  # noqa: F401
+from app.models.roadmap_v4 import RoadmapFeature, FeatureQuarterlyAllocation, FeatureTeam, JIRARecord, JIRAQuarterlyAllocation  # noqa: F401
+from app.models.roadmap_version import RoadmapVersion  # noqa: F401
+from app.models.feature_budget_allocation import FeatureBudgetLineAllocation  # noqa: F401
+from app.models.spillover_history import SpilloverHistory  # noqa: F401
+from app.models.record_history import RecordHistory  # noqa: F401
+from app.models.team_planning import TeamPlanning, POPlanVersion, PlanningNotification  # noqa: F401
+from app.models.global_settings import GlobalSetting, ComponentHat  # noqa: F401
+
+# Create tables on startup (needed for fresh deployments)
+Base.metadata.create_all(bind=engine)
 
 def _get_allowed_origins() -> list[str]:
     """Build CORS origins from environment."""
@@ -118,12 +136,23 @@ app.include_router(trains_router)
 
 @app.on_event("startup")
 def on_startup():
-    from app.database import SessionLocal
-    db = SessionLocal()
+    import traceback
     try:
-        seed_admin_user(db)
-    finally:
-        db.close()
+        print("Starting Amadeus Elevate API...")
+        print(f"Database URL: {os.getenv('DATABASE_URL', 'Using default SQLite path')}")
+
+        from app.database import SessionLocal
+        db = SessionLocal()
+        try:
+            print("Seeding admin user...")
+            seed_admin_user(db)
+            print("Startup complete!")
+        finally:
+            db.close()
+    except Exception as e:
+        print(f"STARTUP ERROR: {e}")
+        traceback.print_exc()
+        raise
 
 
 @app.get("/health", tags=["health"])
