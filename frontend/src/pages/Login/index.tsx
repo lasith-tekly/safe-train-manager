@@ -13,7 +13,20 @@ export default function LoginPage() {
   const isExpired = new URLSearchParams(window.location.search).get('reason') === 'expired';
 
   useEffect(() => {
-    // Clear all tokens on login page load
+    // Clear stale tokens silently on login page load
+    // Remove the ?reason=expired from URL to hide
+    // the session expired message on fresh visits
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('reason') === 'expired') {
+      // Check if tokens actually exist - if not, it was
+      // a false alarm (Render sleeping caused the 401)
+      const hasToken = localStorage.getItem('amadeus_access_token');
+      if (!hasToken) {
+        // Remove the reason param from URL silently
+        window.history.replaceState({}, '', '/login');
+      }
+    }
+    // Always clear stale tokens
     localStorage.removeItem('amadeus_access_token');
     localStorage.removeItem('amadeus_refresh_token');
     localStorage.removeItem('selectedTrainId');
