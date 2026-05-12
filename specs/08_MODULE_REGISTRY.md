@@ -284,6 +284,59 @@ Always use _v4 versions. Legacy files exist but are NOT active:
 
 ---
 
+---
+
+### Phase 10: Multi-Train Architecture
+**Status:** 🔒 LOCKED ✅ COMPLETE  
+**Locked Date:** 2026-05-12  
+**Risk Level:** 🟢 Low (all regression tests passed)
+
+**Backend Files:**
+- `backend/app/models/auth.py` (UserTrainAssignment model)
+- `backend/app/models/pi.py` (train_id column)
+- `backend/app/models/budget_new.py` (FiscalYear train_id)
+- `backend/app/services/auth_service.py` (multi-train helpers)
+- `backend/app/dependencies/auth.py` (get_train_context rewrite)
+- `backend/app/routes/auth.py` (trains array in responses)
+- `backend/app/routes/users.py` (train assignment endpoints)
+- `backend/app/routes/products.py` (train_id dependency)
+- `backend/app/routes/teams.py` (train_id dependency)
+- `backend/app/routes/pis.py` (train filtering)
+- `backend/app/routers/budget_config.py` (train filtering)
+- `backend/app/services/product_service.py` (train_id param)
+- `backend/app/services/team_service.py` (train_id param)
+
+**Frontend Files:**
+- `frontend/src/contexts/AuthContext.tsx` (multi-train context)
+- `frontend/src/App.tsx` (new routes, SuperAdminLayout)
+- `frontend/src/components/Layout/SideNavLayout.tsx` (Switch Train)
+- `frontend/src/components/Layout/SuperAdminLayout.tsx` (NEW)
+- `frontend/src/pages/SelectTrain/index.tsx` (NEW)
+- `frontend/src/pages/NoAccess/index.tsx` (NEW)
+- `frontend/src/pages/Settings/UserManagement/index.tsx` (multi-train UI)
+- `frontend/src/components/TrainContextSelect/index.tsx` (NEW)
+
+**Database Tables:**
+- `user_train_assignments` (NEW - user_id, train_id, role, is_default)
+- `pis` (train_id column added)
+- `fiscal_years` (train_id column added)
+- `products` (train_id now set on creation)
+- `teams` (train_id now set on creation)
+
+**Dependencies:**
+- Used by: All modules (train context filtering)
+- Calls: All train-scoped data services
+
+**Features:**
+- Multi-train user assignments
+- X-Train-Context header mechanism
+- Train selection at login
+- Train switching via dropdown
+- SuperAdmin separate layout
+- Data isolation by train
+
+---
+
 ## 🔄 Active Modules (In Development)
 
 ### Phase 7: Change Propagation
@@ -490,6 +543,67 @@ Always use _v4 versions. Legacy files exist but are NOT active:
 | 2026-02-27 | Budget | Fix train-lines CORS — route ordering bug (GET /versions/{id} shadowed train-lines route) | 🟡 Medium | 93c8a7f3 | API routing |
 | 2026-02-27 | Budget | Enable categories for train-level budget lines | 🟡 Medium | 93c8a7f3 | Train lines UI |
 | 2026-02-27 | Budget | Fix create_train_budget_line 500 — audit called before db.commit() | 🟢 Low | 9ddb5c2b | Budget API |
+| 2026-05-12 | Phase 10 | Multi-Train Architecture — Complete implementation | 🟢 Low | dbacfeda → 2c583de0 | All modules |
+
+### Phase 10 — Multi-Train Architecture (COMPLETE ✅)
+**Date:** 2026-05-12  
+**Commits:** dbacfeda → 2c583de0 (13 commits total)  
+**Risk Level:** 🟢 Low (all regression tests passed)
+
+#### New Tables
+- `user_train_assignments` (user_id, train_id, role, is_default)
+
+#### New Columns
+- `pis.train_id` (UUID FK → trains)
+- `fiscal_years.train_id` (UUID FK → trains)
+
+#### Backend Changes (all low-risk, additive)
+- `backend/app/models/auth.py` — UserTrainAssignment model
+- `backend/app/models/pi.py` — train_id column
+- `backend/app/models/budget_new.py` — FiscalYear train_id
+- `backend/app/services/auth_service.py` — multi-train helpers (get_user_trains, assign_user_to_train, revoke_user_from_train)
+- `backend/app/dependencies/auth.py` — get_train_context rewrite (uses X-Train-Context header)
+- `backend/app/routes/auth.py` — /login, /me return trains array
+- `backend/app/routes/users.py` — new endpoints: /users/{id}/trains (GET/POST/DELETE)
+- `backend/app/routes/products.py` — train_id dependency added
+- `backend/app/routes/teams.py` — train_id dependency added
+- `backend/app/routes/pis.py` — train filtering (GET /pis filters by train_id)
+- `backend/app/routers/budget_config.py` — train filtering (GET /versions filters by train_id)
+- `backend/app/services/product_service.py` — train_id param added to get_products()
+- `backend/app/services/team_service.py` — train_id param added to get_teams()
+
+#### Frontend Changes
+- `frontend/src/contexts/AuthContext.tsx` — multi-train context (selectedTrainId, selectedTrainRole, switchTrain), axios interceptor for X-Train-Context, conditional login routing
+- `frontend/src/App.tsx` — new routes: /select-train, /no-access; SuperAdminLayout for /settings/users and /settings/trains
+- `frontend/src/components/Layout/SideNavLayout.tsx` — Switch Train dropdown in header (only for users with multiple trains), navigate(0) for route reload on train switch
+- `frontend/src/components/Layout/SuperAdminLayout.tsx` — NEW — separate layout for superadmin with minimal sidebar (User/Train Management only)
+- `frontend/src/pages/SelectTrain/index.tsx` — NEW — train selection screen for multi-train users
+- `frontend/src/pages/NoAccess/index.tsx` — NEW — no-access page for users without train assignments
+- `frontend/src/pages/Settings/UserManagement/index.tsx` — multi-train UI with train assignment management
+- `frontend/src/components/TrainContextSelect/index.tsx` — train context selector component
+
+#### Regression Tests Passed
+1. ✅ Budget Configuration — train filtering works, no cross-train leakage
+2. ✅ PI Calendar — train filtering works, correct PI lists per train
+3. ✅ Team Planning — train context respected, no errors
+4. ✅ Roadmap Planning — train scoped features load correctly
+5. ✅ User Management — train assignment CRUD works
+6. ✅ Train switching — dropdown works, data refreshes correctly
+7. ✅ Login flow — superadmin → User Management, single train → auto-select, multi-train → train selection screen
+
+#### Features Delivered
+- Multi-train user assignments with per-train roles (admin/po/readonly)
+- X-Train-Context HTTP header mechanism for train scoping
+- Train selection at login (superadmin → User Management, single train → auto-select, multiple trains → selection screen)
+- Switch Train dropdown in header (only visible for users with multiple trains)
+- SuperAdmin separate layout with minimal menu (User/Train Management only)
+- Data isolation by train (all train-scoped endpoints now filter by X-Train-Context)
+- React Query cache invalidation + route reload for data refresh on train switch
+
+#### Documentation
+- specs/10_PHASE10_MULTI_TRAIN.md — comprehensive Phase 10 implementation spec (15 sections)
+- specs/09_WORKING_ETHICS.md — updated with Phase 10 rules
+- specs/08_MODULE_REGISTRY.md — Phase 10 marked COMPLETE ✅
 
 ---
 
@@ -503,10 +617,11 @@ Always use _v4 versions. Legacy files exist but are NOT active:
 | 2026-02-26 | DB Reset | Full DB reset — tables recreated from SQLAlchemy models directly (Alembic chain was broken) | All 42 tables |
 | 2026-02-26 | is_roadmap_eligible | Add is_roadmap_eligible boolean column to budget_lines | budget_lines |
 | 2026-02-26 | train_budget_lines | product_budget_id nullable confirmed, budget_version_id FK present — no-op migration (schema already correct) | budget_lines |
+| 2026-05-12 | Phase 10 Multi-Train | user_train_assignments table, pis.train_id, fiscal_years.train_id | user_train_assignments, pis, fiscal_years | ✅ Yes |
 
 ---
 
-**Document Version:** 2.1  
-**Last Updated:** 2026-02-27  
+**Document Version:** 2.2  
+**Last Updated:** 2026-05-12  
 **Maintained By:** @TechLead  
 **Review Frequency:** After each phase completion
