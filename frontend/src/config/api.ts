@@ -6,7 +6,7 @@
  *
  * All API calls append /api/... themselves.
  */
-const BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const BASE = import.meta.env.VITE_API_URL || 'https://amadeus-elevate-api.onrender.com';
 
 // Strip trailing slash if present
 const BASE_URL = BASE.endsWith('/') ? BASE.slice(0, -1) : BASE;
