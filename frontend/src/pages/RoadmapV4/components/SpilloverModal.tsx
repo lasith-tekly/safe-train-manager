@@ -55,7 +55,7 @@ export const SpilloverModal: React.FC<SpilloverModalProps> = ({
 
   const fetchPIs = async () => {
     try {
-      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
+      const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://amadeus-elevate-api.onrender.com') + '/api';
       const response = await axios.get(`${API_BASE_URL}/pis`);
       const piList = response.data.data || response.data || [];
       setPis(piList);

@@ -44,7 +44,7 @@ const AdjustExecutionPanel: React.FC<AdjustExecutionPanelProps> = ({
   const loadData = async () => {
     setLoading(true);
     try {
-      const API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
+      const API_BASE = (import.meta.env.VITE_API_URL || 'https://amadeus-elevate-api.onrender.com') + '/api';
       const [recordsRes, pisRes] = await Promise.all([
         axios.get(`${API_BASE}/features/${featureId}/jira-records`),
         axios.get(`${API_BASE}/pis`)
