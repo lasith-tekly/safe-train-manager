@@ -126,7 +126,11 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
       for (const product of products) {
         try {
           const detailResponse = await axios.get(`${API_BASE_URL}/budget/products/${product.id}`);
-          budgetProductsWithDetails.push(detailResponse.data);
+          const productDetail = detailResponse.data;
+          // Filter only roadmap-eligible budget lines
+          productDetail.budget_lines = (productDetail.budget_lines || [])
+            .filter((line: any) => line.is_roadmap_eligible !== false);
+          budgetProductsWithDetails.push(productDetail);
         } catch (err) {
           console.error(`Failed to load budget details for product ${product.id}:`, err);
         }
