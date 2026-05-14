@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal, Form, Input, InputNumber, Select, Button, message, Row, Col, Space, Card, Tag, Collapse } from 'antd';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import axios from 'axios';
+import api from '../../services/api';
 import { createFeature, updateFeature } from '../../services/featureApi';
 import { RoadmapFeature, CreateFeatureRequest, UpdateFeatureRequest, QuarterlyAllocationInput } from '../../types/roadmap_v4';
 import QuarterlyPlanningGrid from './QuarterlyPlanningGrid';
@@ -119,29 +120,23 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
 
   const loadBudgetProducts = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/budget/products`);
+      const response = await api.get('/budget/products');
       const products = response.data.data || response.data || [];
-      console.log('[DEBUG] Budget products response:', products);
 
       const budgetProductsWithDetails: BudgetProduct[] = [];
       for (const product of products) {
         try {
-          const detailResponse = await axios.get(`${API_BASE_URL}/budget/products/${product.id}`);
+          const detailResponse = await api.get(`/budget/products/${product.id}`);
           const productDetail = detailResponse.data;
-          console.log('[DEBUG] Product detail for', product.id, ':', productDetail);
-
           // Filter only roadmap-eligible budget lines
           productDetail.budget_lines = (productDetail.budget_lines || [])
             .filter((line: any) => line.is_roadmap_eligible !== false);
-
-          console.log('[DEBUG] Filtered budget lines:', productDetail.budget_lines);
           budgetProductsWithDetails.push(productDetail);
         } catch (err) {
           console.error(`Failed to load budget details for product ${product.id}:`, err);
         }
       }
 
-      console.log('[DEBUG] Final budgetProductsWithDetails:', budgetProductsWithDetails);
       setBudgetProducts(budgetProductsWithDetails);
     } catch (error) {
       console.error('Failed to load budget products:', error);
