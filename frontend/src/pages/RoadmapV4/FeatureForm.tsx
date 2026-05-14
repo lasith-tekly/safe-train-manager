@@ -121,21 +121,27 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
     try {
       const response = await axios.get(`${API_BASE_URL}/budget/products`);
       const products = response.data.data || response.data || [];
-      
+      console.log('[DEBUG] Budget products response:', products);
+
       const budgetProductsWithDetails: BudgetProduct[] = [];
       for (const product of products) {
         try {
           const detailResponse = await axios.get(`${API_BASE_URL}/budget/products/${product.id}`);
           const productDetail = detailResponse.data;
+          console.log('[DEBUG] Product detail for', product.id, ':', productDetail);
+
           // Filter only roadmap-eligible budget lines
           productDetail.budget_lines = (productDetail.budget_lines || [])
             .filter((line: any) => line.is_roadmap_eligible !== false);
+
+          console.log('[DEBUG] Filtered budget lines:', productDetail.budget_lines);
           budgetProductsWithDetails.push(productDetail);
         } catch (err) {
           console.error(`Failed to load budget details for product ${product.id}:`, err);
         }
       }
-      
+
+      console.log('[DEBUG] Final budgetProductsWithDetails:', budgetProductsWithDetails);
       setBudgetProducts(budgetProductsWithDetails);
     } catch (error) {
       console.error('Failed to load budget products:', error);
@@ -214,9 +220,15 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
   };
 
   const getBudgetLinesByProduct = (productId: string) => {
+    console.log('[DEBUG] getBudgetLinesByProduct called with productId:', productId);
+    console.log('[DEBUG] Available budgetProducts:', budgetProducts);
+
     const budgetProduct = budgetProducts.find(bp => bp.product.id === productId);
+    console.log('[DEBUG] Found budgetProduct:', budgetProduct);
+
     const productBudgetLines = (budgetProduct?.budget_lines || []).filter((bl: any) => bl.is_roadmap_eligible !== false);
-    
+    console.log('[DEBUG] productBudgetLines after filter:', productBudgetLines);
+
     const transversalBudgetLines: any[] = [];
     budgetProducts.forEach(bp => {
       bp.budget_lines.forEach((bl: any) => {
@@ -225,7 +237,8 @@ const FeatureFormModal: React.FC<FeatureFormModalProps> = ({ visible, feature, o
         }
       });
     });
-    
+
+    console.log('[DEBUG] Final budget lines (product + transversal):', [...productBudgetLines, ...transversalBudgetLines]);
     return [...productBudgetLines, ...transversalBudgetLines];
   };
 
