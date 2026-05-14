@@ -278,7 +278,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       res => res,
       async err => {
         const originalRequest = err.config;
-        if (err.response?.status === 401 && !originalRequest._retry) {
+        if (
+          err.response?.status === 401 &&
+          !originalRequest._retry &&
+          !originalRequest.url?.includes('/auth/login') &&
+          !originalRequest.url?.includes('/auth/refresh')
+        ) {
           originalRequest._retry = true;
           try {
             const refresh = localStorage.getItem('amadeus_refresh_token');
