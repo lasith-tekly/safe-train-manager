@@ -33,9 +33,12 @@ class BudgetConfigService:
         return query.order_by(FiscalYear.year.desc()).all()
 
     @staticmethod
-    def get_current_fiscal_year(db: Session) -> Optional[FiscalYear]:
-        """Get the current fiscal year."""
-        return db.query(FiscalYear).filter(FiscalYear.is_current == True).first()
+    def get_current_fiscal_year(db: Session, train_id: Optional[str] = None) -> Optional[FiscalYear]:
+        """Get the current fiscal year, optionally filtered by train."""
+        query = db.query(FiscalYear).filter(FiscalYear.is_current == True)
+        if train_id is not None:
+            query = query.filter(FiscalYear.train_id == train_id)
+        return query.first()
 
     @staticmethod
     def create_fiscal_year(db: Session, data: FiscalYearCreate, train_id: Optional[str] = None) -> FiscalYear:
@@ -99,8 +102,8 @@ class BudgetConfigService:
         max_version = db.query(func.max(BudgetVersion.version_number)).filter(
             BudgetVersion.fiscal_year_id == str(data.fiscal_year_id)
         ).scalar() or 0
-        
-        # Deactivate previous active version
+
+        # Deactivate previous active version (scoped to same fiscal year, which has train)
         db.query(BudgetVersion).filter(
             and_(
                 BudgetVersion.fiscal_year_id == str(data.fiscal_year_id),
@@ -205,9 +208,10 @@ class BudgetConfigService:
 
     @staticmethod
     def get_product_budgets(
-        db: Session, 
+        db: Session,
         fiscal_year_id: Optional[UUID] = None,
-        version_id: Optional[UUID] = None
+        version_id: Optional[UUID] = None,
+        train_id: Optional[str] = None
     ) -> List[ProductBudget]:
         """Get product budgets for a version."""
         if version_id:
@@ -215,12 +219,12 @@ class BudgetConfigService:
         elif fiscal_year_id:
             version = BudgetConfigService.get_active_budget_version(db, fiscal_year_id)
         else:
-            fiscal_year = BudgetConfigService.get_current_fiscal_year(db)
+            fiscal_year = BudgetConfigService.get_current_fiscal_year(db, train_id)
             version = BudgetConfigService.get_active_budget_version(db, UUID(fiscal_year.id)) if fiscal_year else None
-        
+
         if not version:
             return []
-        
+
         return db.query(ProductBudget).filter(
             ProductBudget.budget_version_id == version.id
         ).all()
@@ -659,7 +663,8 @@ class BudgetConfigService:
     def get_budget_summary(
         db: Session,
         fiscal_year_id: Optional[UUID] = None,
-        version_id: Optional[UUID] = None
+        version_id: Optional[UUID] = None,
+        train_id: Optional[str] = None
     ) -> Dict:
         """Get budget summary with totals and breakdown."""
         if version_id:
@@ -667,7 +672,7 @@ class BudgetConfigService:
         elif fiscal_year_id:
             version = BudgetConfigService.get_active_budget_version(db, fiscal_year_id)
         else:
-            fiscal_year = BudgetConfigService.get_current_fiscal_year(db)
+            fiscal_year = BudgetConfigService.get_current_fiscal_year(db, train_id)
             version = BudgetConfigService.get_active_budget_version(db, UUID(fiscal_year.id)) if fiscal_year else None
         
         if not version:

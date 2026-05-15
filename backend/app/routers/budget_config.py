@@ -170,18 +170,23 @@ def get_product_budgets(
     fiscal_year_id: Optional[UUID] = Query(None, description="Fiscal year ID"),
     version_id: Optional[UUID] = Query(None, description="Budget version ID"),
     db: Session = Depends(get_db),
-    current_user = Depends(get_current_user)
+    current_user = Depends(get_current_user),
+    train_id: Optional[str] = Depends(get_train_context)
 ):
     """Get product budgets for active version or specified version."""
     # If no version_id provided, use active version automatically
     if version_id is None:
-        from app.models.budget_new import BudgetVersion
-        active_version = db.query(BudgetVersion).filter(
-            BudgetVersion.is_active == True
-        ).first()
+        from app.models.budget_new import BudgetVersion, FiscalYear
+        # Join to fiscal_years to filter by train
+        query = db.query(BudgetVersion).join(
+            FiscalYear, BudgetVersion.fiscal_year_id == FiscalYear.id
+        ).filter(BudgetVersion.is_active == True)
+        if train_id:
+            query = query.filter(FiscalYear.train_id == train_id)
+        active_version = query.first()
         if active_version:
             version_id = active_version.id
-    product_budgets = BudgetConfigService.get_product_budgets(db, fiscal_year_id, version_id)
+    product_budgets = BudgetConfigService.get_product_budgets(db, fiscal_year_id, version_id, train_id)
     
     # Enrich with consumed amounts from feature allocations
     response_data = []
@@ -437,10 +442,11 @@ def get_budget_summary(
     fiscal_year_id: Optional[UUID] = Query(None, description="Fiscal year ID"),
     version_id: Optional[UUID] = Query(None, description="Budget version ID"),
     db: Session = Depends(get_db),
-    current_user = Depends(get_current_user)
+    current_user = Depends(get_current_user),
+    train_id: Optional[str] = Depends(get_train_context)
 ):
     """Get budget summary for active version or specified version."""
-    summary = BudgetConfigService.get_budget_summary(db, fiscal_year_id, version_id)
+    summary = BudgetConfigService.get_budget_summary(db, fiscal_year_id, version_id, train_id)
     if not summary:
         raise HTTPException(status_code=404, detail="No budget data found")
     return summary
